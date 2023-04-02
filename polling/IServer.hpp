@@ -1,10 +1,15 @@
 #ifndef ISERVER_HPP
 # define ISERVER_HPP
 
+#include "./ISocket.hpp"
+#include <vector>
+
 class IServer {
 public:
-	virtual void m_setSocket() = 0;
-	virtual void m_listen() = 0;
+	virtual void setServerConf() = 0;
+	virtual void setServerSockets() = 0;
+	virtual void makeWorkerProcess() = 0;
+
 	virtual ~IServer() {}
 };
 
