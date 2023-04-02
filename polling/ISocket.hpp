@@ -21,9 +21,9 @@ class ISocket {
 
 	virtual void openSocket() throw (std::runtime_error) = 0;
 	virtual void setSockOptions() throw (std::runtime_error) = 0;
-	virtual void setSocketAddress();
-	virtual void sockBind() throw (std::runtime_error);
-	virtual void sockListen() throw (std::runtime_error);
+	virtual void setSocketAddress() = 0;
+	virtual void sockBind() throw (std::runtime_error) = 0;
+	virtual void sockListen() throw (std::runtime_error) = 0;
 };
 
 #endif
