@@ -37,6 +37,9 @@ public:
 	{
 		this->openSocket();
 		this->setSockOptions();
+		this->setSocketAddress();
+		this->sockBind();
+		this->sockListen();
 	}
 
 
@@ -68,19 +71,35 @@ private:
 		}
 	}
 
-	void setSocketAddress() {
+	/**
+	 * @brief set address of socket
+	 */
+	void setSocketAddress() 
+	{
 		memset(&this->server_addr, 0, sizeof(server_addr));
 		server_addr.sin_family = this->InetLayerProtocol;
 		server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		server_addr.sin_port = htons(this->Port);
 	}
 
-	void sockBind() throw (std::runtime_error) {
+	/**
+	 * @brief naming the unnamed socket
+	 *
+	 * @throw std::runtime_error
+	 */
+	void sockBind() throw (std::runtime_error) 
+	{
 		if (::bind(this->SkFd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
 			throw std::runtime_error("ERROR: bind");
 	}
 
-	void sockListen() throw (std::runtime_error) {
+	/**
+	 * @brief listen socket in skFd
+	 *
+	 * @throw std::runtime_error
+	 */
+	void sockListen() throw (std::runtime_error) 
+	{
 		if (::listen(this->SkFd, SOMAXCONN) < 0)
 			throw std::runtime_error("ERROR: listen");
 	}
@@ -96,17 +115,32 @@ private:
 		return this->SkFd;
 	}
 
+	/**
+	 * @brief get internet layer protocol
+	 *
+	 * @return AF_INET(ipv4)
+	 */
 	int getInetLayerProtocol() const
 	{
 		return this->InetLayerProtocol;
 	}
 
 
+	/**
+	 * @brief get tcp layer protocol
+	 *
+	 * @return SOCK_STREAM
+	 */
 	int getTcpLayerProtocol() const
 	{
 		return this->TpLayerProtocol;
 	}
 
+	/**
+	 * @brief get socket option vector
+	 *
+	 * @return T_SocketOptionVec vec
+	 */
 	T_SocketOptionVec getSockOptVec() const 
 	{
 		return this->SockOptVec;
