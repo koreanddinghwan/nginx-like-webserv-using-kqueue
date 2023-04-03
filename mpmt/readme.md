@@ -128,3 +128,7 @@ listen(ipc_socket, SOMAXCONN);
 <br>
 
 - 따라서, Pipe와 Unix Domain Socket은 각각의 특징을 가지고 있으며, 사용 목적에 따라 적합한 IPC 메커니즘을 선택해야 합니다.
+
+# Nginx 아키텍처 참고
+
+[nginx아키텍처 분석](https://cyuu.tistory.com/172)
