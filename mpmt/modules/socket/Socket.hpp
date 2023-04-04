@@ -9,9 +9,13 @@
 #include <sys/socket.h>
 #include <utility>
 
-
-class Socket : public ISocket
+template <class initArgType, class runArgType>
+class Socket : public ISocket<initArgType, runArgType>
 {
+public:
+	typedef typename std::vector<std::pair<int, std::pair<int, int> > > T_SocketOptionVec;
+	typedef typename T_SocketOptionVec::iterator T_SocketOptIterator;
+
 private:
 
 	int SkFd;
@@ -34,10 +38,17 @@ public:
 		TpLayerProtocol(tpLayerProtocol),
 		SockOptVec(sockOptVec),
 		Port(port)
+	{}
+
+	void init(initArgType args) throw (std::runtime_error)
 	{
 		this->openSocket();
 		this->setSockOptions();
 		this->setSocketAddress();
+	}
+
+	void run(runArgType args) throw (std::runtime_error)
+	{
 		this->sockBind();
 		this->sockListen();
 	}

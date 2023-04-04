@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <unistd.h>
 #include "./IServer.hpp"
 #include "ISocket.hpp"
-#include "Socket.hpp"
+
 
 #ifdef MULTITHREADING
 #include "./threadpool.hpp"
@@ -26,20 +27,22 @@ private:
 public:
 	Server() {}
 
+	void run() {
+		for (int i = 0; i < WORKER_PROCESSES; i++)
+		{
+			int pid = fork();
+			if (pid != 0) //master process
+			{
 
-	/**
-	 * @brief configuration file로 설정합니다.
-	 */
-	void setServerConf() {}
-
-	/**
-	 * @brief conf파일, define에 맞춰 소켓을 세팅합니다.
-	 */
-	void setServerSockets() {}
-
-
-	void makeWorkerProcess() {
-
+			}
+			else//worker process
+			{
+				#ifdef MULTITHREADING
+				//set worker thread to processing parrarel I/O
+				#endif
+				//event loop module(kqueue) needed 
+			}
+		}
 	}
 
 #ifdef MULTITHREADING
