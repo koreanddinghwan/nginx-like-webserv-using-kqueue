@@ -4,10 +4,8 @@
 #include <vector>
 #include "../../interface/IModule.hpp"
 
-template <class initArgType, class runArgType>
-class ISocket : public IModule<initArgType, runArgType>
+class ISocket : public IModule
 {
-
 	public:
 	typedef typename std::vector<std::pair<int, std::pair<int, int> > > T_SocketOptionVec;
 	/**
