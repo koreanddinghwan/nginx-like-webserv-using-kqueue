@@ -2,7 +2,8 @@
 
 [draw.io](https://drive.google.com/file/d/1vH0PNeXKEOKTo_2sLT3yukgT2I_hUp2z/view?usp=sharing)
 
-[초기 설계도](https://github.com/42projectPeople/backend/files/11172915/drawio.pdf)
+![초기 설계도-0407](https://user-images.githubusercontent.com/76278794/230448853-ddfdd56f-cab8-4f7a-8a26-58beda20df63.png)
+
 
 # CGI 아키텍처 다이어그램
 
