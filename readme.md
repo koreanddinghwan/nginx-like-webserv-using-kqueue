@@ -2,6 +2,7 @@
 
 [draw.io](https://drive.google.com/file/d/1vH0PNeXKEOKTo_2sLT3yukgT2I_hUp2z/view?usp=sharing)
 
+[초기 설계도](https://github.com/42projectPeople/backend/files/11172915/drawio.pdf)
 
 # CGI 아키텍처 다이어그램
 
@@ -74,7 +75,7 @@ int main () {
 - 마스터 프로세스는 주소 환경 설정 파일의 로드와 같은 초기화작업을 수행한다.
 - 실제 클라이언트 요청 처리 작업은 워커프로세스에서 수행된다.
 - 기본값으로 CPU코어의 개수이고, 수동으로 설정할 수 있다.
-- `worker_processes`로 설정한다. 
+- `worker_processes`로 설정한다.
 
 <br>
 
@@ -89,29 +90,47 @@ int main () {
 - `그러나, 대부분의 file i/o 작업은 직접적으로 하드드라이브에서 가져오는 것이 아닌, 운영체제가 충분한 RAM이 있는경우, 페이지 캐시를 한다.`
 - `이 경우, 스레드풀을 사용하는 것이 오버헤드가 더 있다고 한다.`
 - 스레드풀을 사용하는 상황은 `NGINX 기반 스트리밍 미디어 서버`인 경우와 같은 로드가 많고, 운영체제의 가상메모리 캐시에 맞지 않은 양의 컨텐츠인 경우에 스레드풀로 오프로드가 더 많은 효율을 발휘한다.
-- 
+-
 
 [스레드풀 관련 공식문](https://www.nginx.com/blog/thread-pools-boost-performance-9x/)
 
 <br>
 
-
 # config for nginx
 
-nginx는 구성 파일에 지정된 명령에 의해 제어되는 모듈로 구성.
+## directives
 
-`directive`는 `simple` 디렉티브와 `block` 디렉티브로 나뉩니다.
+- nginx는 구성 파일에 지정된 명령에 의해 제어되는 모듈로 구성.
 
-simple: 이름과 매개 변수로 구성되며 공백으로 구분되고 세미콜론(;)으로 끝납니다.
+- `directive`는 `simple` 디렉티브와 `block` 디렉티브로 나뉩니다.
 
-block: simple 디렉티브와 구조가 같지만 세미콜론 대신 대괄호({ 및 })로 둘러싸인 추가 명령 집합으로 끝납니다.  
-대괄호 안에 다른 지시어를 포함할 수 있는 경우 context라고 합니다(예: event, http, server, location).
+- simple: 이름과 매개 변수로 구성되며 공백으로 구분되고 세미콜론(;)으로 끝납니다.
+
+- block: simple 디렉티브와 구조가 같지만 세미콜론 대신 대괄호(\{ 및 \})로 둘러싸인 추가 명령 집합으로 끝납니다.
+- 대괄호 안에 다른 지시어를 포함할 수 있는 경우 context라고 합니다
+- 이러한 context에는 `event, http, mail, stream`이 있으며,
+  - `event`: 커넥션 처리 설정
+  - `http` : HTTP 트래픽
+  - `mail` : Mail(SMTP, IMAP, POP3같은 mail 프로토콜) 트래픽
+  - `stream` : TCP, UDP 트래픽
+
+이 있습니다.
+
+- `webserv과제에서는 http block 내부의 server, location 블록 파싱에 집중해야합니다.`
+
+[nginx contexts](https://docs.nginx.com/nginx/admin-guide/basic-functionality/managing-configuration-files/)
 
 <br>
 
 컨텍스트 외부의 구성 파일에 배치된 지시사항은 기본 컨텍스트에 있는 것으로 간주됩니다.
 `event 및 http 지시어는 기본 context`, `server는 http`, `location은 server`에 있습니다.
 \# 기호 뒤에 있는 줄의 나머지 부분은 주석으로 간주됩니다.
+
+<br><br>
+
+### virtual servers
+
+- 각 트래픽 처리 context에 1개 이상의 `server`블록을 두어 서버의 request 처리를 컨트롤할 수 있습니다.
 
 <br><br>
 
@@ -208,7 +227,6 @@ server {
 
 [nginx 리버스프록시](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
 [nginx 비기너 가이드](https://nginx.org/en/docs/beginners_guide.html#control)
-
 
 # worker_connections
 
