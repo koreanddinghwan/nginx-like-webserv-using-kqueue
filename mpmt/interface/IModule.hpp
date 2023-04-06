@@ -6,7 +6,7 @@
 class IModule
 {
 public:
-	virtual void run() throw (std::runtime_error) = 0;
+	virtual void run() throw (std::runtime_error) {}
 	virtual ~IModule() {}
 };
 

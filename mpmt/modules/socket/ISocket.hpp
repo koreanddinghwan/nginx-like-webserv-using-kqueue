@@ -4,7 +4,7 @@
 #include <vector>
 #include "../../interface/IModule.hpp"
 
-class ISocket : public IModule
+class ISocket
 {
 	public:
 	typedef typename std::vector<std::pair<int, std::pair<int, int> > > T_SocketOptionVec;

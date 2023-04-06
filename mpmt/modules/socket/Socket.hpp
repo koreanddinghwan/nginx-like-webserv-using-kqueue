@@ -1,6 +1,7 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
+#include "../config/Config.hpp"
 #include "./ISocket.hpp"
 #include <netinet/in.h>
 #include <stdexcept>
@@ -9,21 +10,10 @@
 #include <sys/socket.h>
 #include <utility>
 
-template <class initArgType, class runArgType>
-class Socket : public ISocket<initArgType, runArgType>
+class Socket : public ISocket
 {
-public:
-	typedef typename std::vector<std::pair<int, std::pair<int, int> > > T_SocketOptionVec;
-	typedef typename T_SocketOptionVec::iterator T_SocketOptIterator;
-
 private:
-
-	int SkFd;
-	int Port;
-	int InetLayerProtocol;
-	int TpLayerProtocol;
-	T_SocketOptionVec SockOptVec;
-	struct sockaddr_in server_addr;
+	Config *ConfigModule;
 
 public:
 	/**
@@ -33,26 +23,17 @@ public:
 	 * @param tpLayerProtocol: 전송계층 프로토콜
 	 * @param sockOptVec: setsockopt 설정 option 벡터.
 	 */
-	Socket(int inetLayerProtocol, int tpLayerProtocol, T_SocketOptionVec sockOptVec, int port) :
-		InetLayerProtocol(inetLayerProtocol),
-		TpLayerProtocol(tpLayerProtocol),
-		SockOptVec(sockOptVec),
-		Port(port)
+	Socket(Config *conf) : ConfigModule(conf)
 	{}
 
-	void init(initArgType args) throw (std::runtime_error)
+	void setSocket() throw (std::runtime_error)
 	{
 		this->openSocket();
 		this->setSockOptions();
 		this->setSocketAddress();
-	}
-
-	void run(runArgType args) throw (std::runtime_error)
-	{
 		this->sockBind();
 		this->sockListen();
 	}
-
 
 private:
 	/**
