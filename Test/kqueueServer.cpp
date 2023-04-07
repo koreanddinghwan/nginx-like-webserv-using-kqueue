@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sys/event.h>
 #include <sys/fcntl.h>
+#include <arpa/inet.h>
 
 int main()
 {
@@ -14,9 +15,15 @@ int main()
         return 1;
     }
 
+	const char *addr = "127.0.0.1";
+
     struct sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+	if (!inet_aton(addr, &address.sin_addr))
+	{	
+        std::cerr << "Failed to set address"<<addr<<std::endl;
+		return 1;
+	}
     address.sin_port = htons(8000);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == -1) {
@@ -42,7 +49,7 @@ int main()
         return 1;
     }
 
-    std::cout << "Server started on port 8080\n";
+    std::cout << "Server started on port 8000\n";
 
     while (true) {
         struct kevent events[16];
@@ -52,8 +59,10 @@ int main()
             return 1;
         }
 
-        for (int i = 0; i < nevents; ++i) {
-            if (events[i].ident == server_fd) {
+        for (int i = 0; i < nevents; ++i) 
+		{
+            if (events[i].ident == server_fd) 
+			{
                 struct sockaddr_in client_address;
                 socklen_t client_len = sizeof(client_address);
                 int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
@@ -72,37 +81,41 @@ int main()
 
                 std::cout << "Client connected\n";
             }
-            else {
-            int client = events[i].ident;
-            struct sockaddr_in client_address;
-            socklen_t client_len = sizeof(client_address);
-            int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
-            char buffer[1024];
-            ssize_t n = read(client_fd, buffer, sizeof(buffer));
-            if (n == -1) {
-                std::cerr << "Failed to read from client socket\n";
-                continue;
-            }
-            else if (n == 0) {
-                std::cout << "Client disconnected\n";
-                close(client_fd);
-                EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
-                    std::cerr << "Failed to unregister client socket with kqueue\n";
-                    return 1;
-                }
-            }
-            else {
-                std::cout << "Received " << n << " bytes from client\n";
+            else 
+			{
+				int client = events[i].ident;
+				struct sockaddr_in client_address;
+				socklen_t client_len = sizeof(client_address);
+				int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
+				char buffer[1024];
+				ssize_t n = read(client_fd, buffer, sizeof(buffer));
+				if (n == -1) 
+				{
+					std::cerr << "Failed to read from client socket\n";
+					continue;
+				}
+				else if (n == 0) 
+				{
+					std::cout << "Client disconnected\n";
+					close(client_fd);
+					EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+					if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
+						std::cerr << "Failed to unregister client socket with kqueue\n";
+						return 1;
+					}
+				}
+				else 
+				{
+					std::cout << "Received " << n << " bytes from client\n";
 
-                // Process incoming data according to the HTTP protocol
-                // Generate a response based on the incoming request
-                // Write the response to the client socket
+					// Process incoming data according to the HTTP protocol
+					// Generate a response based on the incoming request
+					// Write the response to the client socket
 
-                // Example response
-                std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello World!";
-                write(client_fd, response.c_str(), response.length());
-            }
+					// Example response
+					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello World!";
+					write(client_fd, response.c_str(), response.length());
+				}
         }
     }
 }
