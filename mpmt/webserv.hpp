@@ -11,7 +11,8 @@ class WebServ
 {
 private:
 	Config *config;
-	IBlock *blocks;
+	IBlock **blocks;
+	IServer **servers;
 
 
 public:
