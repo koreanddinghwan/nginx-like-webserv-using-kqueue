@@ -3,8 +3,6 @@
 
 class IBlock
 {
-public:
-	~IBlock() {}
 	virtual void parse() = 0;
 };
 
