@@ -12,7 +12,7 @@
 #include <vector>
 #include <unordered_map>
 #include "../../interface/IServer.hpp"
-#include "httpBlock.hpp"
+#include "../config/httpBlock.conf.hpp"
 
 struct Route {
     std::string path;
@@ -50,12 +50,12 @@ const char defaultPath[] = "./test.conf";
 class Config
 {
 private:
-	std::string			ConfigPath;
-	std::ifstream		File;
-	std::string			buf;
-	IBlock				*blocks[5];
+	std::string		ConfigPath;
+	std::ifstream	File;
+	char			buf[100];
+	IBlock			*blocks[5];
 	/*
-	 * 0. server connection conf block
+	 * 0. webserv conf block
 	 * 1. event processing conf block
 	 * 2. http block
 	 * 3. mail block
@@ -75,12 +75,18 @@ public:
 		this->File.open(path);
 	}
 
-	IBlock *getBlocks() 
+	IBlock **getBlocks() 
 	{
 		/*
 		 * make server http->server->location
 		 * */
-		
+		File.getline(buf, 100);
+		//buf에 아무것도없으면
+		/* blocks[0] = webservBlock(File); */
+		//buf에 event가 있으면
+		/* blocks[1] = eventProcessBlock(File); */
+		//buf에 http있으면
+		blocks[2] = new httpBlock(File);
 
 
 		return blocks;
@@ -91,6 +97,8 @@ public:
 	{
 		if (File.is_open())
 			File.close();
+		for (int i = 0; i < 5; i++)
+			delete (blocks + i);
 	}
 };
 
