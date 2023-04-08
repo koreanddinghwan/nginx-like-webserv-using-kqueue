@@ -4,7 +4,8 @@
 #include <stdexcept>
 #include <sys/event.h>
 #include <iostream>
-#include "../http/requestHandler.hpp"
+#include "../../interface/IHandler.hpp"
+#include "../../interface/IBlock.hpp"
 #include "../../interface/IServer.hpp"
 
 class HttpServer : public IServer
@@ -12,15 +13,21 @@ class HttpServer : public IServer
 private:
 	int kq_fd;
 	//servermodules
-	requestHandler *RequestHandler;
+	IBlock *HttpBlock;
+	IHandler *RequestHandler;
+	IHandler *ResponseHandler;
 
 
 public:
-	HttpServer(
-			//server modules
+	HttpServer
+		(
+			IBlock *httpBlock,
 			IHandler *reqHandler,
 			IHandler *resHandler
-			) 
+		) : 
+		HttpBlock(httpBlock), 
+		RequestHandler(reqHandler), 
+		ResponseHandler(resHandler)
 	{
 		this->kq_fd = kqueue();
 		if (kq_fd == -1) {
@@ -29,7 +36,9 @@ public:
 		}
 	}
 	~HttpServer() {}
-	void run() throw(std::runtime_error) {}
+	void run() throw(std::runtime_error) {
+		//
+	}
 };
 
 #endif
