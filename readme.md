@@ -3,6 +3,8 @@
 [draw.io](https://drive.google.com/file/d/1vH0PNeXKEOKTo_2sLT3yukgT2I_hUp2z/view?usp=sharing)
 
 ![초기 설계도-0407](https://user-images.githubusercontent.com/76278794/230448853-ddfdd56f-cab8-4f7a-8a26-58beda20df63.png)
+![2차 설계 -0408](https://user-images.githubusercontent.com/76278794/230726575-aace36c4-d217-46e3-802e-82250e4f38e1.png)
+
 
 <br>
 
