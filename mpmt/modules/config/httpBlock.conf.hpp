@@ -16,7 +16,6 @@ public:
 
 
 	~httpBlock() {}
-
 };
 
 #endif
