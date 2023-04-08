@@ -123,19 +123,24 @@ http {
 
 1. reverse proxy
 
-- nginx에서 클라이언트와 웹서버사이에 위치하며, 클라이언트의 요청을 적절한 웹서버로 전송한다.
+<img width="395" alt="Screen Shot 2023-04-08 at 4 23 41 PM" src="https://user-images.githubusercontent.com/76278794/230709063-43ad4ff7-8b75-4369-8c05-1c62f16b3d89.png">  
+
+- nginx에서 클라이언트와 웹서버사이에 위치하며, 클라이언트의 요청을 프록시된 서버로 전송한다.
 
   - `(internet)client->nginx->webserver(회사)`
 
-- http proxy서버(흔히 스프링, 장고, 노드 등) 혹은 non-http proxy server(FastCGI, uwsgi, SCGI, memcached 프로토콜을 사용하는)에 client의 request를 전달한다.
+- http 서버 혹은 non-http server(FastCGI, uwsgi, SCGI, memcached 프로토콜을 사용하는 PHP, Python과 같은 어플리케이션)에 client의 request를 전달(프록시)한다.
 
 - `보안`: nginx의 서버 주소만 노출하고, 내부 실제 요청을 처리하는 서버의 주소를 숨길 수 있다.
 - `로드밸런싱` : 요청을 처리하는 서버를 여러대 두어 로드밸런싱을 할 수 있다.
+
+![nginx docs](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
 
 <br>
 
 2. (번외)forward proxy
 
+<img width="385" alt="Screen Shot 2023-04-08 at 4 23 14 PM" src="https://user-images.githubusercontent.com/76278794/230709042-da9ca53f-15bc-4498-8fa0-0ca8855ac053.png">  
 - 내부망에서 발생한 client의 요청을 internet에 전달한다.
 - 회사에서 인터넷을 사용할때 보통 이렇게 사용된다.(누군가는 다 알고 있다.)
 
