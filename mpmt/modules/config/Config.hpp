@@ -1,10 +1,9 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
 
-#include "../../interface/IModule.hpp"
+#include "../../interface/IBlock.hpp"
 #include <stdexcept>
-
-
+#include <string>
 #include <iostream>
 #include <netinet/in.h>
 #include <fstream>
@@ -12,6 +11,8 @@
 #include <sys/socket.h>
 #include <vector>
 #include <unordered_map>
+#include "../../interface/IServer.hpp"
+#include "httpBlock.hpp"
 
 struct Route {
     std::string path;
@@ -44,10 +45,6 @@ public:
     std::string error_page_500;
 };
 
-struct HttpConfigs {
-	std::vector<ServerConf> servers;
-};
-
 const char defaultPath[] = "./test.conf";
 
 class Config
@@ -55,10 +52,17 @@ class Config
 private:
 	std::string			ConfigPath;
 	std::ifstream		File;
-	HttpConfigs			httpConfs;
+	std::string			buf;
+	IBlock				*blocks[5];
+	/*
+	 * 0. server connection conf block
+	 * 1. event processing conf block
+	 * 2. http block
+	 * 3. mail block
+	 * 4. stream block
+	 * */
 
-	//server setting
-	//socket setting
+
 
 public:
 	Config(const char *path) 
@@ -68,23 +72,19 @@ public:
 			this->ConfigPath = defaultPath;
 		else
 			this->ConfigPath.assign(path);
+		this->File.open(path);
 	}
 
-	/**
-	 * @brief do configuration
-	 *
-	 * @throw std::runtime_error
-	 */
-	void configuration() throw(std::runtime_error)
+	IBlock *getBlocks() 
 	{
-		//parse
-		//
-
-
+		/*
+		 * make server http->server->location
+		 * */
 		
 
-	}
 
+		return blocks;
+	}
 	
 
 	~Config() 

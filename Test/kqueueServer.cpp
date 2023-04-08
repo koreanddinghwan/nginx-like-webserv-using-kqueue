@@ -19,11 +19,6 @@
 
 int asdfasd = 0;
 
-void sigHandler(int sig, struct __siginfo *t, void *p)
-{
-		
-}
-
 int main()
 {
     int kq_fd = kqueue();
@@ -32,7 +27,8 @@ int main()
         return 1;
     }
 
-
+//////////////////////////////////////server block
+///server module에서 처리
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
         std::cerr << "Failed to create socket\n";
@@ -66,12 +62,6 @@ int main()
         return 1;
     }
 
-	struct sigaction siga;
-	siga.__sigaction_u.__sa_sigaction = &sigHandler;
-
-	
-	/* if (signal(SIGINT, sigHandler) == SIG_ERR) */
-	/* 	return 1; */
 
 	fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
@@ -88,6 +78,9 @@ int main()
     }
 
     std::cout << "Server started on port 8000\n";
+//////////////////////////////////serverblock end
+
+
 
     while (true) {
         struct kevent events[MAX_EVENT];
@@ -136,7 +129,7 @@ int main()
 				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time));
 
 				// Set the interval between keepalive packets to 10 seconds
-				int interval = 10;
+				int interval = 2;
 				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
 
 				// Set the number of keepalive packets to send before considering the connection dead to 5
@@ -191,32 +184,32 @@ int main()
 					std::cout << "Received " << n << " bytes from client\n";
 					std::cout<<buffer<<std::endl;
 
-					/*
-					 * parsing http protocol.
-					 * 1. 정적파일 제공
-					 * 2. cgi 통해 동적파일 제공
-					 * */
+				/*
+				 * parsing http protocol.
+				 * 1. 정적파일 제공
+				 * 2. cgi 통해 동적파일 제공
+				 * */
 
 				//tcp keepalive
 				//소켓 종료이후에도 동일포트, 주소 사용하게설정
 				int opt = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt));
-
 				// Enable TCP keepalive
 				int enable_keepalive = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive));
-
 				// Set the idle time before sending keepalive packets to 30 seconds
-				int idle_time = 30;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time));
-
+				int idle_time = 5;
 				// Set the interval between keepalive packets to 10 seconds
-				int interval = 10;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
-
+				int interval = 1;
 				// Set the number of keepalive packets to send before considering the connection dead to 5
-				int max_attempts = 5;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts));
+				int max_attempts = 2;
+				if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt)) == -1 ||
+				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive)) == -1 ||
+				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time)) == 1 ||
+				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval)) == -1 ||
+				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts)) == -1)
+				{
+					std::cout<<"errno:" <<std::endl;
+				}
+
 
 
 					// Process incoming data according to the HTTP protocol
