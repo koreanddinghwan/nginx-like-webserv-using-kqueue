@@ -1,31 +1,29 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-#include "interface/IBlock.hpp"
-#include "interface/IServer.hpp"
-#include "modules/config/Config.hpp"
-#include <stdexcept>
-#include <vector>
+#include "./interface/IWebServ.hpp"
+#include "./modules/manager/WebservManager.hpp"
 
-class WebServ
+/**
+ * @brief singleton
+ */
+class WebServ : public IWebServ
 {
-private:
-	Config *config;
-	IBlock **blocks;
-	IServer **servers;
+	public:
+		static WebServ& getInstance()
+		{
+			static WebServ instance;
+			return instance;
+		}
+
+		void run() 
+		{
+			WebservManager::getInstance().run();
+		}
 
 
-public:
-	WebServ(Config *conf) : config(conf)
-	{
-		this->blocks = config->getBlocks();
-	}
-
-	~WebServ() {}
-
-	void run() throw (std::runtime_error) {
-		
-	}
+	private:
+		WebServ() {}
 };
 
 #endif
