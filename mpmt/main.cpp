@@ -1,8 +1,10 @@
-#include "modules/config/Config.hpp"
+#include <iostream>
+#include "./modules/config/SingletonConfig.hpp"
+#include "./modules/manager/WebservManager.hpp"
 #include "webserv.hpp"
 
-
-int main(int ac, char **av) {
+int main(int ac, char **av) 
+{
 
 	if (ac > 1)
 	{
@@ -10,8 +12,12 @@ int main(int ac, char **av) {
 		exit(1);
 	}
 
-	Config config(av[1]);
-	WebServ webserv(&config);
-	webserv.run();
+	//config 모듈 초기화
+	SingletonConfig::getInstance().initSingletonConfig(av[1]);
+
+
+	WebServ::getInstance().run();
+
+	/* webserv.run(); */
 	return 0;
 }
