@@ -16,9 +16,21 @@ class WebServ : public IWebServ
 			return instance;
 		}
 
+		void init(int ac, char ** av)
+		{
+			if (ac > 1)
+			{
+				std::cerr<<"Please input 1 config file or nothing"<<std::endl;
+				exit(1);
+			}
+			//config 모듈 초기화
+			SingletonConfig::getInstance().initSingletonConfig(av[1]);
+			WebservManager::getInstance().initServers();
+		}
+
 		void run() 
 		{
-			WebservManager::getInstance().run();
+			WebservManager::getInstance().initLoop();
 		}
 
 
