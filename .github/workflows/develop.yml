@@ -1,0 +1,31 @@
+name: test before merge
+
+on:
+  #develop 브랜치 pull_request마다 확인
+  pull_request:
+    branches:
+    - develop
+
+
+jobs:
+  compile:
+    name: compilation test
+    runs-on: ubuntu-latest
+    
+
+
+    #레포지토리 위치로 이동
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+
+    # if make failed, reject pull req
+    - name: Compile test
+      run: |
+        cd mpmt
+        make 
+        if
+        [ $? != 0 ]; then
+        exit 1
+        fi
