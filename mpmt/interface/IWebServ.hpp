@@ -5,6 +5,7 @@
 class IWebServ
 {
 public:
+	virtual void init(int ac, char **av) = 0;
 	virtual void run() = 0;
 };
 
