@@ -1,9 +1,9 @@
-NAME = threadpool
+NAME = webserv
 CXX = c++
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++98
 INC = .
 
-SRCS = $(addprefix ./, main.cpp threadpool.cpp)
+SRCS = $(addprefix ./, main.cpp)
 OBJS = $(SRCS:.cpp=.o)
 
 all : $(NAME)
