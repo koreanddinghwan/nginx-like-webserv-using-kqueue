@@ -2,9 +2,13 @@
 # define SINGLETONCONFIG_HPP
 
 #include "../../interface/IBlock.hpp"
+#include "eventBlock.conf.hpp"
+#include "generalBlock.conf.hpp"
 #include "../../interface/ISingletonConfig.hpp"
-#include "../config/httpBlock.conf.hpp"
+#include "../config/http/httpBlock.conf.hpp"
 #include <fstream>
+#include <iostream>
+
 
 const char defaultPath[] = "./test.conf";
 
@@ -39,6 +43,12 @@ const char defaultPath[] = "./test.conf";
 /*     std::string error_page_500; */
 /* }; */
 
+/**
+ * @brief config module, singleton
+ *
+ * 설정파일을 읽어 블록단위로 설정합니다.
+ * general, event, http, smtp, ftp, stream 총 6개의 블록이 있으며, 필수 구현부는 general, event, http입니다.
+ */
 class SingletonConfig : public ISingletonConfig
 {
 	public:
@@ -66,12 +76,15 @@ class SingletonConfig : public ISingletonConfig
 			 * */
 			File.getline(buf, 100);
 			//buf에 아무것도없으면
-			/* blocks[0] = webservBlock(File); */
+			/* blocks[0] = new generalBlock(File); */
 			//buf에 event가 있으면
-			/* blocks[1] = eventProcessBlock(File); */
+			/* blocks[1] = new eventBlock(File); */
 			//buf에 http있으면
 			blocks[2] = new httpBlock(File);
+			std::cout<<buf<<std::endl;
 
+
+			File.close();
 		}
 
 		IBlock **getBlocks() 
@@ -79,11 +92,39 @@ class SingletonConfig : public ISingletonConfig
 			return this->blocks;
 		}
 
-	
+		IBlock *getGeneralBlock()
+		{
+			return this->blocks[0];
+		}
+
+		IBlock *getEventBlock()
+		{
+			return this->blocks[1];
+		}
+
+		IBlock *getHttpBlock()
+		{
+			return this->blocks[2];
+		}
+
+		/* IBlock *getSMTPBlock() */
+		/* {} */
+
+		/* IBlock *getFTPBlock() */
+		/* {} */
+
+		/* IBlock *getSTREAMBlock() */
+		/* {} */
 
 
 	private:
 		SingletonConfig() {}
+		~SingletonConfig() 
+		{
+			delete static_cast<generalBlock *>(this->blocks[0]);
+			delete static_cast<eventBlock *>(this->blocks[1]);
+			delete static_cast<httpBlock *>(this->blocks[2]);
+		}
 		SingletonConfig(const SingletonConfig&) {}
 		SingletonConfig& operator=(const SingletonConfig&) {return SingletonConfig::getInstance();}
 
@@ -91,7 +132,7 @@ class SingletonConfig : public ISingletonConfig
 		char *confPath = 0;
 		std::ifstream	File;
 		char			buf[100];
-		IBlock			*blocks[5] = {0, 0, 0, 0, 0};
+		IBlock			*blocks[5] = {0, 0, 0};
 };
 
 
