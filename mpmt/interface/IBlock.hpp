@@ -3,6 +3,7 @@
 
 class IBlock
 {
+public:
 	virtual void parse() = 0;
 };
 
