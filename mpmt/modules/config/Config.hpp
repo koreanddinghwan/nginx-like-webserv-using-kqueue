@@ -1,16 +1,14 @@
 #ifndef SINGLETONCONFIG_HPP
 # define SINGLETONCONFIG_HPP
 
+#include "../../exceptions/configParseException.hpp"
 #include "../../interface/IBlock.hpp"
 #include "eventBlock.conf.hpp"
 #include "generalBlock.conf.hpp"
-#include "../../interface/ISingletonConfig.hpp"
-#include "../config/http/httpBlock.conf.hpp"
+#include "../../interface/IConfig.hpp"
+#include "../config/Http/HttpBlock.conf.hpp"
 #include <fstream>
 #include <iostream>
-
-
-const char defaultPath[] = "./test.conf";
 
 /* struct Route { */
 /*     std::string path; */
@@ -47,9 +45,9 @@ const char defaultPath[] = "./test.conf";
  * @brief config module, singleton
  *
  * 설정파일을 읽어 블록단위로 설정합니다.
- * general, event, http, smtp, ftp, stream 총 6개의 블록이 있으며, 필수 구현부는 general, event, http입니다.
+ * general, event, Http, smtp, ftp, stream 총 6개의 블록이 있으며, 필수 구현부는 general, event, Http입니다.
  */
-class SingletonConfig : public ISingletonConfig
+class Config : public IConfig
 {
 	public:
 		/**
@@ -57,8 +55,8 @@ class SingletonConfig : public ISingletonConfig
 		 *
 		 * @return signleton 객체
 		 */
-		static SingletonConfig& getInstance() {
-			static SingletonConfig instance;
+		static Config& getInstance() {
+			static Config instance;
 			return instance;
 		}
 
@@ -67,20 +65,23 @@ class SingletonConfig : public ISingletonConfig
 		 *
 		 * @param path
 		 */
-		void initSingletonConfig(char *path) 
+		void initConfig(std::string path) throw (configParseException)
 		{
-			confPath = path;
+			this->confPath = path;
 			File.open(path);
+			if (!File.is_open())
+				throw (new configParseException);
 			/*
-			 * make server http->server->location
+			 * make server Http->server->location
 			 * */
 			File.getline(buf, 100);
 			//buf에 아무것도없으면
 			/* blocks[0] = new generalBlock(File); */
 			//buf에 event가 있으면
 			/* blocks[1] = new eventBlock(File); */
-			//buf에 http있으면
-			blocks[2] = new httpBlock(File);
+			//buf에 Http있으면
+			//if Http in buf
+			blocks[2] = new HttpBlock(File);
 			std::cout<<buf<<std::endl;
 
 
@@ -118,18 +119,18 @@ class SingletonConfig : public ISingletonConfig
 
 
 	private:
-		SingletonConfig() {}
-		~SingletonConfig() 
+		Config() {}
+		~Config() 
 		{
 			delete static_cast<generalBlock *>(this->blocks[0]);
 			delete static_cast<eventBlock *>(this->blocks[1]);
-			delete static_cast<httpBlock *>(this->blocks[2]);
+			delete static_cast<HttpBlock *>(this->blocks[2]);
 		}
-		SingletonConfig(const SingletonConfig&) {}
-		SingletonConfig& operator=(const SingletonConfig&) {return SingletonConfig::getInstance();}
+		Config(const Config&) {}
+		Config& operator=(const Config&) {return Config::getInstance();}
 
 	private:
-		char *confPath = 0;
+		std::string		confPath;
 		std::ifstream	File;
 		char			buf[100];
 		IBlock			*blocks[5] = {0, 0, 0};
