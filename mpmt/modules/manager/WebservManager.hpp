@@ -24,6 +24,9 @@ class WebservManager: public IWebservManager
 			return instance;
 		}
 
+		/**
+		 * @brief config 싱골톤 객체에서 설정블록을 불러와 server를 초기화합니다.
+		 */
 		void initServers()
 		{
 			/*
@@ -37,6 +40,10 @@ class WebservManager: public IWebservManager
 			 * */
 		}
 
+		/**
+		 * @brief nginx의 event loop
+		 * worker process가 설정되었다면 구현이 살짝 달라질수도...?
+		 */
 		void initLoop()
 		{
 			this->kq_fd = kqueue();
