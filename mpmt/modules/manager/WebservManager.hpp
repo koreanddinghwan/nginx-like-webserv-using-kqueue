@@ -5,7 +5,7 @@
 #include "../../interface/IConfig.hpp"
 #include "../../interface/IServer.hpp"
 #include <sys/event.h>
-#include "../config/SingletonConfig.hpp"
+#include "../config/Config.hpp"
 #include "../http/HttpServer.hpp"
 
 /**
@@ -32,7 +32,7 @@ class WebservManager: public IWebservManager
 			/*
 			 * do something with general(multi processing), event block(worker thread)
 			 * */
-			this->httpServer = new HttpServer(SingletonConfig::getInstance().getHttpBlock());
+			this->httpServer = new HttpServer(Config::getInstance().getHttpBlock());
 			
 			/*
 			 * do something
