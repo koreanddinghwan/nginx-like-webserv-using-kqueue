@@ -22,7 +22,7 @@ class WebServ : public IWebServ
 		 * @param ac : main's ac
 		 * @param av : main's av
 		 */
-		void init(int ac, char ** av)
+		void init(int ac, char ** av) const
 		{
 			if (ac > 1)
 			{
@@ -39,7 +39,7 @@ class WebServ : public IWebServ
 		/**
 		 * @brief WebservManager의 이벤트루프를 구동합니다.
 		 */
-		void run() 
+		void run() const
 		{
 			WebservManager::getInstance().initLoop();
 		}
