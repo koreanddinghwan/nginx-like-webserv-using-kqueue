@@ -16,6 +16,12 @@ class WebServ : public IWebServ
 			return instance;
 		}
 
+		/**
+		 * @brief WebServ를 초기화합니다
+		 * 싱글톤 객체인 config과 webserv manager를 초기화합니다.
+		 * @param ac : main's ac
+		 * @param av : main's av
+		 */
 		void init(int ac, char ** av)
 		{
 			if (ac > 1)
@@ -25,9 +31,14 @@ class WebServ : public IWebServ
 			}
 			//config 모듈 초기화
 			SingletonConfig::getInstance().initSingletonConfig(av[1]);
+
+			//webserv가 처리할 http, smtp, ftp 등 서버 초기화
 			WebservManager::getInstance().initServers();
 		}
 
+		/**
+		 * @brief WebservManager의 이벤트루프를 구동합니다.
+		 */
 		void run() 
 		{
 			WebservManager::getInstance().initLoop();
