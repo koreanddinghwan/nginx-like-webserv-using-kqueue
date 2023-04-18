@@ -9,6 +9,7 @@
 #include "../config/Http/HttpBlock.conf.hpp"
 #include <fstream>
 #include <iostream>
+#include <string>
 
 /* struct Route { */
 /*     std::string path; */
@@ -74,7 +75,6 @@ class Config : public IConfig
 			/*
 			 * make server Http->server->location
 			 * */
-			File.getline(buf, 100);
 			//buf에 아무것도없으면
 			/* blocks[0] = new generalBlock(File); */
 			//buf에 event가 있으면
@@ -132,8 +132,8 @@ class Config : public IConfig
 	private:
 		std::string		confPath;
 		std::ifstream	File;
-		char			buf[100];
-		IBlock			*blocks[5] = {0, 0, 0};
+		std::string		buf;
+		IBlock			*blocks[5] = {0, 0, 0, 0, 0};
 };
 
 
