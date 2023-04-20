@@ -6,7 +6,7 @@
 #include "eventBlock.conf.hpp"
 #include "generalBlock.conf.hpp"
 #include "../../interface/IConfig.hpp"
-#include "../config/Http/HttpBlock.conf.hpp"
+#include "./http/HttpBlock.conf.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -75,22 +75,14 @@ class Config : public IConfig
 			/*
 			 * make server Http->server->location
 			 * */
-			//buf에 아무것도없으면
-			/* blocks[0] = new generalBlock(File); */
-			//buf에 event가 있으면
-			/* blocks[1] = new eventBlock(File); */
-			//buf에 Http있으면
-			//if Http in buf
+			blocks[0] = new generalBlock(File);
+			blocks[1] = new eventBlock(File);
 			blocks[2] = new HttpBlock(File);
-			std::cout<<buf<<std::endl;
+			/* std::cout<<buf<<std::endl; */
 
-
+			std::cout<<static_cast<generalBlock::generalConfig *>(blocks[0]->getConfigData())->worker_processes<<std::endl;
+			std::cout<<static_cast<eventBlock::eventConfig *>(blocks[1]->getConfigData())->worker_connections<<std::endl;
 			File.close();
-		}
-
-		IBlock **getBlocks() 
-		{
-			return this->blocks;
 		}
 
 		IBlock *getGeneralBlock()
@@ -122,8 +114,8 @@ class Config : public IConfig
 		Config() {}
 		~Config() 
 		{
-			delete static_cast<generalBlock *>(this->blocks[0]);
-			delete static_cast<eventBlock *>(this->blocks[1]);
+			/* delete static_cast<generalBlock *>(this->blocks[0]); */
+			/* delete static_cast<eventBlock *>(this->blocks[1]); */
 			delete static_cast<HttpBlock *>(this->blocks[2]);
 		}
 		Config(const Config&) {}
@@ -133,7 +125,7 @@ class Config : public IConfig
 		std::string		confPath;
 		std::ifstream	File;
 		std::string		buf;
-		IBlock			*blocks[5] = {0, 0, 0, 0, 0};
+		IBlock			*blocks[5];
 };
 
 

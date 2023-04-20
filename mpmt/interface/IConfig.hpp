@@ -8,7 +8,9 @@
 class IConfig
 {
 public:
-	virtual IBlock **getBlocks() = 0;
+	virtual IBlock *getGeneralBlock() = 0;
+	virtual IBlock *getEventBlock() = 0;
+	virtual	IBlock *getHttpBlock() = 0;
 	virtual void initConfig(std::string path) throw (configParseException) = 0;
 };
 
