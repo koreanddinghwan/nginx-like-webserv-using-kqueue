@@ -10,7 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "../../lib/RaIIFile.hpp"
+#include "../../lib/FileGuard.hpp"
 
 /* struct Route { */
 /*     std::string path; */
@@ -69,7 +69,7 @@ class Config : public IConfig
 		 */
 		void initConfig(std::string path) throw (configParseException)
 		{
-			RaIIFile file(path);
+			FileGuard file(path);
 
 			/*
 			 * make server Http->server->location
