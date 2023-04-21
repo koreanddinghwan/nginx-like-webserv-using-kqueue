@@ -13,6 +13,19 @@
 class HttpBlock: public IBlock
 {
 public:
+	struct httpData 
+	{
+		int client_max_body_size;
+		bool sendfile;
+		bool tcp_nopush;
+		std::vector<IBlock *> httpServerBlock;
+	};
+
+private:
+	httpData confData;
+
+
+public:
 	HttpBlock(std::ifstream &File) {
 		this->parse(File);
 	}
@@ -20,8 +33,6 @@ public:
 
 
 private:
-	std::vector<IBlock *> httpServerBlock;
-
 	void parse(std::ifstream &File) {
 		/*
 		 * while 'server' directives in buf,
@@ -29,6 +40,11 @@ private:
 		 * 		httpServerBlock.push(new httpServerBlock(File));
 		 * }
 		 * */
+	}
+
+	void *getConfigData()
+	{
+		return &(this->confData);
 	}
 };
 

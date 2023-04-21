@@ -36,7 +36,12 @@ public:
 	~HttpServerBlock() {}
 
 private:
-	std::vector<IBlock *> httpLocationBlock;
+	struct HttpServerData
+	{
+		int port;
+		std::string server_name;
+		std::vector<IBlock *> httpLocationBlock;
+	};
 
 	void parse(std::ifstream &File) 
 	{
@@ -47,6 +52,8 @@ private:
 		 * }
 		 * */
 	}
+
+
 };
 
 #endif
