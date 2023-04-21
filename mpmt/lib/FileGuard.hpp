@@ -10,15 +10,15 @@
  * recource allocation is initialization.
  * automatically close file with destructor
  */
-class RaIIFile
+class FileGuard
 {
 private:
 	std::ifstream File;
 
 public:
-	RaIIFile(std::string path) throw (configParseException);
+	FileGuard(std::string path) throw (configParseException);
 	std::ifstream &getFile();
-	~RaIIFile();
+	~FileGuard();
 };
 
 
