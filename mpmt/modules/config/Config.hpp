@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include "../../lib/RaIIFile.hpp"
 
 /* struct Route { */
 /*     std::string path; */
@@ -68,21 +69,18 @@ class Config : public IConfig
 		 */
 		void initConfig(std::string path) throw (configParseException)
 		{
-			this->confPath = path;
-			File.open(path);
-			if (!File.is_open())
-				throw (new configParseException);
+			RaIIFile file(path);
+
 			/*
 			 * make server Http->server->location
 			 * */
-			blocks[0] = new generalBlock(File);
-			blocks[1] = new eventBlock(File);
-			blocks[2] = new HttpBlock(File);
+			blocks[0] = new generalBlock(file.getFile());
+			blocks[1] = new eventBlock(file.getFile());
+			blocks[2] = new HttpBlock(file.getFile());
 			/* std::cout<<buf<<std::endl; */
 
 			std::cout<<static_cast<generalBlock::generalConfig *>(blocks[0]->getConfigData())->worker_processes<<std::endl;
 			std::cout<<static_cast<eventBlock::eventConfig *>(blocks[1]->getConfigData())->worker_connections<<std::endl;
-			File.close();
 		}
 
 		IBlock *getGeneralBlock()
@@ -122,8 +120,6 @@ class Config : public IConfig
 		Config& operator=(const Config&) {return Config::getInstance();}
 
 	private:
-		std::string		confPath;
-		std::ifstream	File;
 		std::string		buf;
 		IBlock			*blocks[5];
 };
