@@ -1,10 +1,16 @@
 NAME = webserv
 CXX = c++
-CXXFLAGS = -std=c++98
+CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-SRCS = $(addprefix ./, main.cpp)
-OBJS = $(SRCS:.cpp=.o)
+
+LIBSRCS = strSplit.cpp FileGuard.cpp
+LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
+
+MAINSRCS = main.cpp
+MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
+
+OBJS = $(LIBOBJS) $(MAINOBJS)
 
 all : $(NAME)
 
