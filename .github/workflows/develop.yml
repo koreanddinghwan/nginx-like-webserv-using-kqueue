@@ -24,6 +24,7 @@ jobs:
     - name: Compile test
       run: |
         cd mpmt
+        make fclean
         make 
         if
         [ $? != 0 ]; then
