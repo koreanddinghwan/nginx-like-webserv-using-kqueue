@@ -63,10 +63,20 @@ int main()
     }
 
 
+	/*
+	 * server socket에 대해 nonblock socket임을 명시합니다.
+	 * */
 	fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
 	struct kevent kev;
 	/*
+	 * event를 등록하는 부분입니다.
+	 * EV_SET을통해 등록할 이벤트를 정의합니다. 
+	 * ident : server fd는 socket입니다. 
+	 * ident가 socket의 fd라면
+	 *
+	 * EV_SET
+	 * kevent를 초기화하는 함수
 	 * EVFILT_READ: 파일디스크립터를 event identifier로 정한다.
 	 * socket에 설정하면 pending 상태에 있는 connection이 server_fd에 있을때 트리거된다.
 	 * EV_ADD는 kev에 이 이벤트 트리거를 추가한다는 의미.
@@ -79,9 +89,6 @@ int main()
 
     std::cout << "Server started on port 8000\n";
 //////////////////////////////////serverblock end
-
-
-
     while (true) {
         struct kevent events[MAX_EVENT];
 		//pending 상태의 kqueue의 이벤트를 kevent로 가져온다.
@@ -152,16 +159,18 @@ int main()
             else 
 			{
 				//client로부터 들어온 데이터 처리
-
 				int client_fd = events[i].ident;
 				struct sockaddr_in client_address;
 				socklen_t client_len = sizeof(client_address);
 				char buffer[1024];
+
+				fcntl(client_fd, F_SETFL, O_NONBLOCK);
 				ssize_t n = read(client_fd, buffer, sizeof(buffer));
 				std::cout<<client_fd<<std::endl;
 
 				if (n == -1) 
 				{
+					std::cout<<"read returned -1, errno:"<<errno<<std::endl;
 					if (errno == EAGAIN || errno == EWOULDBLOCK)
 						continue;
 					else
@@ -182,7 +191,8 @@ int main()
 				else 
 				{
 					std::cout << "Received " << n << " bytes from client\n";
-					std::cout<<buffer<<std::endl;
+					for (int i = 0; i < n; i++)
+						std::cout<<buffer[i];
 
 				/*
 				 * parsing http protocol.
@@ -231,9 +241,10 @@ int main()
 							{
 								struct kevent event[1];
 								EV_SET(&event[0], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-								if (kevent(kq_fd, events, 1, NULL, 0, NULL) == -1) {
-								std::cerr << "Failed to register client socket with kqueue\n";
-								return 1;
+								if (kevent(kq_fd, events, 1, NULL, 0, NULL) == -1) 
+								{
+									std::cerr << "Failed to register client socket with kqueue\n";
+									return 1;
 								}
 								// Wait for the socket to become writable
 								nevents = kevent(kq_fd, NULL, 0, events, 1, NULL);
