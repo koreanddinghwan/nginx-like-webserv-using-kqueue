@@ -10,7 +10,7 @@ on:
 jobs:
   compile:
     name: compilation test
-    runs-on: ubuntu-latest
+    runs-on: macos-12
     
 
 
