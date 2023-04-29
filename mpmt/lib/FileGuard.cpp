@@ -2,7 +2,7 @@
 
 FileGuard::FileGuard(std::string path) throw (configParseException)
 {
-	this->File.open(path);
+	this->File.open(path.c_str());
 	if (!File.is_open())
 		throw (new configParseException);
 }
