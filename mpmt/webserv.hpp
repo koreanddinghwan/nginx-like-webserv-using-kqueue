@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 
+char defaultPath[14] = "./nginx.conf";
 /**
  * @brief singleton
  */
@@ -64,7 +65,6 @@ class WebServ : public IWebServ
 
 
 	private:
-		char defaultPath[12] = "./test.conf";
 		WebServ() {}
 };
 
