@@ -4,11 +4,11 @@ CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
 
-LIBSRCS = $(addprefix ./lib/, strSplit.cpp)
-LIBOBJS = $(LIBSRCS:.cpp=.o)
+LIBSRCS = strSplit.cpp FileGuard.cpp
+LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
 
-MAINSRCS = $(addprefix ./, main.cpp)
-MAINOBJS = $(MAINSRCS:.cpp=.o)
+MAINSRCS = main.cpp
+MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
 
 OBJS = $(LIBOBJS) $(MAINOBJS)
 
