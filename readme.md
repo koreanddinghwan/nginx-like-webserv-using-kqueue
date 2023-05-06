@@ -20,6 +20,7 @@
 [CGI란](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/cgi.md)  
 [nginx에 대해](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/nginx.md)
 
+
 ## bonus
 
 [Cookie, Session, Token](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/cookie.md)  
