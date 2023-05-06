@@ -1,5 +1,6 @@
 #include <sys/_types/_iovec_t.h>
 #include <sys/_types/_size_t.h>
+#include <sys/_types/_uintptr_t.h>
 #include <sys/errno.h>
 #include <sys/signal.h>
 #include <sys/types.h>
@@ -16,6 +17,18 @@
 
 # define WORKER_CONNECTIONS 1024
 # define MAX_EVENT 256
+
+void printEvent(struct kevent *kev)
+{
+	std::cout<<"=========현재 처리중인 이벤트========="<<std::endl;
+	std::cout<<"ident:"<<kev->ident<<std::endl;
+	std::cout<<"filter:"<<kev->filter<<std::endl;
+	std::cout<<"flags:"<<kev->flags<<std::endl;
+	std::cout<<"fflags:"<<kev->fflags<<std::endl;
+	std::cout<<"data:"<<kev->data<<std::endl;
+	std::cout<<"udata:"<<reinterpret_cast<uintptr_t>(kev->udata)<<std::endl;
+	std::cout<<"======================================"<<std::endl<<std::endl;
+}
 
 int asdfasd = 0;
 
@@ -36,9 +49,27 @@ int main()
     }
 
 
+	//tcp keepalive
 	//소켓 종료이후에도 동일포트, 주소 사용하게설정
 	int opt = 1;
 	setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt));
+
+	// Enable TCP keepalive
+	int enable_keepalive = 1;
+	setsockopt(server_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive));
+
+	// Set the idle time before sending keepalive packets to 5 seconds
+	int idle_time = 5;
+	setsockopt(server_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time));
+
+	// Set the interval between keepalive packets to 10 seconds
+	int interval = 2;
+	setsockopt(server_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
+
+	// Set the number of keepalive packets to send before considering the connection dead to 5
+	int max_attempts = 1;
+	setsockopt(server_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts));
+
 
 	const char *addr = "127.0.0.1";
 
@@ -100,63 +131,49 @@ int main()
 
         for (int i = 0; i < nevents; ++i) 
 		{
+			printEvent(events + i);
 			//server_fd에서 발생한 이벤트, 즉 새로운 client connection을 감지.
 			//client fd를 read event를 등록한다.
 			//client_fd가 read할 준비가 되면 event에 추가될것.
-            if (events[i].ident == server_fd) 
+			if (events[i].ident == server_fd) 
 			{
-                struct sockaddr_in client_address;
-                socklen_t client_len = sizeof(client_address);
-                int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
-				std::cout<<client_fd<<std::endl;
-                if (client_fd == -1) {
-                    std::cerr << "Failed to accept client connection\n";
-                    continue;
-                }
-
-				//client socket에 nonblock mode명시
-                if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
-				{
-					std::cerr<<"Non blocking err"<<std::endl;
-					close(client_fd);
+				struct sockaddr_in client_address;
+				socklen_t client_len = sizeof(client_address);
+				int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
+				std::cout<<"client fd: "<<client_fd<<std::endl;
+				if (client_fd == -1) {
+					std::cerr << "Failed to accept client connection\n";
 					continue;
 				}
 
-				//tcp keepalive
-				//소켓 종료이후에도 동일포트, 주소 사용하게설정
-				int opt = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt));
-
-				// Enable TCP keepalive
-				int enable_keepalive = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive));
-
-				// Set the idle time before sending keepalive packets to 5 seconds
-				int idle_time = 5;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time));
-
-				// Set the interval between keepalive packets to 10 seconds
-				int interval = 2;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
-
-				// Set the number of keepalive packets to send before considering the connection dead to 5
-				int max_attempts = 1;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts));
-
-
-				//client socket을 kqueue에 등록
-                EV_SET(&kev, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-                if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
-                    std::cerr << "Failed to register client socket with kqueue\n";
-					continue;
-                }
-
-                std::cout << "Client connected\n";
+				std::cout << "Client connected\n";
 				std::cout<< client_address.sin_family<<std::endl;
-				std::cout << (client_address.sin_port)<<std::endl;
-				std::cout << inet_ntoa(client_address.sin_addr) <<std::endl;
-            }
-            else 
+				std::cout << "client port: "<<(client_address.sin_port)<<std::endl;
+				std::cout << "client ipv4"<<inet_ntoa(client_address.sin_addr) <<std::endl;
+
+
+				//nonblock mode 명시된 server socket에서 받은 client socket도 자동으로 nonblock 설정된다.
+				if (fcntl(client_fd, F_GETFL) & O_NONBLOCK)
+					std::cout<<"in accept, client fd is nonblock"<<std::endl;
+
+
+				//client socket을 읽기전용으로  kqueue에 등록
+				EV_SET(&kev, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+				if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
+					std::cerr << "Failed to register client socket with kqueue\n";
+					continue;
+				}
+
+			}
+			else if (events[i].filter & EV_EOF)
+			{
+				std::cout<<"eof"<<std::endl;
+			}
+			else if (events[i].flags & EVFILT_WRITE)
+			{
+				std::cout<<"space: "<<events[i].data<<std::endl;
+			}
+			else if (events[i].flags & EVFILT_READ)
 			{
 				//client로부터 들어온 데이터 처리
 				int client_fd = events[i].ident;
@@ -164,7 +181,9 @@ int main()
 				socklen_t client_len = sizeof(client_address);
 				char buffer[1024];
 
-				fcntl(client_fd, F_SETFL, O_NONBLOCK);
+				int flags = fcntl(client_fd, F_GETFL);
+				if (flags & O_NONBLOCK)
+					std::cout<<"this fd is nonblocking"<<std::endl;
 				ssize_t n = read(client_fd, buffer, sizeof(buffer));
 				std::cout<<client_fd<<std::endl;
 
@@ -184,6 +203,7 @@ int main()
 					std::cout << "Client disconnected\n";
 					//client 소켓 정리
 					asdfasd++;
+					//감시할 event에서 삭제.
 					EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 					close(client_fd);
 					std::cout<<asdfasd<<std::endl;
@@ -200,46 +220,32 @@ int main()
 				 * 2. cgi 통해 동적파일 제공
 				 * */
 
-				//tcp keepalive
-				//소켓 종료이후에도 동일포트, 주소 사용하게설정
-				int opt = 1;
-				// Enable TCP keepalive
-				int enable_keepalive = 1;
-				// Set the idle time before sending keepalive packets to 30 seconds
-				int idle_time = 5;
-				// Set the interval between keepalive packets to 10 seconds
-				int interval = 1;
-				// Set the number of keepalive packets to send before considering the connection dead to 5
-				int max_attempts = 2;
-				if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt)) == -1 ||
-				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive)) == -1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time)) == 1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval)) == -1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts)) == -1)
-				{
-					std::cout<<"errno:" <<std::endl;
-				}
-
-
-
 					// Process incoming data according to the HTTP protocol
 					// Generate a response based on the incoming request
 					// Write the response to the client socket
 
-					// Example response
+					// Example response생성
 					// content length안지키면 client측에서 block되는 문제있음. 주의
-					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5100\r\n\r\naaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaa";
+					std::string *response = new std::string("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\naaaaa");
 					
+					//response작성
 					size_t byte_sent = 0;
-					size_t byte_left = response.length();
+					size_t byte_left = response->length();
+					//write event 처리 실패
+					EV_SET(&kev, client_fd, EVFILT_WRITE, EV_ADD, 0, 0, &response);
+					if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
+						//write event 처리 실패
+						std::cerr << "Failed to register client socket with kqueue\n";
+					}
+
 					while (byte_left > 0)
 					{
-						int n = write(client_fd, response.c_str(), response.length());
+						struct kevent event[1];
+						int n = write(client_fd, response->c_str(), response->length());
 						if (n == -1)
 						{
 							if (errno == EWOULDBLOCK || errno == EAGAIN)
 							{
-								struct kevent event[1];
 								EV_SET(&event[0], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 								if (kevent(kq_fd, events, 1, NULL, 0, NULL) == -1) 
 								{
@@ -253,6 +259,7 @@ int main()
 									return 1;
 								}
 							} else {
+								EV_SET(event, client_fd, EVFILT_WRITE, EV_CLEAR,0,0,NULL);
 								break;
 							}
 						}

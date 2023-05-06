@@ -3,6 +3,8 @@
 `kernel event notification machanism`  
 
 [kqueue FREEBSD소스코드 주소](https://github.com/freebsd/freebsd-src/blob/main/sys/kern/kern_event.c)
+[kqueue tutorial](https://eradman.com/posts/kqueue-tcp.html)
+
 
 ```c
 int
@@ -161,7 +163,6 @@ EV_SET(&kev, ident, filter, flags, fflags, data, udata);
 	- socket인경우
 		-  이전에 호출된 listen에 의해 만들어진 socket의 fd는 pending 상태의 connection 요청이 있을 경우에 반환된다.
 		- 
-
 
 
 
