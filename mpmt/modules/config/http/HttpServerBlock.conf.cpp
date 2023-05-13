@@ -5,7 +5,7 @@ HttpServerBlock::HttpServerBlock(std::ifstream &File)
 	this->parse(File);
 }
 
-HttpServerBlock::HttpServerData& HttpServerBlock::getServerData() {return this->serverData;}
+HttpServerBlock::HttpServerData& HttpServerBlock::getConfigData() {return this->serverData;}
 
 HttpServerBlock::~HttpServerBlock() {}
 

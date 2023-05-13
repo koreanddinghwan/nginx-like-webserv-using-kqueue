@@ -7,5 +7,10 @@ HttpLocationBlock::HttpLocationBlock(std::ifstream &File) {
 HttpLocationBlock::~HttpLocationBlock() 
 {}
 
+HttpLocationBlock::httpLocationData& HttpLocationBlock::getConfigData()
+{
+	return this->confData;  
+}
+
 void HttpLocationBlock::parse(std::ifstream &File)
 {}

@@ -12,7 +12,8 @@
 class GeneralBlock: public IBlock
 {
 public:
-	struct generalConfig {
+	struct generalConfig : public IConfigData
+	{
 		int worker_processes;
 	};
 
@@ -22,7 +23,7 @@ private:
 public:
 	GeneralBlock(std::ifstream &File);
 	void parse(std::ifstream &File);
-	void *getConfigData();
+	generalConfig& getConfigData();
 	~GeneralBlock();
 };
 

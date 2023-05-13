@@ -36,8 +36,8 @@ void EventBlock::parse(std::ifstream &File)
 }
 
 
-void *EventBlock::getConfigData() {
-	return &this->confData;
+EventBlock::eventConfig& EventBlock::getConfigData() {
+	return this->confData;
 }
 
 EventBlock::~EventBlock() {}

@@ -10,7 +10,8 @@
 class EventBlock: public IBlock
 {
 public:
-	struct eventConfig {
+	struct eventConfig : public IConfigData
+	{
 		int worker_connections;
 	};
 
@@ -20,7 +21,7 @@ private:
 public:
 	EventBlock(std::ifstream &File);
 	void parse(std::ifstream &File);
-	void *getConfigData();
+	eventConfig& getConfigData();
 	~EventBlock();
 };
 
