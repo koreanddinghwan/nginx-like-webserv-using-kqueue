@@ -3,8 +3,8 @@
 
 #include "../../exceptions/configParseException.hpp"
 #include "../../interface/IBlock.hpp"
-#include "eventBlock.conf.hpp"
-#include "generalBlock.conf.hpp"
+#include "EventBlock.conf.hpp"
+#include "GeneralBlock.conf.hpp"
 #include "../../interface/IConfig.hpp"
 #include "./http/HttpBlock.conf.hpp"
 #include <fstream>
@@ -57,71 +57,34 @@ class Config : public IConfig
 		 *
 		 * @return signleton 객체
 		 */
-		static Config& getInstance() {
-			static Config instance;
-			return instance;
-		}
+		static Config& getInstance();
 
 		/**
 		 * @brief config file 파싱해서 block별로 정리
 		 *
 		 * @param path
 		 */
-		void initConfig(std::string path) throw (configParseException)
-		{
-			FileGuard file(path);
-
-			/*
-			 * make server Http->server->location
-			 * */
-			blocks[0] = new generalBlock(file.getFile());
-			blocks[1] = new eventBlock(file.getFile());
-			blocks[2] = new HttpBlock(file.getFile());
-			/* std::cout<<buf<<std::endl; */
-
-			std::cout<<static_cast<generalBlock::generalConfig *>(blocks[0]->getConfigData())->worker_processes<<std::endl;
-			std::cout<<static_cast<eventBlock::eventConfig *>(blocks[1]->getConfigData())->worker_connections<<std::endl;
-		}
-
-		IBlock *getGeneralBlock()
-		{
-			return this->blocks[0];
-		}
-
-		IBlock *getEventBlock()
-		{
-			return this->blocks[1];
-		}
-
-		IBlock *getHttpBlock()
-		{
-			return this->blocks[2];
-		}
-
-		/* IBlock *getSMTPBlock() */
-		/* {} */
-
-		/* IBlock *getFTPBlock() */
-		/* {} */
-
-		/* IBlock *getSTREAMBlock() */
-		/* {} */
-
+		void initConfig(std::string path) throw (configParseException);
+		IBlock **getBlocks();
+		IBlock *getGeneralBlock();
+		IBlock *getEventBlock();
+		IBlock *getHTTPBlock();
+		
+		/*
+		 * 아래 3개는 구현부가 아닙니다.
+		 * */
+		IBlock *getSMTPBlock();
+		IBlock *getFTPBlock();
+		IBlock *getSTREAMBlock();
 
 	private:
-		Config() {}
-		~Config() 
-		{
-			/* delete static_cast<generalBlock *>(this->blocks[0]); */
-			/* delete static_cast<eventBlock *>(this->blocks[1]); */
-			delete static_cast<HttpBlock *>(this->blocks[2]);
-		}
-		Config(const Config&) {}
-		Config& operator=(const Config&) {return Config::getInstance();}
-
+		Config();
+		~Config();
+		Config(const Config&);
+		Config& operator=(const Config&);
 	private:
 		std::string		buf;
-		IBlock			*blocks[5];
+		IBlock			*blocks[6];
 };
 
 

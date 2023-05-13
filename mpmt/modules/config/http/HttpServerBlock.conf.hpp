@@ -30,29 +30,25 @@ server { # simple reverse-proxy
 class HttpServerBlock : public IBlock
 {
 public:
-	HttpServerBlock(std::ifstream &File) {
-		this->parse(File);
-	}
-	~HttpServerBlock() {}
-
-private:
 	struct HttpServerData
 	{
 		int port;
-		std::string server_name;
+		std::vector<std::string> server_names;
+		std::string root;
+		std::string errorPage;
 		std::vector<IBlock *> httpLocationBlock;
 	};
 
-	void parse(std::ifstream &File) 
-	{
-		/*
-		 * while 'location' directives in buf,
-		 * {
-		 * 		httpServerBlock.push(new httpLocationBlock(File));
-		 * }
-		 * */
-	}
+private:
+	HttpServerData serverData;
 
+public:
+	HttpServerBlock(std::ifstream &File);
+	HttpServerData &getServerData();
+	~HttpServerBlock();
+
+private:
+	void parse(std::ifstream &File);
 
 };
 

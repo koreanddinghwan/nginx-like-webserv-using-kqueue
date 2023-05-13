@@ -20,15 +20,11 @@
 class HttpLocationBlock : public IBlock
 {
 	public:
-		HttpLocationBlock(std::ifstream &File) {
-			this->parse(File);
-		}
-		~HttpLocationBlock() {}
+		HttpLocationBlock(std::ifstream &File);
+		~HttpLocationBlock();
 
 	private:
-		void parse(std::ifstream &File)
-		{}
+		void parse(std::ifstream &File);
 };
-
 
 #endif
