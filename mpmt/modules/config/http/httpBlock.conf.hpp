@@ -4,6 +4,7 @@
 #include "../../../interface/IBlock.hpp"
 #include "HttpServerBlock.conf.hpp"
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 /**
@@ -24,28 +25,14 @@ public:
 private:
 	httpData confData;
 
-
 public:
-	HttpBlock(std::ifstream &File) {
-		this->parse(File);
-	}
-	~HttpBlock() {}
+	HttpBlock(std::ifstream &File);
+	~HttpBlock();
 
 
 private:
-	void parse(std::ifstream &File) {
-		/*
-		 * while 'server' directives in buf,
-		 * {
-		 * 		httpServerBlock.push(new httpServerBlock(File));
-		 * }
-		 * */
-	}
-
-	void *getConfigData()
-	{
-		return &(this->confData);
-	}
+	void parse(std::ifstream &File);
+	void *getConfigData();
 };
 
 #endif
