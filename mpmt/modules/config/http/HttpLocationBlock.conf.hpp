@@ -20,8 +20,17 @@
 class HttpLocationBlock : public IBlock
 {
 	public:
+		struct httpLocationData : public IConfigData
+		{};
+
+	public:
+		httpLocationData confData;
+
+
+	public:
 		HttpLocationBlock(std::ifstream &File);
 		~HttpLocationBlock();
+		httpLocationData &getConfigData();
 
 	private:
 		void parse(std::ifstream &File);

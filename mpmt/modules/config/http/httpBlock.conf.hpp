@@ -14,13 +14,14 @@
 class HttpBlock: public IBlock
 {
 public:
-	struct httpData 
+	struct httpData: public IConfigData
 	{
 		int client_max_body_size;
 		bool sendfile;
 		bool tcp_nopush;
 		std::vector<IBlock *> httpServerBlock;
 	};
+
 
 private:
 	httpData confData;
@@ -32,7 +33,7 @@ public:
 
 private:
 	void parse(std::ifstream &File);
-	void *getConfigData();
+	httpData &getConfigData();
 };
 
 #endif

@@ -30,7 +30,7 @@ server { # simple reverse-proxy
 class HttpServerBlock : public IBlock
 {
 public:
-	struct HttpServerData
+	struct HttpServerData : public IConfigData
 	{
 		int port;
 		std::vector<std::string> server_names;
@@ -44,7 +44,7 @@ private:
 
 public:
 	HttpServerBlock(std::ifstream &File);
-	HttpServerData &getServerData();
+	HttpServerData& getConfigData();
 	~HttpServerBlock();
 
 private:
