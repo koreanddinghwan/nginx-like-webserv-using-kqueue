@@ -33,16 +33,15 @@ class HttpLocationBlock : public IBlock
 		enum e_uri_match_mode 
 		{
 			PREFIX = 0,
-			EXACT,
+			EXACT, // = 
 			/* REGEX, */
 			/* PREFERENTIAL */
 		};
 
-		struct httpLocationData : public IConfigData
+		struct httpLocationData : public ConfigData
 		{
 			enum e_uri_match_mode uri_match_mode;
 			std::string uri;
-			std::string root;
 			std::string proxy_pass;
 			std::string fastcgi_pass;
 			int return_status;
