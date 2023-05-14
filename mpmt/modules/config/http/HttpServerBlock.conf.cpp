@@ -1,4 +1,5 @@
 #include "HttpServerBlock.conf.hpp"
+#include "HttpLocationBlock.conf.hpp"
 
 HttpServerBlock::HttpServerBlock(std::ifstream &File)
 {
@@ -30,7 +31,7 @@ void HttpServerBlock::parse(std::ifstream &File)
 
 		//found listen port
 		if (buf.find("listen") != std::string::npos)
-			this->serverData.port = atoi(spl.split(buf, ' ').second.c_str());
+			this->serverData.listen = atoi(spl.split(buf, ' ').second.c_str());
 		if (buf.find("server_name") != std::string::npos)
 		{
 			s.split(buf.c_str(), ' ');

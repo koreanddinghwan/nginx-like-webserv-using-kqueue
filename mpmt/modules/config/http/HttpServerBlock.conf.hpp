@@ -4,7 +4,6 @@
 #include "../../../lib/ft_split.hpp"
 #include "../../../lib/strSplit.hpp"
 #include "../../../interface/IBlock.hpp"
-#include "./HttpLocationBlock.conf.hpp"
 #include <fstream>
 #include <vector>
 #include <string>
@@ -35,12 +34,10 @@ server { # simple reverse-proxy
 class HttpServerBlock : public IBlock
 {
 public:
-	struct HttpServerData : public IConfigData
+	struct HttpServerData : public ConfigData
 	{
-		int port;
+		int listen;
 		std::vector<std::string> server_names;
-		std::string root;
-		std::string errorPage;
 		std::vector<IBlock *> httpLocationBlock;
 	};
 

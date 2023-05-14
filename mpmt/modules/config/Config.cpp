@@ -63,8 +63,6 @@ void Config::printConfigData()
 	HttpBlock::httpData &sb = static_cast<HttpBlock::httpData&>(this->getHTTPBlock()->getConfigData());
 
 	std::cout<<"client max body size: "<<sb.getClientMaxBodySize()<<std::endl;
-	std::cout<<"send file: "<<sb.getSendFile()<<std::endl;
-	std::cout<<"tcp_nopush: "<<sb.gettcpNoPush()<<std::endl;
 }
 
 
