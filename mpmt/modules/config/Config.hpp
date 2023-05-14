@@ -69,7 +69,10 @@ class Config : public IConfig
 		IBlock *getGeneralBlock();
 		IBlock *getEventBlock();
 		IBlock *getHTTPBlock();
-		
+
+
+		void printConfigData();
+
 		/*
 		 * 아래 3개는 구현부가 아닙니다.
 		 * */
