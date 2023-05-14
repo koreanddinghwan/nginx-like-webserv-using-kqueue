@@ -1,9 +1,14 @@
 #ifndef HTTPSERVERBLOCK
 # define HTTPSERVERBLOCK
 
+#include "../../../lib/ft_split.hpp"
+#include "../../../lib/strSplit.hpp"
 #include "../../../interface/IBlock.hpp"
+#include "./HttpLocationBlock.conf.hpp"
 #include <fstream>
 #include <vector>
+#include <string>
+#include <iostream>
 
 /*
 server { # php/fastcgi

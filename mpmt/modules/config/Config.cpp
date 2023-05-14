@@ -30,8 +30,8 @@ void Config::initConfig(std::string path) throw (configParseException)
 	/* blocks[5] = new StreamBlock(file.getFile()); */
 	/* std::cout<<buf<<std::endl; */
 
-	std::cout<<static_cast<GeneralBlock::generalConfig *>(blocks[0]->getConfigData())->worker_processes<<std::endl;
-	std::cout<<static_cast<EventBlock::eventConfig *>(blocks[1]->getConfigData())->worker_connections<<std::endl;
+	std::cout<<static_cast<GeneralBlock::generalConfig&>(blocks[0]->getConfigData()).worker_processes<<std::endl;
+	std::cout<<static_cast<EventBlock::eventConfig&>(blocks[1]->getConfigData()).worker_connections<<std::endl;
 }
 
 IBlock** Config::getBlocks() {
