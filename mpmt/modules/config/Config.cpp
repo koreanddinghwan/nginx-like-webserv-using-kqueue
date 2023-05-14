@@ -1,4 +1,6 @@
 #include "Config.hpp"
+#include "http/httpBlock.conf.hpp"
+#include <vector>
 
 Config& Config::getInstance() {
 	static Config instance;
@@ -25,13 +27,11 @@ void Config::initConfig(std::string path) throw (configParseException)
 	blocks[0] = new GeneralBlock(file.getFile());
 	blocks[1] = new EventBlock(file.getFile());
 	blocks[2] = new HttpBlock(file.getFile());
+
 	/* blocks[3] = new SmtpBlock(file.getFile()); */
 	/* blocks[4] = new FtpBlock(file.getFile()); */
 	/* blocks[5] = new StreamBlock(file.getFile()); */
 	/* std::cout<<buf<<std::endl; */
-
-	std::cout<<static_cast<GeneralBlock::generalConfig&>(blocks[0]->getConfigData()).worker_processes<<std::endl;
-	std::cout<<static_cast<EventBlock::eventConfig&>(blocks[1]->getConfigData()).worker_connections<<std::endl;
 }
 
 IBlock** Config::getBlocks() {
@@ -52,6 +52,22 @@ IBlock* Config::getHTTPBlock()
 {
 	return this->blocks[2];
 }
+
+void Config::printConfigData()
+{
+	std::cout<<static_cast<GeneralBlock::generalConfig&>(blocks[0]->getConfigData()).worker_processes<<std::endl;
+	std::cout<<static_cast<EventBlock::eventConfig&>(blocks[1]->getConfigData()).worker_connections<<std::endl;
+
+
+	typedef typename std::vector<IBlock *> t_block;
+	HttpBlock::httpData &sb = static_cast<HttpBlock::httpData&>(this->getHTTPBlock()->getConfigData());
+
+	std::cout<<"client max body size: "<<sb.getClientMaxBodySize()<<std::endl;
+	std::cout<<"send file: "<<sb.getSendFile()<<std::endl;
+	std::cout<<"tcp_nopush: "<<sb.gettcpNoPush()<<std::endl;
+}
+
+
 
 /*
  * 아래 3개는 구현부가 아닙니다.

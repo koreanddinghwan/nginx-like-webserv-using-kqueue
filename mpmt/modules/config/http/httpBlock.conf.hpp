@@ -14,12 +14,25 @@
 class HttpBlock: public IBlock
 {
 public:
-	struct httpData: public IConfigData
+	class httpData: public IConfigData
 	{
-		int client_max_body_size;
-		bool sendfile;
-		bool tcp_nopush;
-		std::vector<IBlock *> httpServerBlock;
+		private:
+			int client_max_body_size;
+			bool sendfile;
+			bool tcp_nopush;
+			std::vector<IBlock *> httpServerBlock;
+
+		public:
+			httpData();
+			~httpData();
+
+			void	setClientMaxBodySize(int a);
+			void	setSendFile(bool a);
+			void	setTcpNoPush(bool a);
+			int		getClientMaxBodySize() const;
+			bool	getSendFile() const;
+			bool 	getTcpNoPush() const;
+			std::vector<IBlock *> getServerBlock();
 	};
 
 
