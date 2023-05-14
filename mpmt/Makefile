@@ -15,7 +15,7 @@ WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 EVENTLOOPSRCS = EventLoop.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
-LIBSRCS = strSplit.cpp FileGuard.cpp
+LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp
 LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
 
 MAINSRCS = main.cpp

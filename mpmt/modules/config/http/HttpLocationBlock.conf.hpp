@@ -2,7 +2,13 @@
 # define HTTPLOCATIONBLOCK_HPP
 
 #include "../../../interface/IBlock.hpp"
+#include "../../../lib/ft_split.hpp"
+#include "../../../lib/strSplit.hpp"
+#include "../../../interface/IBlock.hpp"
 #include <fstream>
+#include <vector>
+#include <string>
+#include <iostream>
 
 /* 
  * location ~ \.php$ { 
@@ -20,8 +26,29 @@
 class HttpLocationBlock : public IBlock
 {
 	public:
+
+		/*
+		 * check docs/configs.md/#default error pages
+		 * */
+		enum e_uri_match_mode 
+		{
+			PREFIX = 0,
+			EXACT,
+			/* REGEX, */
+			/* PREFERENTIAL */
+		};
+
 		struct httpLocationData : public IConfigData
-		{};
+		{
+			enum e_uri_match_mode uri_match_mode;
+			std::string uri;
+			std::string root;
+			std::string proxy_pass;
+			std::string fastcgi_pass;
+			int return_status;
+			std::string redirect_url;
+			bool auto_index;
+		};
 
 	public:
 		httpLocationData confData;

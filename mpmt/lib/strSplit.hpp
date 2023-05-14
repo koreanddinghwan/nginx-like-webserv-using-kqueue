@@ -10,7 +10,7 @@ private:
 	std::pair<std::string, std::string> splited;
 
 public:
-	typedef typename std::pair<std::string, std::string> strPair;
+	typedef typename std::pair< std::string, std::string > strPair;
 
 public:
 	strSplit();
@@ -22,7 +22,7 @@ public:
 	 *
 	 * @return 
 	 */
-	std::pair<std::string, std::string> split(std::string str, const char del);
+	std::pair< std::string, std::string > split(std::string str, const char del);
 	~strSplit();
 };
 
