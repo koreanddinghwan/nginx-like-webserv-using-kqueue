@@ -24,6 +24,7 @@ public:
 			~httpData();
 
 			std::vector<IBlock *> getServerBlock();
+			void setServerBlock(HttpServerBlock *f);
 	};
 
 
