@@ -38,10 +38,46 @@ void HttpBlock::parse(std::ifstream &File)
 			this->confData.setClientMaxBodySize(std::atoi(s.get()[1].c_str()));
 		}
 
+		if (buf.find("error_page") != std::string::npos)
+		{
+			s.splitRemoveSemiColon(buf.c_str(), ' ');
+			for (int i = 1; i < s.get().size() - 1; i++)
+			{
+				this->confData.setErrorPage(std::atoi(s.get()[i].c_str()), s.get()[s.get().size() - 1]);
+			}
+		}
+
+		if (buf.find("root") != std::string::npos)
+		{
+			s.splitRemoveSemiColon(buf.c_str(), ' ');
+			this->confData.setRoot(s.get()[1]);
+		}
+
+		if (buf.find("sendfile") != std::string::npos) 
+		{
+			s.splitRemoveSemiColon(buf.c_str(), ' ');
+			if (s.get()[1] == "on")
+				this->confData.setSendFile(true);
+		}
+
+		if (buf.find("tcp_nodelay") != std::string::npos) 
+		{
+			s.splitRemoveSemiColon(buf.c_str(), ' ');
+			if (s.get()[1] == "off")
+				this->confData.setTcpNoDelay(false);
+		}
+
+		if (buf.find("tcp_nopush") != std::string::npos)
+		{
+			s.splitRemoveSemiColon(buf.c_str(), ' ');
+			if (s.get()[1] == "on")
+				this->confData.setTcpNoPush(true);
+		}
+
 		if (buf.find("server {") != std::string::npos)
 		{
 			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
-			this->confData.getServerBlock().push_back(new HttpServerBlock(File));
+			this->getConfigData().setServerBlock(new HttpServerBlock(File));
 		}
 	}
 }
@@ -51,8 +87,6 @@ HttpBlock::httpData& HttpBlock::getConfigData()
 	return (this->confData);
 }
 
-
-
 /*
  * http block 전용 data getter setter
  * */
@@ -60,3 +94,9 @@ HttpBlock::httpData::httpData() {}
 
 HttpBlock::httpData::~httpData() {}
 std::vector<IBlock *> HttpBlock::httpData::getServerBlock() {return this->httpServerBlock;}
+
+
+void HttpBlock::httpData::setServerBlock(HttpServerBlock *serverBlock)
+{
+	this->httpServerBlock.push_back(serverBlock);
+}
