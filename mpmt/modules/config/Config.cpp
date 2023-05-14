@@ -1,5 +1,5 @@
 #include "Config.hpp"
-#include "http/httpBlock.conf.hpp"
+#include "http/HttpBlock.conf.hpp"
 #include <vector>
 
 Config& Config::getInstance() {
