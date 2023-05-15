@@ -1,13 +1,15 @@
 #include "HttpLocationBlock.conf.hpp"
+#include "../Parser.cpp"
 
-HttpLocationBlock::HttpLocationBlock(std::ifstream &File) {
+HttpLocationBlock::HttpLocationBlock(std::ifstream &File, ConfigData &c) {
+	static_cast<ConfigData>(this->confData) = c;
 	this->parse(File);
 }
 
 HttpLocationBlock::~HttpLocationBlock() 
 {}
 
-HttpLocationBlock::httpLocationData& HttpLocationBlock::getConfigData()
+HttpLocationBlock::HttpLocationData& HttpLocationBlock::getConfigData()
 {
 	return this->confData;  
 }
@@ -17,7 +19,6 @@ void HttpLocationBlock::parse(std::ifstream &File)
 	std::string	buf;
 	ft_split	s;
 
-
 	while (buf.find("}") == std::string::npos)
 	{
 		if (File.eof())
@@ -25,60 +26,24 @@ void HttpLocationBlock::parse(std::ifstream &File)
 		std::getline(File, buf);
 
 		std::cout<<"current:"<<buf<<std::endl;
-		if (buf.find("location") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-
-			//check exact match
-			if (s.get()[1] == "=")
-			{
-				confData.uri_match_mode = EXACT;
-				confData.uri.assign(s.get()[2]);
-			}
-			else
-			{
-				confData.uri_match_mode = PREFIX;
-				confData.uri.assign(s.get()[1]);
-			}
-		}
-
-		if (buf.find("root") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			confData.root.assign(s.get()[1].substr(0, s.get()[1].size() - 1));
-		}
-
-		if (buf.find("proxy_pass") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			confData.proxy_pass.assign(s.get()[1].substr(0, s.get()[1].size() - 1));
-		}
-
-		if (buf.find("fastcgi_pass") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			confData.fastcgi_pass.assign(s.get()[1].substr(0, s.get()[1].size() - 1));
-		}
-
-		if (buf.find("return") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			confData.return_status = std::atoi(s.get()[1].c_str());
-			confData.redirect_url.assign(s.get()[2].substr(0, s.get()[2].size() - 1));
-		}
-
-		/*
-		 * getcwd -> opendir -> readdir
-		 * */
-		if (buf.find("auto_index") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			if (s.get()[2] == "on;")
-				confData.auto_index = true;
-			else
-				confData.auto_index = false;
-		}
+		Parser::httpBlockParser(buf, this->confData);
+		Parser::httpLocationBlockParser(buf, this->confData);
 	}
-
 	std::cout<<"end of location block"<<std::endl;
 }
+
+
+enum HttpLocationBlock::e_uri_match_mode HttpLocationBlock::HttpLocationData::getUriMatchMode() {return this->uri_match_mode;}
+std::string HttpLocationBlock::HttpLocationData::getUri() {return this->uri;}
+std::string HttpLocationBlock::HttpLocationData::getProxyPass() {return this->proxy_pass;}
+std::string HttpLocationBlock::HttpLocationData::getFastcgiPass() {return this->fastcgi_pass;}
+int HttpLocationBlock::HttpLocationData::getReturnStatus() {return this->return_status;}
+std::string HttpLocationBlock::HttpLocationData::getRedirectUrl() {return this->redirect_url;}
+
+
+void HttpLocationBlock::HttpLocationData::setUriMatchMode(enum HttpLocationBlock::e_uri_match_mode e) { this->uri_match_mode = e;}
+void HttpLocationBlock::HttpLocationData::setUri(std::string u) { this->uri = u;}
+void HttpLocationBlock::HttpLocationData::setProxyPass(std::string p) { this->proxy_pass = p;}
+void HttpLocationBlock::HttpLocationData::setFastcgiPass(std::string f) { this->fastcgi_pass = f;}
+void HttpLocationBlock::HttpLocationData::setReturnStatus(int r) { this->return_status = r;}
+void HttpLocationBlock::HttpLocationData::setRedirectUrl(std::string r) { this->redirect_url = r;}

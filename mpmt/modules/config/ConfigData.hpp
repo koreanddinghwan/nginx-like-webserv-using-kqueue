@@ -26,6 +26,7 @@ private:
 	bool tcp_nodelay; //default: on
 	bool tcp_nopush; //default : off
 
+	bool autoindex;
 	//server_name : server
 	//proxy_pass : location
 	//fastcgi_pass : location
@@ -42,13 +43,15 @@ public:
 	bool	getSendFile() const;
 	bool	getTcpNoDelay() const;
 	bool	getTcpNoPush() const;
+	bool	getAutoIndex() const;
 
 	void	setClientMaxBodySize(int a);
 	void	setErrorPage(int errCode, std::string html);
-	void	setRoot(std::string r) ;
-	void	setSendFile(bool a) ;
-	void	setTcpNoDelay(bool a) ;
-	void	setTcpNoPush(bool a) ;
+	void	setRoot(std::string r);
+	void	setSendFile(bool a);
+	void	setTcpNoDelay(bool a);
+	void	setTcpNoPush(bool a);
+	void	setAutoIndex(bool a);
 };
 
 #endif
