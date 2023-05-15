@@ -1,6 +1,7 @@
 #include "HttpBlock.conf.hpp"
 #include "HttpServerBlock.conf.hpp"
 #include <string>
+#include "../Parser.cpp"
 #include <vector>
 
 HttpBlock::HttpBlock(std::ifstream &File) 
@@ -18,7 +19,6 @@ void HttpBlock::parse(std::ifstream &File)
 {
 	int cur_offset = File.tellg();
 	std::string buf;
-	ft_split s;
 	std::getline(File, buf);
 
 	//http 찾을때까지 점프
@@ -32,52 +32,13 @@ void HttpBlock::parse(std::ifstream &File)
 			break;
 
 		std::getline(File, buf);
-		if (buf.find("client_max_body_size") != std::string::npos)
-		{
-			s.split(buf.c_str(), ' ');
-			this->confData.setClientMaxBodySize(std::atoi(s.get()[1].c_str()));
-		}
 
-		if (buf.find("error_page") != std::string::npos)
-		{
-			s.splitRemoveSemiColon(buf.c_str(), ' ');
-			for (int i = 1; i < s.get().size() - 1; i++)
-			{
-				this->confData.setErrorPage(std::atoi(s.get()[i].c_str()), s.get()[s.get().size() - 1]);
-			}
-		}
-
-		if (buf.find("root") != std::string::npos)
-		{
-			s.splitRemoveSemiColon(buf.c_str(), ' ');
-			this->confData.setRoot(s.get()[1]);
-		}
-
-		if (buf.find("sendfile") != std::string::npos) 
-		{
-			s.splitRemoveSemiColon(buf.c_str(), ' ');
-			if (s.get()[1] == "on")
-				this->confData.setSendFile(true);
-		}
-
-		if (buf.find("tcp_nodelay") != std::string::npos) 
-		{
-			s.splitRemoveSemiColon(buf.c_str(), ' ');
-			if (s.get()[1] == "off")
-				this->confData.setTcpNoDelay(false);
-		}
-
-		if (buf.find("tcp_nopush") != std::string::npos)
-		{
-			s.splitRemoveSemiColon(buf.c_str(), ' ');
-			if (s.get()[1] == "on")
-				this->confData.setTcpNoPush(true);
-		}
+		Parser::httpBlockParser(buf, this->getConfigData());
 
 		if (buf.find("server {") != std::string::npos)
 		{
 			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
-			this->getConfigData().setServerBlock(new HttpServerBlock(File));
+			this->getConfigData().setServerBlock(new HttpServerBlock(File, this->getConfigData()));
 		}
 	}
 }

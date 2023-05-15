@@ -38,25 +38,42 @@ class HttpLocationBlock : public IBlock
 			/* PREFERENTIAL */
 		};
 
-		struct httpLocationData : public ConfigData
+		class HttpLocationData : public ConfigData
 		{
+		private:
 			enum e_uri_match_mode uri_match_mode;
 			std::string uri;
 			std::string proxy_pass;
 			std::string fastcgi_pass;
 			int return_status;
 			std::string redirect_url;
-			bool auto_index;
+		public:
+			HttpLocationData();
+			~HttpLocationData();
+
+			enum e_uri_match_mode getUriMatchMode(); 
+			std::string getUri(); 
+			std::string getProxyPass(); 
+			std::string getFastcgiPass(); 
+			int getReturnStatus(); 
+			std::string getRedirectUrl(); 
+
+			void setUriMatchMode(enum e_uri_match_mode e); 
+			void setUri(std::string u); 
+			void setProxyPass(std::string p); 
+			void setFastcgiPass(std::string f); 
+			void setReturnStatus(int r);  
+			void setRedirectUrl(std::string r);  
 		};
 
 	public:
-		httpLocationData confData;
+		HttpLocationData confData;
 
 
 	public:
-		HttpLocationBlock(std::ifstream &File);
+		HttpLocationBlock(std::ifstream &File, ConfigData &c);
 		~HttpLocationBlock();
-		httpLocationData &getConfigData();
+		HttpLocationData &getConfigData();
 
 	private:
 		void parse(std::ifstream &File);
