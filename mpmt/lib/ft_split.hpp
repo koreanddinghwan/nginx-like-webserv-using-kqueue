@@ -12,7 +12,7 @@ private:
 
 public:
 
-typedef typename std::vector<std::string> splited;
+typedef std::vector<std::string> splited;
 
 	std::vector<std::string> get();
 	std::vector<std::string> split(char const *s, char c);

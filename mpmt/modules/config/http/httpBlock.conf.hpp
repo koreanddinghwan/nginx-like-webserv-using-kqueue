@@ -1,8 +1,10 @@
 #ifndef HTTPBLOCK_HPP
 # define HTTPBLOCK_HPP
 
+#include "../data/HttpData.hpp"
 #include "../../../interface/IBlock.hpp"
 #include "HttpServerBlock.conf.hpp"
+#include "../BlockParser.hpp"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -13,23 +15,8 @@
  */
 class HttpBlock: public IBlock
 {
-public:
-	class httpData: public ConfigData
-	{
-		private:
-			std::vector<IBlock *> httpServerBlock;
-
-		public:
-			httpData();
-			~httpData();
-
-			std::vector<IBlock *> getServerBlock();
-			void setServerBlock(HttpServerBlock *f);
-	};
-
-
 private:
-	httpData confData;
+	HttpData confData;
 
 public:
 	HttpBlock(std::ifstream &File);
@@ -38,7 +25,7 @@ public:
 
 private:
 	void parse(std::ifstream &File);
-	httpData &getConfigData();
+	HttpData &getConfigData();
 };
 
 #endif

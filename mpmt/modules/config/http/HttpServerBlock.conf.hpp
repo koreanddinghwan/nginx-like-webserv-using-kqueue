@@ -1,10 +1,12 @@
-#ifndef HTTPSERVERBLOCK
-# define HTTPSERVERBLOCK
+#ifndef HTTPSERVERBLOCK_HPP
+# define HTTPSERVERBLOCK_HPP
 
+#include "HttpLocationBlock.conf.hpp"
+#include "../BlockParser.hpp"
+#include "../data/HttpServerData.hpp"
 #include "../../../lib/ft_split.hpp"
 #include "../../../lib/strSplit.hpp"
 #include "../../../interface/IBlock.hpp"
-#include "HttpLocationBlock.conf.hpp"
 #include <fstream>
 #include <vector>
 #include <string>
@@ -31,39 +33,20 @@ server { # simple reverse-proxy
   location / {
 */
 
+class HttpData;
 
 class HttpServerBlock : public IBlock
 {
-public:
-	class HttpServerData : public ConfigData
-	{
-		private:
-			int listen;
-			std::vector<std::string> server_names;
-			std::vector<IBlock *> httpLocationBlock;
-		public:
-			HttpServerData();
-			~HttpServerData();
-
-			int  getListen();
-			std::vector<std::string> getServerNames();
-			std::vector<IBlock *> getHttpLocationBlock();
-			void setListen(int port);
-			void setServerName(std::string name);
-			void setHttpLocationBlock(HttpLocationBlock *n);
-	};
-
 private:
 	HttpServerData serverData;
 
 public:
-	HttpServerBlock(std::ifstream &File, ConfigData &c);
+	HttpServerBlock(std::ifstream &File, HttpData *c);
 	HttpServerData& getConfigData();
 	~HttpServerBlock();
 
 private:
 	void parse(std::ifstream &File);
-
 };
 
 #endif
