@@ -1,8 +1,4 @@
-#include "HttpBlock.conf.hpp"
-#include "HttpServerBlock.conf.hpp"
-#include <string>
-#include "../Parser.cpp"
-#include <vector>
+#include "httpBlock.conf.hpp"
 
 HttpBlock::HttpBlock(std::ifstream &File) 
 {
@@ -17,7 +13,6 @@ HttpBlock::~HttpBlock() {
 
 void HttpBlock::parse(std::ifstream &File) 
 {
-	int cur_offset = File.tellg();
 	std::string buf;
 	std::getline(File, buf);
 
@@ -33,31 +28,14 @@ void HttpBlock::parse(std::ifstream &File)
 
 		std::getline(File, buf);
 
-		Parser::httpBlockParser(buf, this->getConfigData());
+		BlockParser::httpBlockParser(buf, this->getConfigData());
 
 		if (buf.find("server {") != std::string::npos)
 		{
 			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
-			this->getConfigData().setServerBlock(new HttpServerBlock(File, this->getConfigData()));
+			this->getConfigData().setServerBlock(new HttpServerBlock(File, &(this->getConfigData())));
 		}
 	}
 }
 
-HttpBlock::httpData& HttpBlock::getConfigData()
-{
-	return (this->confData);
-}
-
-/*
- * http block 전용 data getter setter
- * */
-HttpBlock::httpData::httpData() {}
-
-HttpBlock::httpData::~httpData() {}
-std::vector<IBlock *> HttpBlock::httpData::getServerBlock() {return this->httpServerBlock;}
-
-
-void HttpBlock::httpData::setServerBlock(HttpServerBlock *serverBlock)
-{
-	this->httpServerBlock.push_back(serverBlock);
-}
+HttpData& HttpBlock::getConfigData() {return confData;}

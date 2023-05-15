@@ -1,7 +1,7 @@
 #ifndef IBLOCK_HPP
 # define IBLOCK_HPP
 
-#include "../modules/config/ConfigData.hpp"
+#include "../modules/config/data/ConfigData.hpp"
 #include <fstream>
 class IBlock
 {

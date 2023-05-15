@@ -1,6 +1,6 @@
 #include "Config.hpp"
-#include "http/HttpBlock.conf.hpp"
-#include <vector>
+#include "data/HttpServerData.hpp"
+#include "http/HttpServerBlock.conf.hpp"
 
 Config& Config::getInstance() {
 	static Config instance;
@@ -55,14 +55,30 @@ IBlock* Config::getHTTPBlock()
 
 void Config::printConfigData()
 {
-	std::cout<<static_cast<GeneralBlock::generalConfig&>(blocks[0]->getConfigData()).worker_processes<<std::endl;
-	std::cout<<static_cast<EventBlock::eventConfig&>(blocks[1]->getConfigData()).worker_connections<<std::endl;
+	std::cout<<"\033[35m"<<"Config Result"<<std::endl;
+
+	std::cout<<"=====General====="<<std::endl;
+	std::cout<<"worker_processes: "<<static_cast<GeneralBlock::generalConfig&>(blocks[0]->getConfigData()).worker_processes<<std::endl;
+	std::cout<<"=====Events======"<<std::endl;
+	std::cout<<"connections: "<<static_cast<EventBlock::eventConfig&>(blocks[1]->getConfigData()).worker_connections<<std::endl;
 
 
-	typedef typename std::vector<IBlock *> t_block;
-	HttpBlock::httpData &sb = static_cast<HttpBlock::httpData&>(this->getHTTPBlock()->getConfigData());
+	std::cout<<"======Http======="<<std::endl;
+	typedef std::vector<IBlock *> t_block;
+	HttpData &sb = static_cast<HttpData&>(this->getHTTPBlock()->getConfigData());
+	sb.printConfig();
 
-	std::cout<<"client max body size: "<<sb.getClientMaxBodySize()<<std::endl;
+	for (int i = 0; i < sb.getServerBlock().size(); i++)
+	{
+		std::cout<<"\033[33m"<<"================Server================="<<std::endl;
+		HttpServerBlock *sd = static_cast<HttpServerBlock *>(sb.getServerBlock()[i]);
+		sd->getConfigData().printServerDataConfig();
+		for (int j = 0; j < sd->getConfigData().getHttpLocationBlock().size(); j++)
+		{
+		std::cout<<"\033[32m"<<"==================Location=============="<<std::endl;
+			static_cast<HttpLocationBlock *>(sd->getConfigData().getHttpLocationBlock()[j])->getConfigData().printLocationData();
+		}
+	}
 }
 
 

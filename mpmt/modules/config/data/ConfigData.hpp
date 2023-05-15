@@ -1,12 +1,16 @@
 #ifndef CONFIGDATA_HPP
 # define CONFIGDATA_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
 
 class ConfigData
 {
+public:
+	typedef std::map<int, std::string> errorMap;
+
 private:
 	/*
 	 * http, server location block 모두에 적용
@@ -35,7 +39,8 @@ private:
 public:
 	ConfigData();
 	~ConfigData();
-	void operator=(ConfigData &c);
+	ConfigData& operator=(ConfigData &c);
+	ConfigData(ConfigData &c);
 
 	int		getClientMaxBodySize() const;
 	std::map<int, std::string> getErrorPage() const;
@@ -52,6 +57,9 @@ public:
 	void	setTcpNoDelay(bool a);
 	void	setTcpNoPush(bool a);
 	void	setAutoIndex(bool a);
+
+	void	copyErrorPage(errorMap m);
+	void	printConfig();
 };
 
 #endif
