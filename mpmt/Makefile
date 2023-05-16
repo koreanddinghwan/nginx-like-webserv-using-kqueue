@@ -3,8 +3,8 @@ CXX = c++
 CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-DATASRCS = ConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
-DATAOBJS = $(addprefix ./modules/config/data/, $(DATASRCS:.cpp=.o))
+HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
+HTTPDATAOBJS = $(addprefix ./modules/config/data/, $(HTTPDATASRCS:.cpp=.o))
 HTTPCONFIGSRCS = HttpBlock.conf.cpp HttpLocationBlock.conf.cpp HttpServerBlock.conf.cpp
 HTTPCONFIGOBJS = $(addprefix ./modules/config/http/, $(HTTPCONFIGSRCS:.cpp=.o))
 CONFIGSRCS = Config.cpp EventBlock.conf.cpp GeneralBlock.conf.cpp BlockParser.cpp
@@ -18,7 +18,7 @@ LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
 MAINSRCS = main.cpp
 MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
 
-OBJS = $(LIBOBJS) $(MAINOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(DATAOBJS) $(WEBSERVOBJS)
+OBJS = $(LIBOBJS) $(MAINOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS)
 
 all : $(NAME)
 

@@ -1,7 +1,7 @@
 #ifndef HTTPLOCATIONBLOCK_HPP
 # define HTTPLOCATIONBLOCK_HPP
 
-#include "../data/ConfigData.hpp"
+#include "../data/HttpConfigData.hpp"
 #include "../BlockParser.hpp"
 #include "../../../interface/IBlock.hpp"
 #include "../../../lib/ft_split.hpp"

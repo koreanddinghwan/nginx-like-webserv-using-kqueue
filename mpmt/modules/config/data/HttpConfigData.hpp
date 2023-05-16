@@ -1,12 +1,16 @@
-#ifndef CONFIGDATA_HPP
-# define CONFIGDATA_HPP
+#ifndef HttpCONFIGDATA_HPP
+# define HttpCONFIGDATA_HPP
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <map>
 
-class ConfigData
+/**
+ * @brief Configuration data for Http.
+ * these data shared in http, server, location block
+ */
+class HttpConfigData
 {
 public:
 	typedef std::map<int, std::string> errorMap;
@@ -35,12 +39,17 @@ private:
 	//proxy_pass : location
 	//fastcgi_pass : location
 
+	/**
+	 * @brief
+	 * @link https://nginx.org/en/docs/http/ngx_http_index_module.html#index
+	 */
+	std::vector<std::string> index;
 
 public:
-	ConfigData();
-	~ConfigData();
-	ConfigData& operator=(ConfigData &c);
-	ConfigData(ConfigData &c);
+	HttpConfigData();
+	~HttpConfigData();
+	HttpConfigData& operator=(HttpConfigData &c);
+	HttpConfigData(HttpConfigData &c);
 
 	int		getClientMaxBodySize() const;
 	std::map<int, std::string> getErrorPage() const;
@@ -49,6 +58,7 @@ public:
 	bool	getTcpNoDelay() const;
 	bool	getTcpNoPush() const;
 	bool	getAutoIndex() const;
+	std::vector<std::string>	getIndex() const;
 
 	void	setClientMaxBodySize(int a);
 	void	setErrorPage(int errCode, std::string html);
@@ -57,6 +67,7 @@ public:
 	void	setTcpNoDelay(bool a);
 	void	setTcpNoPush(bool a);
 	void	setAutoIndex(bool a);
+	void	setIndex(std::string);
 
 	void	copyErrorPage(errorMap m);
 	void	printConfig();

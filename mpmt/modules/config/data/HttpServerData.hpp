@@ -2,12 +2,12 @@
 # define HTTPSERVERDATA_HPP
 
 #include "../../../interface/IBlock.hpp"
-#include "../data/ConfigData.hpp"
+#include "../data/HttpConfigData.hpp"
 
 class HttpLocationBlock;
 class HttpData;
 
-class HttpServerData : public ConfigData
+class HttpServerData : public HttpConfigData
 {
 	private:
 		int listen;

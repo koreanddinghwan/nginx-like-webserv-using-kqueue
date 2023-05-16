@@ -12,7 +12,7 @@
 class GeneralBlock: public IBlock
 {
 public:
-	struct generalConfig : public ConfigData
+	struct generalConfig : public HttpConfigData
 	{
 		int worker_processes;
 	};

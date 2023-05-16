@@ -1,5 +1,5 @@
 #include "HttpServerData.hpp"
-#include "ConfigData.hpp"
+#include "HttpConfigData.hpp"
 #include "HttpData.hpp"
 #include "HttpLocationData.hpp"
 #include <vector>
