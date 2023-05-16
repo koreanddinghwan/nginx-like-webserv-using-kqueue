@@ -5,12 +5,6 @@ WebservManager& WebservManager::getInstance() {
 	return instance;
 }
 
-/**
- * @brief config를 초기화합니다
- * 싱글톤 객체인 config를 초기화합니다.
- * @param ac : main's ac
- * @param av : main's av
- */
 void WebservManager::initConfig(int ac, char **av) const throw (std::runtime_error, configParseException)
 {
 	char defaultPath[14] = "./nginx.conf";
@@ -34,10 +28,11 @@ void WebservManager::initConfig(int ac, char **av) const throw (std::runtime_err
 	}
 }
 
-/**
- * @brief nginx의 event loop
- * worker process가 설정되었다면 구현이 살짝 달라질수도...?
- */
+void WebservManager::initServers()
+{
+	HttpServer::getInstance().initSocket();
+}
+
 void WebservManager::initLoop()
 {
 	EventLoop::getInstance().initEventLoop();

@@ -15,6 +15,7 @@ WebServ& WebServ::getInstance()
 void WebServ::run(int ac, char **av) const
 {
 	WebservManager::getInstance().initConfig(ac, av);
+	WebservManager::getInstance().initServers();
 	WebservManager::getInstance().initLoop();
 }
 
