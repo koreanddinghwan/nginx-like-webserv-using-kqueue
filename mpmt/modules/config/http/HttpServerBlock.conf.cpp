@@ -33,5 +33,7 @@ void HttpServerBlock::parse(std::ifstream &File)
 			this->serverData.setHttpLocationBlock(static_cast<IBlock *>(new HttpLocationBlock(File, &(this->getConfigData()))));
 		}
 	}
+	if (this->serverData.getHttpLocationBlock().size() == 0)
+		this->serverData.setHttpLocationBlock(static_cast<IBlock *>(new HttpLocationBlock(&(this->getConfigData()))));
 	std::cout<<"end of server block"<<std::endl;
 }
