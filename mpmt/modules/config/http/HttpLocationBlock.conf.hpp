@@ -30,6 +30,7 @@ class HttpLocationBlock : public IBlock
 
 	public:
 		HttpLocationBlock(std::ifstream &File, HttpServerData *c);
+		HttpLocationBlock(HttpServerData *c);
 		~HttpLocationBlock();
 		HttpLocationData &getConfigData();
 
