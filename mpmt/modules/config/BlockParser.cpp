@@ -89,7 +89,7 @@
  * @param buf
  * @param confData
  */
-void BlockParser::httpLocationBlockParser(std::string &buf, ConfigData &confData)
+void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf, ConfigData &confData)
 {
 	ft_split	s;
 
@@ -130,6 +130,17 @@ void BlockParser::httpLocationBlockParser(std::string &buf, ConfigData &confData
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		static_cast<HttpLocationData&>(confData).setReturnStatus(std::atoi(s.get()[1].c_str()));
 		static_cast<HttpLocationData&>(confData).setRedirectUrl(s.get()[2]);
+	}
+
+	// basically, if this directive specified, 
+	// deny all methods except this directive has
+	if (buf.find("limit_except ") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpLocationData&>(confData).setLimitedMethods(s.get());
+		while (buf.find("}") == std::string::npos)
+			std::getline(File, buf);
+		std::getline(File, buf);
 	}
 }
 
