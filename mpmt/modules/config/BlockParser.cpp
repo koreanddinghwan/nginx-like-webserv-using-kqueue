@@ -3,6 +3,12 @@
 #include "http/HttpLocationBlock.conf.hpp"
 #include "http/HttpServerBlock.conf.hpp"
 
+/**
+ * @brief for http, server. location block
+ *
+ * @param buf
+ * @param confData
+ */
  void BlockParser::httpBlockParser(std::string &buf, ConfigData &confData)
 {
 	ft_split s;
