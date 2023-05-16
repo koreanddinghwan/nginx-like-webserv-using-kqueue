@@ -1,5 +1,5 @@
 #include "BlockParser.hpp"
-#include "./data/ConfigData.hpp"
+#include "./data/HttpConfigData.hpp"
 #include "http/HttpLocationBlock.conf.hpp"
 #include "http/HttpServerBlock.conf.hpp"
 
@@ -9,7 +9,7 @@
  * @param buf
  * @param confData
  */
- void BlockParser::httpBlockParser(std::string &buf, ConfigData &confData)
+ void BlockParser::httpBlockParser(std::string &buf, HttpConfigData &confData)
 {
 	ft_split s;
 	if (buf.find("client_max_body_size") != std::string::npos)
@@ -65,6 +65,13 @@
 		else
 			confData.setAutoIndex(false);
 	}
+
+	if (buf.find("index") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		for (int i = 1; i < s.get().size(); i++)
+			confData.setIndex(s.get()[i]);
+	}
 }
 
 /**
@@ -73,7 +80,7 @@
  * @param buf
  * @param confData
  */
- void BlockParser::httpServerBlockParser(std::string &buf, ConfigData &confData)
+ void BlockParser::httpServerBlockParser(std::string &buf, HttpConfigData &confData)
 {
 
 	ft_split s;
@@ -95,7 +102,7 @@
  * @param buf
  * @param confData
  */
-void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf, ConfigData &confData)
+void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf, HttpConfigData &confData)
 {
 	ft_split	s;
 
