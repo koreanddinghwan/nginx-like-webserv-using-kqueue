@@ -14,12 +14,16 @@ HttpConfigData& HttpConfigData::operator=(HttpConfigData &c)
 {
 	std::cout<<"operator called"<<std::endl;
 	this->client_max_body_size = c.getClientMaxBodySize();
-	this->errorPage = c.getErrorPage();
+	this->copyErrorPage(c.getErrorPage());
 	this->root.assign(c.getRoot());
 	this->autoindex = c.getAutoIndex();
 	this->sendfile = c.getSendFile();
 	this->tcp_nodelay = c.getTcpNoDelay();
 	this->tcp_nopush = c.getTcpNoPush();
+	for (int i = 0 ; i < c.getIndex().size(); i++)
+	{
+		this->setIndex(c.getIndex()[i]);
+	}
 	return (*this);
 }
 
@@ -75,13 +79,17 @@ void	HttpConfigData::printConfig() {
 	errorMap em = this->getErrorPage();
 	for (errorMap::iterator it = em.begin(); it != em.end(); it++)
 	{
-		std::cout<<"["<<(*it).first<<","<<"]"<<"["<<(*it).second<<"]"<<std::endl;
+		std::cout<<"["<<(*it).first<<"]"<<":"<<"["<<(*it).second<<"]"<<std::endl;
 	}
 
 	std::cout<<"root: "<<this->getRoot()<<std::endl;
-
 	std::cout<<"sendfile: "<<this->getSendFile()<<std::endl;
 	std::cout<<"tcpnodelay: "<<this->getTcpNoDelay()<<std::endl;
 	std::cout<<"tcpnopush: "<<this->getTcpNoPush()<<std::endl;
 	std::cout<<"autoindex: "<<this->getAutoIndex()<<std::endl;
+
+	for (int i = 0; i < this->index.size(); i++)
+	{
+		std::cout<<"index :["<<i<<"]"<<index[i]<<std::endl;
+	}
 }

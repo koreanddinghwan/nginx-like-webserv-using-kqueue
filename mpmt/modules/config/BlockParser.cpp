@@ -66,7 +66,7 @@
 			confData.setAutoIndex(false);
 	}
 
-	if (buf.find("index") != std::string::npos)
+	if (buf.find(" index ") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		for (int i = 1; i < s.get().size(); i++)

@@ -30,6 +30,10 @@ void HttpLocationData::operator=(HttpServerData &c)
 	this->setSendFile(c.getSendFile());
 	this->setTcpNoDelay(c.getTcpNoDelay());
 	this->setTcpNoPush(c.getTcpNoPush());
+	for (int i = 0 ; i < c.getIndex().size(); i++)
+	{
+		this->setIndex(c.getIndex()[i]);
+	}
 	this->setListen(c.getListen());
 	for (int i = 0; i < c.getServerNames().size(); i++)
 		this->setServerName(c.getServerNames()[i]);
