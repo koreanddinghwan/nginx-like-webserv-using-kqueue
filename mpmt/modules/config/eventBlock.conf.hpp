@@ -2,17 +2,18 @@
 # define EVENTBLOCK_HPP
 
 #include "../../lib/strSplit.hpp"
-#include "../../interface/IBlock.hpp"
+#include "../../interface/IEventBlock.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
 
-class EventBlock: public IBlock
+class EventBlock: public IEventBlock
 {
 public:
-	struct eventConfig : public HttpConfigData
+	class eventConfig: public IConfigData
 	{
-		int worker_connections;
+		public:
+			int worker_connections;
 	};
 
 private:
@@ -21,7 +22,7 @@ private:
 public:
 	EventBlock(std::ifstream &File);
 	void parse(std::ifstream &File);
-	eventConfig& getConfigData();
+	IConfigData *getConfigData();
 	~EventBlock();
 };
 

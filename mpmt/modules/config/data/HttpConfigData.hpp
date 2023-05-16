@@ -1,6 +1,7 @@
 #ifndef HttpCONFIGDATA_HPP
 # define HttpCONFIGDATA_HPP
 
+#include "../../../interface/IConfigData.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,7 +11,7 @@
  * @brief Configuration data for Http.
  * these data shared in http, server, location block
  */
-class HttpConfigData
+class HttpConfigData : public IConfigData
 {
 public:
 	typedef std::map<int, std::string> errorMap;

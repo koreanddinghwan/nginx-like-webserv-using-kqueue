@@ -34,8 +34,8 @@ void GeneralBlock::parse(std::ifstream &File)
 	 * int worker_process;
 	 * };
 	 */
-GeneralBlock::generalConfig& GeneralBlock::getConfigData() {
-	return this->confData;
+IConfigData* GeneralBlock::getConfigData() {
+	return &(this->confData);
 }
 
 GeneralBlock::~GeneralBlock() {}

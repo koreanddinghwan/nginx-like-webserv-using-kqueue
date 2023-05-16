@@ -28,14 +28,14 @@ void HttpBlock::parse(std::ifstream &File)
 
 		std::getline(File, buf);
 
-		BlockParser::httpBlockParser(buf, this->getConfigData());
+		BlockParser::httpBlockParser(buf, *static_cast<HttpConfigData *>(this->getConfigData()));
 
 		if (buf.find("server {") != std::string::npos)
 		{
 			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
-			this->getConfigData().setServerBlock(new HttpServerBlock(File, &(this->getConfigData())));
+			static_cast<HttpData *>(this->getConfigData())->setServerBlock(new HttpServerBlock(File, static_cast<HttpData *>(this->getConfigData())));
 		}
 	}
 }
 
-HttpData& HttpBlock::getConfigData() {return confData;}
+IConfigData* HttpBlock::getConfigData() {return &confData;}

@@ -18,10 +18,10 @@ void HttpData::operator=(HttpData &c) {
 	this->setTcpNoPush(c.getTcpNoPush());
 }
 
-std::vector<IBlock *> HttpData::getServerBlock() {return this->httpServerBlock;}
+std::vector<IHttpBlock *> HttpData::getServerBlock() {return this->httpServerBlock;}
 
 
-void HttpData::setServerBlock(HttpServerBlock *serverBlock)
+void HttpData::setServerBlock(IHttpBlock *serverBlock)
 {
 	this->httpServerBlock.push_back(serverBlock);
 }

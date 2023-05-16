@@ -2,8 +2,7 @@
 # define HTTPDATA_HPP
 
 #include "HttpConfigData.hpp"
-#include "../../../interface/IBlock.hpp"
-#include "../http/HttpServerBlock.conf.hpp"
+#include "../../../interface/IHttpBlock.hpp"
 
 /**
  * @brief HttpData
@@ -13,7 +12,7 @@
 class HttpData: public HttpConfigData
 {
 	private:
-		std::vector<IBlock *> httpServerBlock;
+		std::vector<IHttpBlock *> httpServerBlock;
 
 	public:
 		HttpData();
@@ -21,8 +20,8 @@ class HttpData: public HttpConfigData
 		HttpData(HttpData &c);
 		void operator=(HttpData &c);
 
-		std::vector<IBlock *> getServerBlock();
-		void setServerBlock(HttpServerBlock *f);
+		std::vector<IHttpBlock *> getServerBlock();
+		void setServerBlock(IHttpBlock *f);
 
 		void printData();
 };

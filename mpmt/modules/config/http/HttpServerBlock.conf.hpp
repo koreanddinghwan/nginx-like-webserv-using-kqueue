@@ -6,7 +6,7 @@
 #include "../data/HttpServerData.hpp"
 #include "../../../lib/ft_split.hpp"
 #include "../../../lib/strSplit.hpp"
-#include "../../../interface/IBlock.hpp"
+#include "../../../interface/IHttpBlock.hpp"
 #include <fstream>
 #include <vector>
 #include <string>
@@ -35,14 +35,14 @@ server { # simple reverse-proxy
 
 class HttpData;
 
-class HttpServerBlock : public IBlock
+class HttpServerBlock : public IHttpBlock
 {
 private:
 	HttpServerData serverData;
 
 public:
 	HttpServerBlock(std::ifstream &File, HttpData *c);
-	HttpServerData& getConfigData();
+	IConfigData* getConfigData();
 	~HttpServerBlock();
 
 private:
