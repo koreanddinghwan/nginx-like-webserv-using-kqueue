@@ -2,7 +2,7 @@
 # define HTTPBLOCK_HPP
 
 #include "../data/HttpData.hpp"
-#include "../../../interface/IBlock.hpp"
+#include "../../../interface/IHttpBlock.hpp"
 #include "HttpServerBlock.conf.hpp"
 #include "../BlockParser.hpp"
 #include <fstream>
@@ -13,7 +13,7 @@
  * @brief make Http block
  * Http block 1... <-> ...n server block 1... <-> ...n location block
  */
-class HttpBlock: public IBlock
+class HttpBlock: public IHttpBlock
 {
 private:
 	HttpData confData;
@@ -25,7 +25,7 @@ public:
 
 private:
 	void parse(std::ifstream &File);
-	HttpData &getConfigData();
+	IConfigData* getConfigData();
 };
 
 #endif

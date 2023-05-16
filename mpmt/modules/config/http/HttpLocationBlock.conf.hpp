@@ -3,7 +3,7 @@
 
 #include "../data/HttpConfigData.hpp"
 #include "../BlockParser.hpp"
-#include "../../../interface/IBlock.hpp"
+#include "../../../interface/IHttpBlock.hpp"
 #include "../../../lib/ft_split.hpp"
 #include "../../../lib/strSplit.hpp"
 #include <fstream>
@@ -23,16 +23,17 @@
 *   proxy_pass      http://127.0.0.1:8080; 
 * } 
 * */
-class HttpLocationBlock : public IBlock
+class HttpLocationBlock : public IHttpBlock
 {
-	public:
+	private:
 		HttpLocationData confData;
 
 	public:
 		HttpLocationBlock(std::ifstream &File, HttpServerData *c);
 		HttpLocationBlock(HttpServerData *c);
 		~HttpLocationBlock();
-		HttpLocationData &getConfigData();
+		IConfigData *getConfigData();
+		HttpLocationData& getLocationData();
 
 	private:
 		void parse(std::ifstream &File);

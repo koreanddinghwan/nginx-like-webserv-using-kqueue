@@ -11,9 +11,9 @@ HttpLocationBlock::HttpLocationBlock(HttpServerData *c) : confData(*c)
 HttpLocationBlock::~HttpLocationBlock() 
 {}
 
-HttpLocationData& HttpLocationBlock::getConfigData()
+IConfigData* HttpLocationBlock::getConfigData()
 {
-	return this->confData;  
+	return &this->confData;  
 }
 
 void HttpLocationBlock::parse(std::ifstream &File)
@@ -32,4 +32,8 @@ void HttpLocationBlock::parse(std::ifstream &File)
 		BlockParser::httpLocationBlockParser(File, buf, this->confData);
 	}
 	std::cout<<"end of location block"<<std::endl;
+}
+
+HttpLocationData& HttpLocationBlock::getLocationData() {
+	return this->confData;
 }

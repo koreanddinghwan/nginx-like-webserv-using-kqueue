@@ -3,6 +3,7 @@
 
 #include "http/httpBlock.conf.hpp"
 #include "../../exceptions/configParseException.hpp"
+#include "../../interface/IHttpBlock.hpp"
 #include "../../interface/IBlock.hpp"
 #include "EventBlock.conf.hpp"
 #include "GeneralBlock.conf.hpp"
@@ -37,7 +38,7 @@ class Config : public IConfig
 		IBlock **getBlocks();
 		IBlock *getGeneralBlock();
 		IBlock *getEventBlock();
-		IBlock *getHTTPBlock();
+		IHttpBlock *getHTTPBlock();
 
 
 		void printConfigData();

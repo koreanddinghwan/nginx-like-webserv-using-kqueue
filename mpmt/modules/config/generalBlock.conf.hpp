@@ -2,6 +2,7 @@
 # define GENERALBLOCK_HPP
 
 #include <cstdlib>
+#include "../../interface/IConfigData.hpp"
 #include "../../interface/IBlock.hpp"
 #include <fstream>
 #include <iostream>
@@ -12,7 +13,7 @@
 class GeneralBlock: public IBlock
 {
 public:
-	struct generalConfig : public HttpConfigData
+	struct generalConfig : public IConfigData
 	{
 		int worker_processes;
 	};
@@ -23,7 +24,7 @@ private:
 public:
 	GeneralBlock(std::ifstream &File);
 	void parse(std::ifstream &File);
-	generalConfig& getConfigData();
+	IConfigData* getConfigData();
 	~GeneralBlock();
 };
 
