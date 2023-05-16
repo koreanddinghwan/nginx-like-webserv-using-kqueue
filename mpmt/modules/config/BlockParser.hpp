@@ -1,7 +1,7 @@
 #ifndef BLOCKPARSER_HPP
 # define BLOCKPARSER_HPP
 
-#include "data/ConfigData.hpp"
+#include "data/HttpConfigData.hpp"
 #include <fstream>
 #include <string>
 #include "../../lib/ft_split.hpp"
@@ -15,7 +15,7 @@ public:
 	 * @param buf
 	 * @param confData
 	 */
-	static void httpBlockParser(std::string &buf, ConfigData &confData);
+	static void httpBlockParser(std::string &buf, HttpConfigData &confData);
 
 	/**
 	 * @brief only for server block
@@ -23,7 +23,7 @@ public:
 	 * @param buf
 	 * @param confData
 	 */
-	static void httpServerBlockParser(std::string &buf, ConfigData &confData);
+	static void httpServerBlockParser(std::string &buf, HttpConfigData &confData);
 
 	/**
 	 * @brief only for location block
@@ -31,7 +31,7 @@ public:
 	 * @param buf
 	 * @param confData
 	 */
-	static void httpLocationBlockParser(std::string &buf, ConfigData &confData);
+	static void httpLocationBlockParser(std::ifstream &File, std::string &buf, HttpConfigData &confData);
 
 private:
 	BlockParser();
