@@ -5,8 +5,6 @@
 #include "../modules/config/data/HttpConfigData.hpp"
 #include <fstream>
 
-class IEventBlock : public IBlock
-{
-};
+class IEventBlock : public IBlock {};
 
 #endif

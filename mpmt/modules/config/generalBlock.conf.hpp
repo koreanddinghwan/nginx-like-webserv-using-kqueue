@@ -3,14 +3,14 @@
 
 #include <cstdlib>
 #include "../../interface/IConfigData.hpp"
-#include "../../interface/IBlock.hpp"
+#include "../../interface/IGeneralBlock.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include "../../lib/strSplit.hpp"
 #include <cstdlib>
 
-class GeneralBlock: public IBlock
+class GeneralBlock: public IGeneralBlock
 {
 public:
 	struct generalConfig : public IConfigData

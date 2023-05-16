@@ -1,7 +1,4 @@
 #include "Config.hpp"
-#include "data/HttpLocationData.hpp"
-#include "data/HttpServerData.hpp"
-#include "http/HttpServerBlock.conf.hpp"
 
 Config& Config::getInstance() {
 	static Config instance;
@@ -39,14 +36,14 @@ IBlock** Config::getBlocks() {
 	return this->blocks;
 }
 
-IBlock* Config::getGeneralBlock()
+IGeneralBlock* Config::getGeneralBlock()
 {
-	return this->blocks[0];
+	return static_cast<IGeneralBlock *>(this->blocks[0]);
 }
 
-IBlock* Config::getEventBlock()
+IEventBlock* Config::getEventBlock()
 {
-	return this->blocks[1];
+	return static_cast<IEventBlock*>(this->blocks[1]);
 }
 
 IHttpBlock* Config::getHTTPBlock()

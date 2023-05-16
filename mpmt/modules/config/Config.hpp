@@ -4,9 +4,13 @@
 #include "http/httpBlock.conf.hpp"
 #include "../../exceptions/configParseException.hpp"
 #include "../../interface/IHttpBlock.hpp"
-#include "../../interface/IBlock.hpp"
+#include "../../interface/IGeneralBlock.hpp"
+#include "../../interface/IEventBlock.hpp"
 #include "EventBlock.conf.hpp"
 #include "GeneralBlock.conf.hpp"
+#include "data/HttpLocationData.hpp"
+#include "data/HttpServerData.hpp"
+#include "http/HttpServerBlock.conf.hpp"
 #include "../../interface/IConfig.hpp"
 #include <fstream>
 #include <iostream>
@@ -35,9 +39,10 @@ class Config : public IConfig
 		 * @param path
 		 */
 		void initConfig(std::string path) throw (configParseException);
+
 		IBlock **getBlocks();
-		IBlock *getGeneralBlock();
-		IBlock *getEventBlock();
+		IGeneralBlock *getGeneralBlock();
+		IEventBlock *getEventBlock();
 		IHttpBlock *getHTTPBlock();
 
 
