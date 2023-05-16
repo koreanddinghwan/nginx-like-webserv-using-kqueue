@@ -27,6 +27,9 @@ class WebservManager: public IWebservManager
 		void initConfig(int ac, char **av) const throw (std::runtime_error, configParseException);
 
 
+		void initServers();
+
+
 		/**
 		 * @brief nginx의 event loop
 		 * worker process가 설정되었다면 구현이 살짝 달라질수도...?
