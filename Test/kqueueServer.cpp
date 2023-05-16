@@ -1,5 +1,7 @@
+#include <cstring>
 #include <sys/_types/_iovec_t.h>
 #include <sys/_types/_size_t.h>
+#include <sys/_types/_uintptr_t.h>
 #include <sys/errno.h>
 #include <sys/signal.h>
 #include <sys/types.h>
@@ -15,8 +17,59 @@
 #include <signal.h>
 
 # define WORKER_CONNECTIONS 1024
-# define MAX_EVENT 256
+# define MAX_EVENT 12
 
+/**
+ * @brief kevent의 udata에 전달하는 구조체.
+ */
+typedef struct s_ev_udata {
+	std::string *response;
+	int  byteWrote;
+	int  byteLeft;
+} t_ev_udata;
+
+void setClientSockOpt(int client)
+{
+
+
+}
+
+/**
+ * @brief http 1.1 을위한 server socket에 대한 setsockopt
+ *
+ * @param serverfd
+ */
+void setServerSockOpt(int server)
+{
+  int keep_alive = 1;
+  if (setsockopt(server, SOL_SOCKET, SO_KEEPALIVE, &keep_alive, sizeof(keep_alive)) < 0) {
+    perror("setsockopt");
+    exit(1);
+  }
+
+  // Disable Nagle algorithm
+  // http1.1에서는  사용되지 않음.
+  int nagle_off = 1;
+  if (setsockopt(server, IPPROTO_TCP, TCP_NODELAY, &nagle_off, sizeof(nagle_off)) < 0) {
+    perror("setsockopt");
+    exit(1);
+  }
+}
+
+
+void printEvent(struct kevent *kev)
+{
+	std::cout<<"=========현재 처리중인 이벤트========="<<std::endl;
+	std::cout<<"ident:"<<kev->ident<<std::endl;
+	std::cout<<"filter:"<<kev->filter<<std::endl;
+	std::cout<<"flags:"<<kev->flags<<std::endl;
+	std::cout<<"fflags:"<<kev->fflags<<std::endl;
+	std::cout<<"data:"<<kev->data<<std::endl;
+	std::cout<<"udata:"<<(kev->udata)<<std::endl;
+	std::cout<<"======================================"<<std::endl<<std::endl;
+}
+
+char buffer[1024];
 int asdfasd = 0;
 
 int main()
@@ -36,10 +89,7 @@ int main()
     }
 
 
-	//소켓 종료이후에도 동일포트, 주소 사용하게설정
-	int opt = 1;
-	setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt));
-
+	//tcp keepalive
 	const char *addr = "127.0.0.1";
 
     struct sockaddr_in address;
@@ -63,10 +113,20 @@ int main()
     }
 
 
+	/*
+	 * server socket에 대해 nonblock socket임을 명시합니다.
+	 * */
 	fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
 	struct kevent kev;
 	/*
+	 * event를 등록하는 부분입니다.
+	 * EV_SET을통해 등록할 이벤트를 정의합니다. 
+	 * ident : server fd는 socket입니다. 
+	 * ident가 socket의 fd라면
+	 *
+	 * EV_SET
+	 * kevent를 초기화하는 함수
 	 * EVFILT_READ: 파일디스크립터를 event identifier로 정한다.
 	 * socket에 설정하면 pending 상태에 있는 connection이 server_fd에 있을때 트리거된다.
 	 * EV_ADD는 kev에 이 이벤트 트리거를 추가한다는 의미.
@@ -79,9 +139,6 @@ int main()
 
     std::cout << "Server started on port 8000\n";
 //////////////////////////////////serverblock end
-
-
-
     while (true) {
         struct kevent events[MAX_EVENT];
 		//pending 상태의 kqueue의 이벤트를 kevent로 가져온다.
@@ -93,164 +150,178 @@ int main()
 
         for (int i = 0; i < nevents; ++i) 
 		{
+			std::cout << "\033[0m"; // set text color to green
+			printEvent(events + i);
+
+			if (events[i].flags & EV_EOF)
+            {
+				std::cout << "\033[30m"; // set text color to green
+                printf("Client has disconnected");
+                close(events[i].ident);
+            }
 			//server_fd에서 발생한 이벤트, 즉 새로운 client connection을 감지.
 			//client fd를 read event를 등록한다.
 			//client_fd가 read할 준비가 되면 event에 추가될것.
-            if (events[i].ident == server_fd) 
+			else if (events[i].ident == server_fd) 
 			{
-                struct sockaddr_in client_address;
-                socklen_t client_len = sizeof(client_address);
-                int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
-				std::cout<<client_fd<<std::endl;
-                if (client_fd == -1) {
-                    std::cerr << "Failed to accept client connection\n";
-                    continue;
-                }
-
-				//client socket에 nonblock mode명시
-                if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
-				{
-					std::cerr<<"Non blocking err"<<std::endl;
-					close(client_fd);
+				std::cout << "\033[31m"; // set text color to red
+				std::cout<< "connection callback"<<std::endl;
+				//connection 처리
+				struct sockaddr_in client_address;
+				socklen_t client_len = sizeof(client_address);
+				int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
+				std::cout<<"client fd: "<<client_fd<<std::endl;
+				if (client_fd == -1) {
+					std::cerr << "Failed to accept client connection\n";
 					continue;
 				}
 
-				//tcp keepalive
-				//소켓 종료이후에도 동일포트, 주소 사용하게설정
-				int opt = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt));
-
-				// Enable TCP keepalive
-				int enable_keepalive = 1;
-				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive));
-
-				// Set the idle time before sending keepalive packets to 5 seconds
-				int idle_time = 5;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time));
-
-				// Set the interval between keepalive packets to 10 seconds
-				int interval = 2;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
-
-				// Set the number of keepalive packets to send before considering the connection dead to 5
-				int max_attempts = 1;
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts));
-
-
-				//client socket을 kqueue에 등록
-                EV_SET(&kev, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-                if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
-                    std::cerr << "Failed to register client socket with kqueue\n";
-					continue;
-                }
-
-                std::cout << "Client connected\n";
+				std::cout << "Client connected\n";
 				std::cout<< client_address.sin_family<<std::endl;
-				std::cout << (client_address.sin_port)<<std::endl;
-				std::cout << inet_ntoa(client_address.sin_addr) <<std::endl;
-            }
-            else 
-			{
-				//client로부터 들어온 데이터 처리
+				std::cout << "client port: "<<(client_address.sin_port)<<std::endl;
+				std::cout << "client ipv4: "<<inet_ntoa(client_address.sin_addr) <<std::endl;
 
+
+				//nonblock mode 명시된 server socket에서 받은 client socket도 자동으로 nonblock 설정된다.
+				if (fcntl(client_fd, F_GETFL) & O_NONBLOCK)
+					std::cout<<"in accept, client fd is nonblock"<<std::endl;
+
+
+				//client socket을 읽기전용으로  kqueue에 등록
+				EV_SET(&kev, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+				if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
+					std::cerr << "Failed to register client socket with kqueue\n";
+					continue;
+				}
+			}
+			else if (events[i].filter == EVFILT_READ)
+			{
+				std::cout << "\033[32m"; // set text color to green
+				std::cout<<"read callback"<<std::endl;
+				// read callback
+				//client로부터 들어온 데이터 처리
 				int client_fd = events[i].ident;
 				struct sockaddr_in client_address;
 				socklen_t client_len = sizeof(client_address);
-				char buffer[1024];
-				ssize_t n = read(client_fd, buffer, sizeof(buffer));
-				std::cout<<client_fd<<std::endl;
 
+				int flags = fcntl(client_fd, F_GETFL);
+				if (flags & O_NONBLOCK)
+					std::cout<<"this fd is nonblocking"<<std::endl;
+				ssize_t n = read(client_fd, buffer, sizeof(buffer));
+				std::cout<<"n: "<<n<<std::endl;
+
+				//read의 리턴값이 -1일때, errno가 EAGAIN(EWOULDBLOCK)인 경우, 아직 read될 준비가 되지 않은 것이므로, continue.
+				//
 				if (n == -1) 
+				{
+					std::cout<<"read returned -1, errno:"<<errno<<std::endl;
+					if (errno == EAGAIN || errno == EWOULDBLOCK)
+					{
+						EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+						kevent(kq_fd, &kev, 1, NULL, 0, NULL);
+						continue;
+					}
+					else
+					{
+						/* ? */
+						std::cerr << "Failed to read from client socket, errno: "<<errno<<std::endl;
+						close(events[i].ident);
+					}
+				}
+				/*
+				 * n이 0이라면, eof를 만난 것. kqueue에서 <client socket fd, EVFILT_READ>를 삭제
+				 * */
+				else if (n == 0) 
+				{
+					std::cout << "Client disconnected\n";
+					//감시할 event에서 삭제.
+					EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+					kevent(kq_fd, &kev, 1, NULL, 0, NULL);
+					close(client_fd);
+					std::cout<<"deleted"<<std::endl;
+				}
+				/*
+				 * client socket에서 n byte만큼의 데이터를 읽어왔음.
+				 * */
+				else 
+				{
+					/*
+					 * client request 출력
+					 * */
+					std::cout<<"=======CLIENT REQUEST======="<<std::endl;
+					std::cout << "Received " << events[i].data << " bytes from client\n";
+					for (int i = 0; i < n; i++)
+						std::cout<<buffer[i];
+					
+					/*
+					 * parsing http protocol.
+					 * 1. 정적파일 제공
+					 * 2. cgi 통해 동적파일 제공
+					 * */
+					/*
+					 * chunked message 처리 => 
+					 * if (the request not end) 
+					 * {
+					 * 		
+					 * }
+					 * */
+
+					/* Example response */
+					/* content length안지키면 client측에서 block되는 문제있음. 주의 */
+					/* 동적할당된 response는 EV_WRITE에서 delete*/
+					std::string *response = new std::string("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\naaaaa");
+					
+
+					t_ev_udata *udata = new t_ev_udata();
+					memset(udata, 0, sizeof(t_ev_udata));
+					udata->response = response;
+					udata->byteLeft = response->length();
+
+					/*
+					 * client_fd에 response를 write하는 event를 kqueue에 추가.
+					 * */
+					EV_SET(&kev, client_fd, EVFILT_WRITE, EV_ADD, 0, 0, udata);
+					if (kevent(kq_fd, &kev, 1, NULL, 0, NULL) == -1) {
+						//write event 처리 실패
+						std::cerr << "Failed to register client socket with kqueue\n";
+					}
+				}
+			}
+			else if (events[i].filter == EVFILT_WRITE)
+			{
+				std::cout << "\033[33m"; // set text color to green
+				std::cout<<"write callback"<<std::endl;
+				//write callback
+				if (fcntl(events[i].ident, F_GETFL) & O_NONBLOCK)
+					std::cout<<"this fd is nonblocking"<<std::endl;
+
+				//write
+				t_ev_udata *udata = static_cast<t_ev_udata *>(events[i].udata);
+				int n = write(events[i].ident, udata->response->c_str() + udata->byteWrote, udata->byteLeft);
+
+				if (n == -1)
 				{
 					if (errno == EAGAIN || errno == EWOULDBLOCK)
 						continue;
 					else
 					{
-						std::cerr << "Failed to read from client socket\n";
+						/* ? */
+						std::cout<<"unknown err: "<<errno<<std::endl;
 						continue;
 					}
 				}
-				else if (n == 0) 
-				{
-					std::cout << "Client disconnected\n";
-					//client 소켓 정리
-					asdfasd++;
-					EV_SET(&kev, client_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-					close(client_fd);
-					std::cout<<asdfasd<<std::endl;
-				}
-				else 
-				{
-					std::cout << "Received " << n << " bytes from client\n";
-					std::cout<<buffer<<std::endl;
-
 				/*
-				 * parsing http protocol.
-				 * 1. 정적파일 제공
-				 * 2. cgi 통해 동적파일 제공
+				 * 모두 작성된 경우
 				 * */
-
-				//tcp keepalive
-				//소켓 종료이후에도 동일포트, 주소 사용하게설정
-				int opt = 1;
-				// Enable TCP keepalive
-				int enable_keepalive = 1;
-				// Set the idle time before sending keepalive packets to 30 seconds
-				int idle_time = 5;
-				// Set the interval between keepalive packets to 10 seconds
-				int interval = 1;
-				// Set the number of keepalive packets to send before considering the connection dead to 5
-				int max_attempts = 2;
-				if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &opt, sizeof(opt)) == -1 ||
-				setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive)) == -1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPALIVE, &idle_time, sizeof(idle_time)) == 1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval)) == -1 ||
-				setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &max_attempts, sizeof(max_attempts)) == -1)
+				else
 				{
-					std::cout<<"errno:" <<std::endl;
-				}
+					//write event delete
+					std::cout<<"all of data wrote"<<std::endl;
 
-
-
-					// Process incoming data according to the HTTP protocol
-					// Generate a response based on the incoming request
-					// Write the response to the client socket
-
-					// Example response
-					// content length안지키면 client측에서 block되는 문제있음. 주의
-					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5100\r\n\r\naaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaaaaaaaaaaaaaaaaAaasaaaaaaaaaaaa";
-					
-					size_t byte_sent = 0;
-					size_t byte_left = response.length();
-					while (byte_left > 0)
-					{
-						int n = write(client_fd, response.c_str(), response.length());
-						if (n == -1)
-						{
-							if (errno == EWOULDBLOCK || errno == EAGAIN)
-							{
-								struct kevent event[1];
-								EV_SET(&event[0], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-								if (kevent(kq_fd, events, 1, NULL, 0, NULL) == -1) {
-								std::cerr << "Failed to register client socket with kqueue\n";
-								return 1;
-								}
-								// Wait for the socket to become writable
-								nevents = kevent(kq_fd, NULL, 0, events, 1, NULL);
-								if (nevents == -1) {
-									std::cerr << "Failed to wait for events\n";
-									return 1;
-								}
-							} else {
-								break;
-							}
-						}
-						else 
-						{
-							byte_sent += n;
-							byte_left -= n;
-						}
-					}
+					delete static_cast<t_ev_udata *>(events[i].udata);
+					delete static_cast<t_ev_udata *>(events[i].udata);
+					EV_SET(&kev, events[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+					kevent(kq_fd, &kev, 1, NULL, 0, NULL);
 				}
 			}
 		}

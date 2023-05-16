@@ -1,9 +1,16 @@
-#ifndef HTTPSERVERBLOCK
-# define HTTPSERVERBLOCK
+#ifndef HTTPSERVERBLOCK_HPP
+# define HTTPSERVERBLOCK_HPP
 
-#include "../../../interface/IBlock.hpp"
+#include "HttpLocationBlock.conf.hpp"
+#include "../BlockParser.hpp"
+#include "../data/HttpServerData.hpp"
+#include "../../../lib/ft_split.hpp"
+#include "../../../lib/strSplit.hpp"
+#include "../../../interface/IHttpBlock.hpp"
 #include <fstream>
 #include <vector>
+#include <string>
+#include <iostream>
 
 /*
 server { # php/fastcgi
@@ -26,34 +33,20 @@ server { # simple reverse-proxy
   location / {
 */
 
+class HttpData;
 
-class HttpServerBlock : public IBlock
+class HttpServerBlock : public IHttpBlock
 {
+private:
+	HttpServerData serverData;
+
 public:
-	HttpServerBlock(std::ifstream &File) {
-		this->parse(File);
-	}
-	~HttpServerBlock() {}
+	HttpServerBlock(std::ifstream &File, HttpData *c);
+	IConfigData* getConfigData();
+	~HttpServerBlock();
 
 private:
-	struct HttpServerData
-	{
-		int port;
-		std::string server_name;
-		std::vector<IBlock *> httpLocationBlock;
-	};
-
-	void parse(std::ifstream &File) 
-	{
-		/*
-		 * while 'location' directives in buf,
-		 * {
-		 * 		httpServerBlock.push(new httpLocationBlock(File));
-		 * }
-		 * */
-	}
-
-
+	void parse(std::ifstream &File);
 };
 
 #endif

@@ -6,7 +6,7 @@ class IServer
 {
 public:
 	~IServer() {}
-	virtual void run() throw (std::runtime_error) {}
+	virtual void initSocket() throw (std::runtime_error) {}
 };
 
 #endif

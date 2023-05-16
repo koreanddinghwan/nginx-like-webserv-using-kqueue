@@ -3,14 +3,24 @@ CXX = c++
 CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-
-LIBSRCS = strSplit.cpp FileGuard.cpp
+HTTPSRCS = HttpServer.cpp
+HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
+HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
+HTTPDATAOBJS = $(addprefix ./modules/config/data/, $(HTTPDATASRCS:.cpp=.o))
+HTTPCONFIGSRCS = HttpBlock.conf.cpp HttpLocationBlock.conf.cpp HttpServerBlock.conf.cpp
+HTTPCONFIGOBJS = $(addprefix ./modules/config/http/, $(HTTPCONFIGSRCS:.cpp=.o))
+CONFIGSRCS = Config.cpp EventBlock.conf.cpp GeneralBlock.conf.cpp BlockParser.cpp
+CONFIGOBJS = $(addprefix ./modules/config/, $(CONFIGSRCS:.cpp=.o))
+WEBSERVSRCS = WebServ.cpp WebServManager.cpp
+WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
+EVENTLOOPSRCS = EventLoop.cpp
+EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
+LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp
 LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
-
 MAINSRCS = main.cpp
 MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
 
-OBJS = $(LIBOBJS) $(MAINOBJS)
+OBJS = $(LIBOBJS) $(MAINOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS) $(HTTPOBJS)
 
 all : $(NAME)
 
