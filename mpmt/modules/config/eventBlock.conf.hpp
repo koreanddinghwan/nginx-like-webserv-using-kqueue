@@ -10,7 +10,7 @@
 class EventBlock: public IBlock
 {
 public:
-	struct eventConfig : public ConfigData
+	struct eventConfig : public HttpConfigData
 	{
 		int worker_connections;
 	};

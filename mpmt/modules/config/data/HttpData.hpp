@@ -1,11 +1,16 @@
 #ifndef HTTPDATA_HPP
 # define HTTPDATA_HPP
 
-#include "ConfigData.hpp"
+#include "HttpConfigData.hpp"
 #include "../../../interface/IBlock.hpp"
 #include "../http/HttpServerBlock.conf.hpp"
 
-class HttpData: public ConfigData
+/**
+ * @brief HttpData
+ *
+ * data that only have http
+ */
+class HttpData: public HttpConfigData
 {
 	private:
 		std::vector<IBlock *> httpServerBlock;
