@@ -29,7 +29,7 @@ class HttpBlock: public IHttpBlock
 
 private:
 	HttpData confData;
-	std::map<int, std::vector<HttpLocationBlock *> > locationBlocksByPort;
+	std::map<int, std::vector<HttpLocationBlock *>* > locationBlocksByPort;
 
 public:
 	IConfigData* getConfigData();
