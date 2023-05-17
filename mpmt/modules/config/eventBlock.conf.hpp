@@ -23,6 +23,7 @@ public:
 	EventBlock(std::ifstream &File);
 	void parse(std::ifstream &File);
 	IConfigData *getConfigData();
+	eventConfig& getEventConfigData();
 	~EventBlock();
 };
 

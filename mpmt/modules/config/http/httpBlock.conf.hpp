@@ -3,6 +3,7 @@
 
 #include "../data/HttpData.hpp"
 #include "../../../interface/IHttpBlock.hpp"
+#include "HttpLocationBlock.conf.hpp"
 #include "HttpServerBlock.conf.hpp"
 #include "../BlockParser.hpp"
 #include <fstream>
@@ -15,17 +16,40 @@
  */
 class HttpBlock: public IHttpBlock
 {
+	public:
+		typedef std::map<int, std::vector<HttpLocationBlock *> *> locationBlocksByPortMap;
+		typedef std::map<int, std::vector<HttpLocationBlock *> *>& locationBlocksByPortMapRef;
+		/**
+		 * @brief location block iterator
+		 * int : port number
+		 * vector<HttpLocationBlock *> : location blocks
+		 */
+		typedef std::map<int, std::vector<HttpLocationBlock *> *>::iterator locationBlocksByPortMapIter;
+
+
 private:
 	HttpData confData;
+	std::map<int, std::vector<HttpLocationBlock *>* > locationBlocksByPort;
 
 public:
+	IConfigData* getConfigData();
 	HttpBlock(std::ifstream &File);
 	~HttpBlock();
+	
+	/*
+	 * get Location Blocks By Port
+	 * */
+	std::map<int, std::vector<HttpLocationBlock *> *>& getLocationBlocksByPort();
+
+	/*
+	 * get Location Blocks By Port
+	 * */
+	std::vector<HttpLocationBlock *>* findLocationBlocksByPort(int p);
 
 
 private:
+	HttpBlock();
 	void parse(std::ifstream &File);
-	IConfigData* getConfigData();
 };
 
 #endif

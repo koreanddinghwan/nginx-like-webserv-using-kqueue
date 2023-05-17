@@ -19,7 +19,7 @@
 [멀티프로세싱](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/multiprocessing.md)  
 [CGI란](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/cgi.md)  
 [nginx에 대해](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/nginx.md)
-
+[configuration 설명](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/configs.md)
 
 ## bonus
 

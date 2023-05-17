@@ -27,7 +27,7 @@
 - 스레드풀을 사용하는 상황은 `NGINX 기반 스트리밍 미디어 서버`인 경우와 같은 로드가 많고, 운영체제의 가상메모리 캐시에 맞지 않은 양의 컨텐츠인 경우에 스레드풀로 오프로드가 더 많은 효율을 발휘한다.
 -
 
-[스레드풀 관련 공식문](https://www.nginx.com/blog/thread-pools-boost-performance-9x/)
+[스레드풀 관련 공식문서](https://www.nginx.com/blog/thread-pools-boost-performance-9x/)
 
 <br>
 
