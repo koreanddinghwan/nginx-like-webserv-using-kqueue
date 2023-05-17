@@ -39,9 +39,16 @@ public:
 	/*
 	 * get Location Blocks By Port
 	 * */
-	std::vector<HttpLocationBlock *>* getLocationBlocksByPort(int p);
+	std::map<int, std::vector<HttpLocationBlock *> *>& getLocationBlocksByPort();
+
+	/*
+	 * get Location Blocks By Port
+	 * */
+	std::vector<HttpLocationBlock *>* findLocationBlocksByPort(int p);
+
 
 private:
+	HttpBlock();
 	void parse(std::ifstream &File);
 };
 
