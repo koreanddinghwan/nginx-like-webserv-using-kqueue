@@ -16,21 +16,20 @@
 #include <sys/event.h>
 
 class HttpServer : public IServer {
+
+public:
+
+	/*                    socket_fd, port number location blocks                */
+	typedef std::pair<std::pair<int, int>, std::vector<HttpLocationBlock *>* > portMapPair;
+
 private:
-	GeneralBlock *G;
-	EventBlock *E;
 	HttpBlock *H;
 
-	typedef std::pair<int, HttpServerData *> socketMapPair;
-	typedef std::map<int, HttpServerData *>::iterator socketMapIter;
-	typedef std::map<int, HttpServerData *>::const_iterator socketMapConstIter;
+	std::vector<struct kevent> kevents;
+	std::vector<portMapPair> portMap;
 
-
-	/*
-	 * socket_fd : socket file descriptor for this server
-	 * locationDatas : location data for this server
-	 * */
-	std::map<int, HttpServerData *> socketMap;
+	/* buffer to process http request, */
+	std::string HttpBuffer;
 
 public:
   /**
@@ -45,17 +44,29 @@ public:
    *
    * @throw std::runtime_error
    */
-  void initSocket() throw(std::runtime_error);
+  void initHttpServer() throw(std::runtime_error);
+
+
+  /**
+   * @brief server socket인지 확인합니다.
+   *
+   * @param socket_fd
+   *
+   * @return 
+   */
+  bool isServerSocket(int socket_fd);
+
+
+  std::vector<struct kevent> &getKevents();
+  std::vector<portMapPair> &getPortMap();
+  std::string& getHttpBuffer();
 
 
 private:
-  HttpServer() {}
-  ~HttpServer() {}
+  HttpServer(); 
+  ~HttpServer(); 
   HttpServer(const HttpServer &hs);
   HttpServer &operator=(const HttpServer &hs);
-
-
-  socketMapPair getSocketMapPair(HttpServerData *hsd);
 };
 
 #endif
