@@ -16,6 +16,17 @@
  */
 class HttpBlock: public IHttpBlock
 {
+	public:
+		typedef std::map<int, std::vector<HttpLocationBlock *> *> locationBlocksByPortMap;
+		typedef std::map<int, std::vector<HttpLocationBlock *> *>& locationBlocksByPortMapRef;
+		/**
+		 * @brief location block iterator
+		 * int : port number
+		 * vector<HttpLocationBlock *> : location blocks
+		 */
+		typedef std::map<int, std::vector<HttpLocationBlock *> *>::iterator locationBlocksByPortMapIter;
+
+
 private:
 	HttpData confData;
 	std::map<int, std::vector<HttpLocationBlock *> > locationBlocksByPort;
