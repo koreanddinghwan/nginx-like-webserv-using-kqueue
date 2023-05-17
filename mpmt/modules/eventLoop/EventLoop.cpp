@@ -1,6 +1,5 @@
 #include "./EventLoop.hpp"
 
-
 EventLoop& EventLoop::getInstance() {
 	static EventLoop instance;
 	return instance;
@@ -8,7 +7,6 @@ EventLoop& EventLoop::getInstance() {
 
 void EventLoop::initEventLoop()
 {
-	this->blocks = Config::getInstance().getBlocks();
 }
 
 
