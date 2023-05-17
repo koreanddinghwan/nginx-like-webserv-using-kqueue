@@ -41,3 +41,7 @@ IConfigData* EventBlock::getConfigData() {
 }
 
 EventBlock::~EventBlock() {}
+
+EventBlock::eventConfig& EventBlock::getEventConfigData() {
+	return this->confData;
+}
