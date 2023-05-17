@@ -61,9 +61,15 @@ void HttpBlock::parse(std::ifstream &File)
 	}
 }
 
-std::vector<HttpLocationBlock *> *HttpBlock::getLocationBlocksByPort(int p)
+std::vector<HttpLocationBlock *> *HttpBlock::findLocationBlocksByPort(int p)
 {
-	return &this->locationBlocksByPort.find(p)->second;
+	return this->locationBlocksByPort.find(p)->second;
 }
 
+std::map<int, std::vector<HttpLocationBlock *> *>& HttpBlock::getLocationBlocksByPort()
+{
+	return (this->locationBlocksByPort);
+}
+
+HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
