@@ -1,5 +1,6 @@
 #include "httpBlock.conf.hpp"
 #include "HttpLocationBlock.conf.hpp"
+#include <utility>
 
 HttpBlock::HttpBlock(std::ifstream &File) 
 {
@@ -16,9 +17,13 @@ HttpBlock::HttpBlock(std::ifstream &File)
 
 			/* 해당 port를 가진 location block이 없ㅇ므. */
 			if (locationBlocksByPort.find(port) == locationBlocksByPort.end())
-				locationBlocksByPort.insert(std::make_pair(port, locationBlock));
+			{
+				std::vector<HttpLocationBlock *> *tmp = new std::vector<HttpLocationBlock *>();
+				tmp->push_back(static_cast<HttpLocationBlock *>(locationBlock[j]));
+				locationBlocksByPort[port] = tmp;
+			}
 			else
-				locationBlocksByPort.find(port)->second.push_back(locationBlock[j]);
+				locationBlocksByPort.find(port)->second->push_back(static_cast<HttpLocationBlock *>(locationBlock[j]));
 		}
 	}
 }
