@@ -39,11 +39,10 @@ void EventLoop::initEventLoop()
 			{
 				std::cout<<"First Connection"<<std::endl;
 				std::cout<<reinterpret_cast<uintptr_t>(events[i].udata)<<std::endl;
-				std::vector<HttpLocationData *>* locData = static_cast<std::vector<HttpLocationData *>*>(events[i].udata);
+				HttpServer::HTTPEventUdataType locData = HttpServer::getLocationDataVectorFromKevent(events + i);
 
 				for (int i =0; i < locData->size(); i++)
 					(*locData)[i]->printLocationData();
-
 			}
 
 		}
