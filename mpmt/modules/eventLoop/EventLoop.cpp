@@ -39,21 +39,17 @@ void EventLoop::initEventLoop()
 			{
 				std::cout<<"First Connection"<<std::endl;
 				std::cout<<reinterpret_cast<uintptr_t>(events[i].udata)<<std::endl;
-				std::vector<HttpLocationBlock *>* locData = static_cast<std::vector<HttpLocationBlock *>*>(events[i].udata);
+				std::vector<HttpLocationData *>* locData = static_cast<std::vector<HttpLocationData *>*>(events[i].udata);
 
 				for (int i =0; i < locData->size(); i++)
-				{
-					(*locData)[i]->getLocationData().printLocationData();
-				}
+					(*locData)[i]->printLocationData();
+
 			}
 
 		}
 		
 
 	}
-
-
-
 }
 
 
@@ -83,13 +79,13 @@ void EventLoop::printCurrentData()
 		std::cout<<"socket_fd: "<<m[i].first.first<<std::endl;
 		std::cout<<"port number: "<<m[i].first.second<<std::endl;
 
-		std::vector<HttpLocationBlock *> *v = m[i].second;
+		std::vector<HttpLocationData *> *v = m[i].second;
 
 		std::cout<<"\033[35m";
 		for (int j = 0; j < v->size(); j++)
 		{
 			std::cout<<"============["<<j<<"]============="<<std::endl;
-			(*v)[j]->getLocationData().printLocationData();
+			(*v)[j]->printLocationData();
 			std::cout<<"=================================="<<std::endl;
 		}
 		std::cout<<"========================="<<std::endl;

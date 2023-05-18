@@ -18,9 +18,8 @@
 class HttpServer : public IServer {
 
 public:
-
 	/*                    socket_fd, port number location blocks                */
-	typedef std::pair<std::pair<int, int>, std::vector<HttpLocationBlock *>* > portMapPair;
+	typedef std::pair<std::pair<int, int>, std::vector<HttpLocationData *>* > portMapPair;
 
 private:
 	HttpBlock *H;
@@ -30,6 +29,8 @@ private:
 
 	/* buffer to process http request, */
 	std::string HttpBuffer;
+
+	/* http reqeust parsing class */
 
 public:
   /**
