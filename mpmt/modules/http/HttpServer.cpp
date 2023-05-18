@@ -83,6 +83,8 @@ void HttpServer::initHttpServer() throw(std::runtime_error)
 	}
 }
 
+
+
 bool HttpServer::isServerSocket(int socket_fd)
 {
 	for (int i = 0; i < this->portMap.size(); i++)
@@ -99,6 +101,11 @@ std::vector<HttpServer::portMapPair> & HttpServer::getPortMap() { return this->p
 
 
 std::string& HttpServer::getHttpBuffer() { return this->HttpBuffer; }
+
+HttpServer::HTTPEventUdataType HttpServer::getLocationDataVectorFromKevent(struct kevent *e)
+{
+	return static_cast<HTTPEventUdataType>(e->udata);
+}
 
 
 HttpServer::HttpServer() {}

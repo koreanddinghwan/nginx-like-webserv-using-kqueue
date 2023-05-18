@@ -20,6 +20,7 @@ class HttpServer : public IServer {
 public:
 	/*                    socket_fd, port number location blocks                */
 	typedef std::pair<std::pair<int, int>, std::vector<HttpLocationData *>* > portMapPair;
+  typedef std::vector<HttpLocationData *>* HTTPEventUdataType;
 
 private:
 	HttpBlock *H;
@@ -56,6 +57,15 @@ public:
    * @return 
    */
   bool isServerSocket(int socket_fd);
+
+  /**
+   * @brief kevent로부터 locationDataVector를 얻어옵니다.
+   *
+   * @param udata
+   *
+   * @return HttpLocationData vector를 리턴합니다.
+   */
+  static HTTPEventUdataType getLocationDataVectorFromKevent(struct kevent *e); 
 
 
   std::vector<struct kevent> &getKevents();
