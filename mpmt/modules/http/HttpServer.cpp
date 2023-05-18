@@ -64,15 +64,15 @@ void HttpServer::initHttpServer() throw(std::runtime_error)
 	//https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
 	this->HttpBuffer.resize(1024);
 
-	std::map<int, std::vector<HttpLocationBlock *> *>& m = H->getLocationBlocksByPort();
+	std::map<int, std::vector<HttpLocationData *> *>& m = H->getLocationDatasByPort();
 
-	for (HttpBlock::locationBlocksByPortMapIter it = m.begin(); it != m.end(); it++)
+	for (HttpBlock::locationDatasByPortMapIter it = m.begin(); it != m.end(); it++)
 	{
 		int port = (*it).first;
-		(*(*it).second)[0]->getLocationData().printLocationData();
+		(*(*it).second)[0]->printLocationData();
 		portMapPair tmp;
 
-		tmp.first.first = makeSocketByLocationData((*(*it).second)[0]->getLocationData());
+		tmp.first.first = makeSocketByLocationData(*(*(*it).second)[0]);
 		tmp.first.second = port;
 		tmp.second = ((*it).second);
 		this->portMap.push_back(tmp);
@@ -82,6 +82,8 @@ void HttpServer::initHttpServer() throw(std::runtime_error)
 		this->kevents.push_back(kev);
 	}
 }
+
+
 
 bool HttpServer::isServerSocket(int socket_fd)
 {
@@ -99,6 +101,11 @@ std::vector<HttpServer::portMapPair> & HttpServer::getPortMap() { return this->p
 
 
 std::string& HttpServer::getHttpBuffer() { return this->HttpBuffer; }
+
+HttpServer::HTTPEventUdataType HttpServer::getLocationDataVectorFromKevent(struct kevent *e)
+{
+	return static_cast<HTTPEventUdataType>(e->udata);
+}
 
 
 HttpServer::HttpServer() {}

@@ -17,19 +17,19 @@
 class HttpBlock: public IHttpBlock
 {
 	public:
-		typedef std::map<int, std::vector<HttpLocationBlock *> *> locationBlocksByPortMap;
-		typedef std::map<int, std::vector<HttpLocationBlock *> *>& locationBlocksByPortMapRef;
+		typedef std::map<int, std::vector<HttpLocationData *> *> locationDatasByPortMap;
+		typedef std::map<int, std::vector<HttpLocationData *> *>& locationDatasByPortMapRef;
 		/**
 		 * @brief location block iterator
 		 * int : port number
-		 * vector<HttpLocationBlock *> : location blocks
+		 * vector<HttpLocationData *> : location blocks
 		 */
-		typedef std::map<int, std::vector<HttpLocationBlock *> *>::iterator locationBlocksByPortMapIter;
+		typedef std::map<int, std::vector<HttpLocationData *> *>::iterator locationDatasByPortMapIter;
 
 
 private:
 	HttpData confData;
-	std::map<int, std::vector<HttpLocationBlock *>* > locationBlocksByPort;
+	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
 
 public:
 	IConfigData* getConfigData();
@@ -37,14 +37,14 @@ public:
 	~HttpBlock();
 	
 	/*
-	 * get Location Blocks By Port
+	 * get Location Datas By Port
 	 * */
-	std::map<int, std::vector<HttpLocationBlock *> *>& getLocationBlocksByPort();
+	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
 
 	/*
-	 * get Location Blocks By Port
+	 * get Location Datas By Port
 	 * */
-	std::vector<HttpLocationBlock *>* findLocationBlocksByPort(int p);
+	std::vector<HttpLocationData *>* findLocationDatasByPort(int p);
 
 
 private:
