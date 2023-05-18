@@ -1,6 +1,8 @@
 #ifndef HTTPREQUESTINFO_HPP
 # define HTTPREQUESTINFO_HPP
 
+# include <iostream>
+
 /*
  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
  * GET / HTTP/1.1
@@ -41,9 +43,9 @@ enum RequestBodyType
 struct httpRequestInfo
 {
 	/*Start line*/
-	method Method; //get,post,delete
-	char *Path; //request target, url임 대부분
-	char *HttpVersion; //http 버전
+	std::string method; //get,post,delete
+	std::string path; //request target, url임 대부분
+	std::string httpVersion; //http 버전
 
 
 	/*Headers*/
@@ -63,7 +65,7 @@ struct httpRequestInfo
 		int ContentLength;
 	
 	/*body*/
-
+		std::string body;
 
 	/*others*/
 	char *others;
