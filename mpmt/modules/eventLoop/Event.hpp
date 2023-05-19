@@ -21,8 +21,6 @@
 
 /* 3. Error */
 
-
-
 typedef enum s_ServerType {
 	HTTP_SERVER,
 	HTTPS_SERVER,
@@ -34,16 +32,16 @@ typedef enum s_ServerType {
 	SSH_SERVER
 } t_ServerType;
 
-typedef enum s_FdType {
-	SERVER_SOCKET_FD,
-	CLIENT_SOCKET_FD,
-	PIPE_FD,
-	FILE_FD
-} t_FdType;
+typedef enum s_EventType {
+	E_SERVER_SOCKET,
+	E_CLIENT_SOCKET,
+	E_PIPE,
+	E_FILE
+} t_EventType;
 
 typedef struct s_FdInfo {
 	int			fd;
-	t_FdType	fdType;
+	t_EventType	fdType;
 } t_FdInfo;
 
 typedef struct s_SocketInfo
@@ -76,8 +74,8 @@ public:
 	~Event();
 
 public:
-	void setFdType(t_FdType *t);
-	void setFdInfo(t_FdType t);
+	void setFdType(t_EventType *t);
+	void setFdInfo(t_EventType t);
 	void setSocketInfo(t_SocketInfo *t);
 	void setRequestHandler();
 
