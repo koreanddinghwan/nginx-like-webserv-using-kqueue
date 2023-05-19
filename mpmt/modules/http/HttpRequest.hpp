@@ -4,14 +4,15 @@
 # include <iostream>
 # include "../../interface/IHttpBlock.hpp"
 # include "HttpRequestInfo.hpp"
-# include <string.h>
+# include <string>
 
 #define CRLF "\r\n"
+#define CRLF2 "\r\n\r\n"
 
-enum {
+enum messageStateEnum {
 	chunked = 1,
 	seperate,
-	others
+	basic
 };
 
 
@@ -28,33 +29,43 @@ class HttpRequest
 	public: 
 		void setBuf(std::string buf);
 		std::string getBuf(void) const;
-		void initRequest(void);
-		void parseOthers(void);
+		void initRequest(std::string req);
+		
+		//init utils
+		void parseContentLength(void);
+		void parseMethod(void);
+		bool checkSeperate(int poscrlf2Pos);
+		void initMessegeState(void);
+
+		//basic
+		void parseBasic(void);
 		void parseStartLine(std::string line);
 		void parseHeader(std::string line);
 		void parseBody(void);
 
+		//utils
 		void printReq(void);
+		void appendBuf(std::string req);
 
 	private:
-		//파싱 후 예쁘게 담을 구조체
+
+		/* ======== 패킷 모두 전송 전까지 사용할 변수 ======= */
+		//패킷 전송 방식(chunked, seperate, basic)
+		messageStateEnum _messageState;
+
+		std::string	_buf;
+		std::string	_method;
+
+		int _contentLength;
+		/* ========================================== */
+
+
+		/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
+		//파싱 후 result
 		struct httpRequestInfo _reqInfo;
+		//std::map<std::string, std::string> reqHeaderMap;
 
-		//enum으로 header 어떻게 들어오는지
-		int state;
-
-		//파싱하는데 사용할 버퍼
-		//body까지 다 받은 후 아래 변수에 쪼개기
-		std::string _buf;
-		//간략하게 3필드로 나눌 변수 사용 x
-		std::string _startLine;
-		std::string _header;
-		std::string _body;
-
-		//request Header만 담을 map
-		// map은 순서 보장 안하니까 상의하고 다른 자료구조로 바꾸기
-		std::map<std::string, std::string> _reqHeaderMap;
-
+		/* ========================================== */
 };
 
 #endif
