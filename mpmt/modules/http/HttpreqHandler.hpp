@@ -4,23 +4,17 @@
 #include "./HttpRequestInfo.hpp"
 #include "../../interface/IHandler.hpp"
 
-/**
- * @brief static class
- */
 class HttpreqHandler : public IHandler
 {
 private:
-	HttpreqHandler() {}
-	~HttpreqHandler() {}
+	httpRequestInfo *info;
 
 public:
-	static void *handler(char *buffer) 
-	{
-		httpRequestInfo *rtn = new httpRequestInfo();
-		/*parsing!!!!!!!!!!!!!*/
-		rtn->others = buffer;
-		return rtn;
-	}
+	HttpreqHandler();
+	~HttpreqHandler();
+
+public:
+	void *handle(void *data);
 };
 
 #endif
