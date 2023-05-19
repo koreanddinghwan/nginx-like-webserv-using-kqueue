@@ -20,6 +20,25 @@ Event::Event(t_ServerType t)
 	}
 }
 
+void Event::setServerType(t_ServerType t)
+{memcpy(&this->serverType, &t, sizeof(t_ServerType));}
+
+void Event::setSocketInfo(t_SocketInfo t)
+{memcpy(&this->socketInfo, &t, sizeof(t_SocketInfo));}
+
+void Event::setFdInfo(t_FdInfo t)
+{memcpy(&this->fdInfo, &t, sizeof(t_FdInfo));}
+
+t_ServerType& Event::getServerType()
+{return this->serverType;}
+
+
+t_SocketInfo& Event::getSocketInfo()
+{return this->socketInfo;}
+
+t_FdInfo& Event::getFdInfo()
+{return this->fdInfo;}
+
 Event::~Event()
 {}
 
