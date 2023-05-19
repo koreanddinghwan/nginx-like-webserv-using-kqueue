@@ -15,8 +15,6 @@ Event::Event(t_ServerType t)
 			break;
 		default:
 			break;
-		
-	
 	}
 }
 
@@ -26,18 +24,26 @@ void Event::setServerType(t_ServerType t)
 void Event::setSocketInfo(t_SocketInfo t)
 {memcpy(&this->socketInfo, &t, sizeof(t_SocketInfo));}
 
-void Event::setFdInfo(t_FdInfo t)
-{memcpy(&this->fdInfo, &t, sizeof(t_FdInfo));}
+void Event::setFd(int t)
+{memcpy(&this->fd, &t, sizeof(int));}
+
+void Event::setEventType(t_EventType t)
+{this->eventInfo = t;}
+
+void Event::setConfigData(std::vector<HttpLocationData *> *t)
+{this->configData = t;}
 
 t_ServerType& Event::getServerType()
 {return this->serverType;}
 
-
 t_SocketInfo& Event::getSocketInfo()
 {return this->socketInfo;}
 
-t_FdInfo& Event::getFdInfo()
-{return this->fdInfo;}
+int& Event::getFd()
+{return this->fd;}
+
+t_EventType& Event::getEventType()
+{return this->eventInfo;}
 
 Event::~Event()
 {}
@@ -46,7 +52,14 @@ Event::Event()
 {}
 
 Event::Event(Event &e)
-{}
+{
+	this->serverType = e.getServerType();
+	this->socketInfo = e.getSocketInfo();
+	this->fd = e.getFd();
+	this->eventInfo = e.getEventType();
+	this->requestHandler = e.getRequestHandler();
+	this->configData = e.getConfigData();
+}
 
 const Event& Event::operator=(const Event &e)
 {return *this;}
