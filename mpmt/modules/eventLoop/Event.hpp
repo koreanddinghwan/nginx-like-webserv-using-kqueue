@@ -5,7 +5,7 @@
 #include "../http/HttpReqHandler.hpp"
 #include <netinet/in.h>
 #include "../../interface/IServer.hpp"
-#include "../../interface/IConfigData.hpp"
+#include "../config/data/HttpLocationData.hpp"
 
 /* Event Type: */
 
@@ -41,15 +41,10 @@ typedef enum s_EventType {
 	E_FILE
 } t_EventType;
 
-typedef struct s_FdInfo {
-	int			fd;
-	t_EventType	fdType;
-} t_FdInfo;
-
 typedef struct s_SocketInfo
 {
 	struct sockaddr_in socket_addr;
-	int opt;
+	int reUseAddr;
 	int keep_alive;
 	int nagle_off;
 } t_SocketInfo;
@@ -64,33 +59,49 @@ private:
 
 	/* 이 이벤트의 fd정보 */
 	/* maybe....some...,,ummm, kevent? ...no socket info!*/
-	t_FdInfo	fdInfo;
+	int	fd;
+
+	t_EventType	eventInfo;
 
 	/* 이벤트를 처리할 핸들러*/
 	/* umm,,, request info*/
 	/* @obsovo */
 	IHandler*	requestHandler;
 
-	std::vector<IConfigData *> *configData;
+	/**
+	 * @brief 현재 이벤트에 대한 location block data
+	 */
+	std::vector<HttpLocationData *> *configData;
+
+
+	/**
+	 * @brief todo: 생성자에서 초기화
+	 */
+	std::vector<HttpServerData *> *serverData;
+
 
 public:
 	Event(t_ServerType t);
+	Event(Event &e);
 	~Event();
 
 public:
 	void setServerType(t_ServerType t);
 	void setSocketInfo(t_SocketInfo t);
-	void setFdInfo(t_FdInfo t);
+	void setFd(int t);
+	void setEventType(t_EventType t);
+	void setConfigData(std::vector<HttpLocationData *> *t);
 
 	t_ServerType& getServerType();
 	t_SocketInfo& getSocketInfo();
-	t_FdInfo& getFdInfo();
+	int& getFd();
+	t_EventType& getEventType();
 	IHandler* getRequestHandler();
+	std::vector<HttpLocationData *> *getConfigData();
 
 private:
 	Event();
 	const Event& operator=(const Event &e);
-	Event(Event &e);
 };
 
 
