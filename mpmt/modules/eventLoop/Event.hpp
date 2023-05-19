@@ -1,9 +1,11 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
 
+#include <cstring>
 #include "../http/HttpReqHandler.hpp"
 #include <netinet/in.h>
 #include "../../interface/IServer.hpp"
+#include "../../interface/IConfigData.hpp"
 
 /* Event Type: */
 
@@ -69,16 +71,21 @@ private:
 	/* @obsovo */
 	IHandler*	requestHandler;
 
+	std::vector<IConfigData *> *configData;
+
 public:
 	Event(t_ServerType t);
 	~Event();
 
 public:
-	void setFdType(t_EventType *t);
-	void setFdInfo(t_EventType t);
-	void setSocketInfo(t_SocketInfo *t);
-	void setRequestHandler();
+	void setServerType(t_ServerType t);
+	void setSocketInfo(t_SocketInfo t);
+	void setFdInfo(t_FdInfo t);
 
+	t_ServerType& getServerType();
+	t_SocketInfo& getSocketInfo();
+	t_FdInfo& getFdInfo();
+	IHandler* getRequestHandler();
 
 private:
 	Event();
