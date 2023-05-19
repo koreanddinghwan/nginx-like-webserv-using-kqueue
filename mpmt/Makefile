@@ -13,7 +13,7 @@ CONFIGSRCS = Config.cpp EventBlock.conf.cpp GeneralBlock.conf.cpp BlockParser.cp
 CONFIGOBJS = $(addprefix ./modules/config/, $(CONFIGSRCS:.cpp=.o))
 WEBSERVSRCS = WebServ.cpp WebServManager.cpp
 WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
-EVENTLOOPSRCS = EventLoop.cpp
+EVENTLOOPSRCS = EventLoop.cpp Event.cpp EventManager.cpp readCallback.cpp writeCallback.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp
 LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
