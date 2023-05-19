@@ -20,13 +20,6 @@
  * Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
  * */
 
-
-enum method {
-	GET = 1,
-	POST,
-	DELETE
-};
-
 #define HTTPV10 "HTTP/1.0" // HTTP/1.0
 #define HTTPV11 "HTTP/1.1" // HTTP/1.1
 #define HTTPV20 "HTTP/2.0" // HTTP/2.0
@@ -40,6 +33,11 @@ enum RequestBodyType
 //필수적인 것만 파싱하고, 너미지는 char *others에 넣는게 나을듯요
 struct httpRequestInfo
 {
+	enum method {
+		GET = 1,
+		POST,
+		DELETE
+	};
 	/*Start line*/
 	method Method; //get,post,delete
 	char *Path; //request target, url임 대부분
