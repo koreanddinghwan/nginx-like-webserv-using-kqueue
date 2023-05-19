@@ -30,7 +30,7 @@ void WebservManager::initConfig(int ac, char **av) const throw (std::runtime_err
 
 void WebservManager::initServers()
 {
-	HttpServer::getInstance().initHttpServer();
+	HttpServer::getInstance().init();
 }
 
 void WebservManager::initLoop()
