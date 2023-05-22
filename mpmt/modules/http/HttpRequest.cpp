@@ -6,12 +6,11 @@ HttpRequest::HttpRequest(const HttpRequest& obj) {}
 HttpRequest::~HttpRequest(void) {}
 HttpRequest& HttpRequest::operator=(const HttpRequest& obj) { return (*this);}
 
-
 /* 
 	리스닝 소켓 감지 이후 HttpRequest객체 생성
 */
 HttpRequest::HttpRequest(void)
-: _buf(""), _messageState(basic) 
+: _buf(""), _messageState(basic), _isPending(false)
 { 
 	memset(&_reqInfo, 0, sizeof(_reqInfo));
 	//initRequest();
@@ -22,7 +21,7 @@ HttpRequest::HttpRequest(void)
 	메인 테스트용..
 */
 HttpRequest::HttpRequest(std::string req)  // 이걸 없애고 그냥 initRequest를 밖에서 호출하는게 맞는듯
-	: _buf(""), _messageState(basic)
+	: _buf(""), _messageState(basic), _isPending(false)
 {
 	//map이 들어있는 구조체를 멤셋으로 초기화해버리면 좃댄다...
 	//memset(&_reqInfo, 0, sizeof(_reqInfo));
@@ -48,11 +47,18 @@ void HttpRequest::printReq(void)
 	얘가 아마 밖에서 처음 호출 될 애인 듯 싶은디 
 	아마 처음 한 번
 */
+void HttpRequest::initPendingState(void)
+{
+	if (_messageState != basic)
+		_isPending = true;
+}
+
 void HttpRequest::initRequest(std::string req)
 {
-	appendBuf(req);
+	setBuf(req);
 	// chunked, basic,seperate 메세지 형식 구분하는 함수
 	initMessegeState();
+	initPendingState();
 	//if (_messageState == chunked)
 	//if checkChunked();
 	//	parseChunked();
@@ -63,10 +69,7 @@ void HttpRequest::initRequest(std::string req)
 	printReq();
 }
 
-void HttpRequest::appendBuf(std::string req)
-{
-	_buf.append(req);
-}
+
 
 void HttpRequest::initMessegeState(void)
 {
@@ -110,7 +113,6 @@ void HttpRequest::parseContentLength(void)
 	//15 == Content-Length길이
 	lengthStr = _buf.substr(prevPos + 15, pos - prevPos - 15);
 	_reqInfo.ContentLength = std::strtod(lengthStr.c_str(), &endptr);
-	//_reqInfo.ContentLength = std::stoi(lengthStr);
 }
 
 bool HttpRequest::checkSeperate(int crlf2Pos)
@@ -202,11 +204,8 @@ void HttpRequest::parseBody(void)
 }
 //receiveRequest() => 객체 생성 이후에 이벤트 루프에서 호출할 함수
 
-std::string HttpRequest::getBuf() const {
-return _buf;
-}
+std::string HttpRequest::getBuf() const { return _buf; }
 
-void HttpRequest::setBuf(std::string buf)
-{
+void HttpRequest::setBuf(std::string req) { _buf.append(req); }
 
-}
+bool HttpRequest::getIsPending(void) const { return (_isPending); }
