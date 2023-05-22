@@ -30,12 +30,17 @@ class HttpRequest
 		void setBuf(std::string buf);
 		std::string getBuf(void) const;
 		void initRequest(std::string req);
+		bool getIsPending(void) const;
 		
 		//init utils
 		void parseContentLength(void);
 		void parseMethod(void);
 		bool checkSeperate(int poscrlf2Pos);
 		void initMessegeState(void);
+		void initPendingState(void);
+
+		//run
+		void handleRequest(void);
 
 		//basic
 		void parseBasic(void);
@@ -45,7 +50,6 @@ class HttpRequest
 
 		//utils
 		void printReq(void);
-		void appendBuf(std::string req);
 
 	private:
 
@@ -57,6 +61,7 @@ class HttpRequest
 		std::string	_method;
 
 		int _contentLength;
+		bool _isPending;
 		/* ========================================== */
 
 
