@@ -16,7 +16,6 @@ void *HttpreqHandler::handle(void *e)
 		if (_pended && _messageState == chunked)
 			parseChunked(*req);
 		else if (_pended && _messageState == seperate)
-			//무작위 message parse
 			parseSeperate(*req);
 	}
 	/*

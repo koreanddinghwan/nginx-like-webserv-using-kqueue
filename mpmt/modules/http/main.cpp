@@ -3,7 +3,9 @@
 int main()
 {
 	std::string sep1, sep2, sep3, 
-	chunked, basic, post,
+	chunked, 
+	basic_post, basic_get, 
+	post,
 	c1, c2, c3, c4, c5;
 
 	//basic = "GET / HTTP/1.1\r\n"
@@ -43,13 +45,15 @@ int main()
 
 
 
-	basic = "POST /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
+	basic_post = "POST /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
+	basic_get = "GET /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n";
 	chunked = "POST /test HTTP/1.1\r\n"
 			"Content-Type: text/plain\r\n"
 			"Transfer-Encoding: chunked\r\n\r\n";
 			c1 = "7\r\nMozilla\r\n";
 			c2 = "11\r\nDeveloper Network\r\n";
-			c3 = "0\r\n\r\n";;
+			c3 = "0\r\n\r\n";
+			// 어디선 "0\r\n\r\n" 고 어디는 "0\r\n"라 나중에 수정해야됨
 
 	sep1 = "POST /test HTTP/1.1\r\nHost: fo";
 	sep2 ="o.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Lengt";
@@ -63,10 +67,13 @@ int main()
 	req1.handle(&sep3);
 
 
-	std::cout << "\n\nbasic" << std::endl;
+	std::cout << "\n\nbasic_post" << std::endl;
 	HttpreqHandler req2;
-	req2.handle(&basic);
+	req2.handle(&basic_post);
 
+	std::cout << "\n\nbasic_get" << std::endl;
+	HttpreqHandler req4;
+	req4.handle(&basic_get);
 
 	std::cout << "\n\nchunked" << std::endl;
 	HttpreqHandler req3;
