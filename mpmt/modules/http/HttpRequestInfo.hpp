@@ -1,10 +1,6 @@
 #ifndef HTTPREQUESTINFO_HPP
 # define HTTPREQUESTINFO_HPP
 
-# include <iostream>
-# include <map>
-# include <string>
-
 /*
  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
  * GET / HTTP/1.1
@@ -43,31 +39,29 @@ struct httpRequestInfo
 		DELETE
 	};
 	/*Start line*/
-	std::string method; //get,post,delete
-	std::string path; //request target, url임 대부분
-	std::string httpVersion; //http 버전
+	method Method; //get,post,delete
+	char *Path; //request target, url임 대부분
+	char *HttpVersion; //http 버전
 
 
 	/*Headers*/
-	//request Header만 담을 map(map은 순서 보장 안하니까 상의하고 다른 자료구조로 바꾸기)
-	std::map<std::string, std::string> reqHeaderMap;
 		/*Requeset headers*/
-		//char *Host;
-		//char *UserAgent;
-		//char *Accept;
-		//char *AcceptLanguage;
-		//char *AcceptEncoding;
+		char *Host;
+		char *UserAgent;
+		char *Accept;
+		char *AcceptLanguage;
+		char *AcceptEncoding;
 
-		///*General headers*/
-		//int Connection;
-		//int UpgradeInsecureRequesets;
+		/*General headers*/
+		int Connection;
+		int UpgradeInsecureRequesets;
 
 		/*Representation Headers*/
 		char *ContentType;
 		int ContentLength;
 	
 	/*body*/
-		std::string body;
+
 
 	/*others*/
 	char *others;
