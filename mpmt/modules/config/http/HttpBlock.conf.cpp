@@ -1,8 +1,31 @@
 #include "httpBlock.conf.hpp"
+#include "HttpLocationBlock.conf.hpp"
+#include <utility>
 
 HttpBlock::HttpBlock(std::ifstream &File) 
 {
-		this->parse(File);
+	this->parse(File);
+	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
+
+	for (int i = 0; i < serverBlock.size(); i++)
+	{
+		std::vector<IHttpBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
+
+		for (int j = 0; j < locationBlock.size(); j++)
+		{
+			int port = static_cast<HttpLocationData *>(locationBlock[j]->getConfigData())->getListen();
+
+			/* 해당 port를 가진 location block이 없ㅇ므. */
+			if (locationDatasByPort.find(port) == locationDatasByPort.end())
+			{
+				std::vector<HttpLocationData *> *tmp = new std::vector<HttpLocationData *>();
+				tmp->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
+				locationDatasByPort[port] = tmp;
+			}
+			else
+				locationDatasByPort.find(port)->second->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
+		}
+	}
 }
 
 HttpBlock::~HttpBlock() {
@@ -38,4 +61,15 @@ void HttpBlock::parse(std::ifstream &File)
 	}
 }
 
+std::vector<HttpLocationData *> *HttpBlock::findLocationDatasByPort(int p)
+{
+	return this->locationDatasByPort.find(p)->second;
+}
+
+std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByPort()
+{
+	return (this->locationDatasByPort);
+}
+
+HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
