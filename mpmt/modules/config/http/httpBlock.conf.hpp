@@ -29,6 +29,12 @@ class HttpBlock: public IHttpBlock
 
 private:
 	HttpData confData;
+
+	/**
+	 * @brief locationDatasByPort
+	 * locationDatasByPort는 port를 key로, 해당 port를 가진 location block들을 value로 가지는 map이다.
+	 * socket open을 위해 httpServer에서 사용된다.
+	 * */
 	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
 
 public:
