@@ -38,11 +38,11 @@ private:
 	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
 
 	/**
-	 * @beief defaultServerData
+	 * @beief defaultServerBlock
 	 * request에서 host를 찾지 못했을때, 즉, servername이 일치하지 않으면
-	 * defaultServerData를 사용한다.
+	 * defaultServerBlock를 사용한다.
 	 */
-	HttpServerBlock* defaultServerData;
+	HttpServerBlock* defaultServerBlock;
 
 public:
 	HttpBlock(std::ifstream &File);
@@ -61,7 +61,10 @@ public:
 	 * */
 	std::vector<HttpLocationData *>* findLocationDatasByPort(int p);
 
-
+	/**
+	 * get default Server Data
+	 * */
+	HttpServerBlock* getDefaultServerBlock();
 
 
 
