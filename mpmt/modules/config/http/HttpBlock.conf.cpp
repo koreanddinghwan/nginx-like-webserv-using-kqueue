@@ -45,11 +45,11 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	}
 
 	/**
-	 * @set defaultServerdatas
-	 * Event 구조체가 들고있어야하는 default server data를 세팅한다.  
+	 * @set defaultServerBlock
+	 * Event 구조체가 들고있어야하는 default server block을 세팅한다.  
 	 * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다.  
 	 * */
-	this->defaultServerData = static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0]);
+	this->defaultServerBlock = static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0]);
 }
 
 HttpBlock::~HttpBlock() {
@@ -97,3 +97,5 @@ std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByP
 
 HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
+
+HttpServerBlock *HttpBlock::getDefaultServerBlock() {return this->defaultServerBlock;}
