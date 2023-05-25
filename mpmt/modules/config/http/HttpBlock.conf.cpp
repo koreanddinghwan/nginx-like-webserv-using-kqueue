@@ -5,6 +5,9 @@
 HttpBlock::HttpBlock(std::ifstream &File) 
 {
 	this->parse(File);
+	// parsing part is done.
+
+
 	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
 	for (int i = 0; i < serverBlock.size(); i++)
