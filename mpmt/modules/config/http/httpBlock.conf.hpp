@@ -37,24 +37,38 @@ private:
 	 * */
 	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
 
+	std::vector<HttpLocationData *>* serverData;
+
 public:
-	IConfigData* getConfigData();
 	HttpBlock(std::ifstream &File);
+
+
+	IConfigData* getConfigData();
 	~HttpBlock();
 	
-	/*
+	/**
 	 * get Location Datas By Port
 	 * */
 	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
 
-	/*
+	/**
 	 * find Location Datas By Port
 	 * */
 	std::vector<HttpLocationData *>* findLocationDatasByPort(int p);
 
 
+
+
+
 private:
+	/**
+	 * Do not enable default constructor
+	 * */
 	HttpBlock();
+
+	/**
+	 * private method for parsing
+	 * */
 	void parse(std::ifstream &File);
 };
 
