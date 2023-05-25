@@ -13,7 +13,6 @@ HttpBlock::HttpBlock(std::ifstream &File)
 
 	/**
 	 * @set locationDatasByPort
-	 * locationDatasByPort는 port를 key로, 해당 port를 가진 location block들을 value로 가지는 map이다.
 	 * */
 	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
