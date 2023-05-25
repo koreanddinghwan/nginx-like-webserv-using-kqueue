@@ -42,7 +42,7 @@ public:
 	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
 
 	/*
-	 * get Location Datas By Port
+	 * find Location Datas By Port
 	 * */
 	std::vector<HttpLocationData *>* findLocationDatasByPort(int p);
 
