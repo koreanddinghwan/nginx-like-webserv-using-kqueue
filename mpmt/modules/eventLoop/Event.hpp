@@ -1,6 +1,7 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
 
+#include "../config/Config.hpp"
 #include <cstring>
 #include "../http/HttpReqHandler.hpp"
 #include <netinet/in.h>
@@ -59,7 +60,17 @@ private:
 
 	/* 이 이벤트의 fd정보 */
 	/* maybe....some...,,ummm, kevent? ...no socket info!*/
-	int	fd;
+	/**
+	 * @brief 이벤트의 fd정보
+	 * @todo pipe를 처리하면, 그 파이프의 out pipe를 처리할 fd는 어디에?
+	 * fd의 종류별로 처리할 일이 다름.
+	 * file open fd의 read 준비가 끝났을때, open한 파일의 read이후, 어디로 처리?
+	 * 종류별로 모두 들고있는게 나을 것 같음.
+	 */
+	int	server_socket_fd;
+	int client_socket_fd;
+	int pipe_fd;
+	int file_fd;
 
 	t_EventType	eventInfo;
 
@@ -71,13 +82,13 @@ private:
 	/**
 	 * @brief 현재 이벤트에 대한 location block data
 	 */
-	std::vector<HttpLocationData *> *configData;
+	std::vector<HttpLocationData *> *locationData;
 
 
 	/**
 	 * @brief todo: 생성자에서 초기화
 	 */
-	std::vector<HttpServerData *> *serverData;
+	HttpServerData *defaultServerData;
 
 
 public:
@@ -88,16 +99,26 @@ public:
 public:
 	void setServerType(t_ServerType t);
 	void setSocketInfo(t_SocketInfo t);
-	void setFd(int t);
+	void setServerFd(int t);
+	void setClientFd(int t);
+	void setPipeFd(int t);
+	void setFileFd(int t);
+
 	void setEventType(t_EventType t);
-	void setConfigData(std::vector<HttpLocationData *> *t);
+	void setLocationData(std::vector<HttpLocationData *> *t);
+	void setDefaultServerData(HttpServerData *t);
+
 
 	t_ServerType& getServerType();
 	t_SocketInfo& getSocketInfo();
-	int& getFd();
+	int& getServerFd();
+	int& getClientFd();
+	int& getPipeFd();
+	int& getFileFd();
 	t_EventType& getEventType();
 	IHandler* getRequestHandler();
-	std::vector<HttpLocationData *> *getConfigData();
+	std::vector<HttpLocationData *> *getLocationData();
+	HttpServerData *getDefaultServerData();
 
 private:
 	Event();
