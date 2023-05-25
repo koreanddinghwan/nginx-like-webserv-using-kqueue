@@ -15,7 +15,7 @@ EventManager& EventManager::getInstance()
 
 void EventManager::addEvent(Event *e)
 {
-	this->eventMap.insert(std::pair<int, Event *>(e->getFd(), e));
+	this->eventMap.insert(std::pair<int, Event *>(e->getServerFd(), e));
 }
 
 void EventManager::deleteEvent(int fd)
