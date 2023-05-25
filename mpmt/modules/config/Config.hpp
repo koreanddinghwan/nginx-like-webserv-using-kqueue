@@ -41,9 +41,9 @@ class Config : public IConfig
 		void initConfig(std::string path) throw (configParseException);
 
 		IBlock **getBlocks();
-		IGeneralBlock *getGeneralBlock();
-		IEventBlock *getEventBlock();
-		IHttpBlock *getHTTPBlock();
+		GeneralBlock *getGeneralBlock();
+		EventBlock *getEventBlock();
+		HttpBlock *getHTTPBlock();
 
 
 		void printConfigData();
