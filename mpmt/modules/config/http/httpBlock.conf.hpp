@@ -34,10 +34,15 @@ private:
 	 * @brief locationDatasByPort
 	 * locationDatasByPort는 port를 key로, 해당 port를 가진 location block들을 value로 가지는 map이다.
 	 * socket open을 위해 httpServer에서 사용된다.
-	 * */
+	 */
 	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
 
-	std::vector<HttpLocationData *>* serverData;
+	/**
+	 * @beief defaultServerData
+	 * request에서 host를 찾지 못했을때, 즉, servername이 일치하지 않으면
+	 * defaultServerData를 사용한다.
+	 */
+	HttpServerBlock* defaultServerData;
 
 public:
 	HttpBlock(std::ifstream &File);
