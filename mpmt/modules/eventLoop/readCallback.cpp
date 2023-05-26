@@ -1,9 +1,4 @@
-#include "Event.hpp"
 #include "EventLoop.hpp"
-#include "EventManager.hpp"
-#include <sys/_types/_socklen_t.h>
-#include <sys/_types/_ssize_t.h>
-#include <sys/socket.h>
 
 void EventLoop::readCallback(struct kevent *e)
 {
@@ -65,7 +60,6 @@ void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
 	//socket의 readfilter-> EOF flag는 client의 disconnect.
 	if (e->flags == EV_EOF)
 	{
-		EventManager::getInstance().deleteEvent(e->ident);
 		close(e->ident);
 		std::cout<<"client disconnected"<<std::endl;
 	}

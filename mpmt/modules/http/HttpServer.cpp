@@ -27,7 +27,6 @@ void HttpServer::init() throw(std::runtime_error)
 	
 		/* todo =>event 넣기*/
 		EV_SET(&kev, fd, EVFILT_READ, EV_ADD, 0, 0, e);
-		EventManager::getInstance().addEvent(e);
 		this->kevents.push_back(kev);
 	}
 }

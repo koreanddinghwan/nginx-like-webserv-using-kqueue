@@ -1,6 +1,4 @@
 #include "Event.hpp"
-#include "EventManager.hpp"
-
 
 Event::Event(t_ServerType t)
 {
@@ -99,7 +97,6 @@ Event *Event::createNewClientSocketEvent(Event *e)
 
 	Event *new_udata = new Event(HTTP_SERVER);
 
-	EventManager::getInstance().addEvent(new_udata);
 	t_SocketInfo socketInfo;
 	int sockfd = e->getServerFd();
 	socklen_t cliLen = sizeof(socketInfo.socket_addr);
