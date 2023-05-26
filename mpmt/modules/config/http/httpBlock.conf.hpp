@@ -47,7 +47,7 @@ private:
 public:
 	HttpBlock(std::ifstream &File);
 
-
+	HttpData& getHttpData();
 	IConfigData* getConfigData();
 	~HttpBlock();
 	

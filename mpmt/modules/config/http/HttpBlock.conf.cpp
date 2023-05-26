@@ -97,5 +97,5 @@ std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByP
 
 HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
-
+HttpData& HttpBlock::getHttpData() {return confData;}
 HttpServerData *HttpBlock::getDefaultServerData() {return this->defaultServerData;}
