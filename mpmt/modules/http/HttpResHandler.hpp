@@ -7,17 +7,14 @@
 /**
  * @brief static class
  */
-class HttpresHandler : public IHandler
+class HttpResHandler : public IHandler
 {
 private:
-	HttpresHandler() {}
-	~HttpresHandler() {}
+	HttpResHandler();
+	~HttpResHandler();
 
 public:
-	static void *handler(void *reqInfo) {
-
-		//do something with request information
-	}
+	void *handler(void *data); 
 };
 
 #endif

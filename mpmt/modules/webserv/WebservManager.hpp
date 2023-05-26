@@ -2,6 +2,7 @@
 # define WEBSERV_MANAGER_HPP
 
 #include "../eventLoop/EventLoop.hpp"
+#include "../eventLoop/Event.hpp"
 #include "../../interface/IWebservManager.hpp"
 #include "../../interface/IConfig.hpp"
 #include "../../interface/IServer.hpp"

@@ -2,7 +2,9 @@
 #define HTTPSERVER_HPP
 
 #include "../config/Config.hpp"
+#include "../eventLoop/Event.hpp"
 #include "../config/http/HttpBlock.conf.hpp"
+#include "../eventLoop/EventManager.hpp"
 #include "../config/GeneralBlock.conf.hpp"
 #include "../config/EventBlock.conf.hpp"
 #include "../../interface/IHandler.hpp"
@@ -12,26 +14,27 @@
 #include <iostream>
 #include <map>
 #include <netinet/tcp.h>
+#include <netinet/in.h>
 #include <stdexcept>
 #include <sys/event.h>
 
 class HttpServer : public IServer {
-
-public:
-	/*                    socket_fd, port number location blocks                */
-	typedef std::pair<std::pair<int, int>, std::vector<HttpLocationData *>* > portMapPair;
-  typedef std::vector<HttpLocationData *>* HTTPEventUdataType;
-
 private:
 	HttpBlock *H;
-
+	HttpBlock::locationDatasByPortMap *locationDatasByPortMap;
 	std::vector<struct kevent> kevents;
-	std::vector<portMapPair> portMap;
+	std::vector<int> serverSocketFd;
+	/*     clientFd, obejct*/
+	/* std::map<int, request> requestMap; */
 
-	/* buffer to process http request, */
-	std::string HttpBuffer;
+	//1024로 설정. 나중에 수정 필요
+	//nginx의 client_body_buffer_size, client_header_buffer_size 확인할 것.
+	//https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
+	char HttpBuffer[1024];
 
-	/* http reqeust parsing class */
+	//is it needed?
+	//anyway, resize in init function to 1024
+	std::string stringBuffer;
 
 public:
   /**
@@ -46,8 +49,7 @@ public:
    *
    * @throw std::runtime_error
    */
-  void initHttpServer() throw(std::runtime_error);
-
+  void init() throw(std::runtime_error);
 
   /**
    * @brief server socket인지 확인합니다.
@@ -58,20 +60,12 @@ public:
    */
   bool isServerSocket(int socket_fd);
 
-  /**
-   * @brief kevent로부터 locationDataVector를 얻어옵니다.
-   *
-   * @param udata
-   *
-   * @return HttpLocationData vector를 리턴합니다.
-   */
-  static HTTPEventUdataType getLocationDataVectorFromKevent(struct kevent *e); 
-
-
+  void makeSocketByLocationData(std::vector<HttpLocationData *> *m, Event *e);
+ 
   std::vector<struct kevent> &getKevents();
-  std::vector<portMapPair> &getPortMap();
-  std::string& getHttpBuffer();
-
+  HttpBlock::locationDatasByPortMap *getLocationDatasByPortMap(); 
+  char* getHttpBuffer();
+  std::string &getStringBuffer();
 
 private:
   HttpServer(); 

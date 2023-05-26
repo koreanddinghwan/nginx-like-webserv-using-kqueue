@@ -1,11 +1,15 @@
 #ifndef EVENTLOOP_HPP
 # define EVENTLOOP_HPP
 
+#include <cstdlib>
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/event.h>
 #include <stdexcept>
 #include "../config/Config.hpp"
 #include "../../interface/IBlock.hpp"
 #include "../http/HttpServer.hpp"
+#include "Event.hpp"
 
 /**
  * @brief singleton eventloop
@@ -21,6 +25,11 @@ public:
 	static EventLoop& getInstance();
 
 	/**
+	 * @brief init event
+	 */
+	void initEvent();
+
+	/**
 	 * @brief init eventloop
 	 * 핵심모듈
 	 */
@@ -29,11 +38,25 @@ public:
 private:
 	int kq_fd;
 
+	struct kevent dummyEvent;
+
+	struct sockaddr_in dummy_addr;
+
 private:
 	EventLoop();
 	~EventLoop();
 	void printCurrentData();
-	void registerSocketEvent(struct kevent *kev);
+	void registerInitialEvent(struct kevent *kev);
+
+
+	void readCallback(struct kevent *e);
+	void writeCallback(struct kevent *e);
+	void disconnectionCallback(struct kevent *e);
+
+	void e_serverSocketCallback(struct kevent *e, Event *e_udata);
+	void e_clientSocketCallback(struct kevent *e, Event *e_udata);
+	void e_pipeCallback(struct kevent *e, Event *e_udata);
+	void e_fileCallback(struct kevent *e, Event *e_udata);
 };
 
 

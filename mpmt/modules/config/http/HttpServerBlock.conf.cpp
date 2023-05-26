@@ -6,6 +6,7 @@ HttpServerBlock::HttpServerBlock(std::ifstream &File, HttpData *c): serverData(*
 }
 
 IConfigData* HttpServerBlock::getConfigData() {return &this->serverData;}
+HttpServerData &HttpServerBlock::getServerData() {return this->serverData;}
 
 HttpServerBlock::~HttpServerBlock() {}
 
