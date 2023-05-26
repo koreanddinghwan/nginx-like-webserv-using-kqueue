@@ -48,7 +48,12 @@ void EventLoop::e_serverSocketCallback(struct kevent *e, Event *e_udata)
 		//create client socket
 		//모든 pipe, file의 이벤트는 client socket에서 부터 시작한다.
 		Event *new_udata = Event::createNewClientSocketEvent(e_udata);
+
+		//handler 객체 설정
 		new_udata->setRequestHandler(new HttpreqHandler());
+		new_udata->setResponseHandler(new Response());
+
+		//kqueue에 event 등록
 		registerClientSocketReadEvent(new_udata);
 	}
 }
