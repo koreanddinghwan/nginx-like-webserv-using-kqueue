@@ -58,11 +58,6 @@ void HttpServer::makeSocketByLocationData(std::vector<HttpLocationData *> *m, Ev
 
 void HttpServer::init() throw(std::runtime_error)
 {
-	/*
-	 * @ToDo
-	 * */
-	/* this->requestHandler = new RequestHandler(); */
-	/* this->requestHandler = new ResponseHandler(); */
 	this->H = static_cast<HttpBlock *>(Config::getInstance().getHTTPBlock());
 	this->locationDatasByPortMap = &(H->getLocationDatasByPort());
 
