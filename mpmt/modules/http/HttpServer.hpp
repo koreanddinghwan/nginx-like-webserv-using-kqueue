@@ -32,7 +32,9 @@ private:
 	//https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
 	char HttpBuffer[1024];
 
-	/* http reqeust parsing class */
+	//is it needed?
+	//anyway, resize in init function to 1024
+	std::string stringBuffer;
 
 public:
   /**
@@ -63,6 +65,7 @@ public:
   std::vector<struct kevent> &getKevents();
   HttpBlock::locationDatasByPortMap *getLocationDatasByPortMap(); 
   char* getHttpBuffer();
+  std::string &getStringBuffer();
 
 private:
   HttpServer(); 
