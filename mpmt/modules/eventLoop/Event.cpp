@@ -73,6 +73,9 @@ int& Event::getFileFd()
 t_EventType& Event::getEventType()
 {return this->eventInfo;}
 
+IHandler *Event::getRequestHandler()
+{return this->requestHandler;}
+
 std::vector<HttpLocationData *> *Event::getLocationData() {return this->locationData;}
 
 HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
@@ -85,18 +88,18 @@ Event::~Event()
  * */
 Event::Event(Event &e)
 {
-	this->serverType = e.getServerType();
-	this->socketInfo = e.getSocketInfo();
+	/* this->serverType = e.getServerType(); */
+	/* this->socketInfo = e.getSocketInfo(); */
 
-	this->server_socket_fd = e.getServerFd();
-	this->client_socket_fd = e.getClientFd();
-	this->pipe_fd = e.getPipeFd();
-	this->file_fd = e.getFileFd();
+	/* this->server_socket_fd = e.getServerFd(); */
+	/* this->client_socket_fd = e.getClientFd(); */
+	/* this->pipe_fd = e.getPipeFd(); */
+	/* this->file_fd = e.getFileFd(); */
 
-	this->eventInfo = e.getEventType();
-	this->requestHandler = e.getRequestHandler();
-	this->locationData = e.getLocationData();
-	this->defaultServerData = e.getDefaultServerData();
+	/* this->eventInfo = e.getEventType(); */
+	/* this->requestHandler = e.getRequestHandler(); */
+	/* this->locationData = e.getLocationData(); */
+	/* this->defaultServerData = e.getDefaultServerData(); */
 }
 
 /**
