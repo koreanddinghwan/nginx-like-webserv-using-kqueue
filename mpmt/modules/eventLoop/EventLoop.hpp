@@ -57,6 +57,13 @@ private:
 	void e_clientSocketCallback(struct kevent *e, Event *e_udata);
 	void e_pipeCallback(struct kevent *e, Event *e_udata);
 	void e_fileCallback(struct kevent *e, Event *e_udata);
+
+	void registerClientSocketReadEvent(Event *e);
+	void registerPipeReadEvent(Event *e);
+	void registerFileReadEvent(Event *e);
+	void registerClientSocketWriteEvent(Event *e);
+	void registerPipeWriteEvent(Event *e);
+	void registerFileWriteEvent(Event *e);
 };
 
 
