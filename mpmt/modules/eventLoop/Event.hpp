@@ -36,7 +36,7 @@ typedef enum s_ServerType {
 } t_ServerType;
 
 typedef enum s_EventType {
-	E_SERVER_SOCKET,
+	E_SERVER_SOCKET = 0,
 	E_CLIENT_SOCKET,
 	E_PIPE,
 	E_FILE
@@ -119,6 +119,12 @@ public:
 	IHandler* getRequestHandler();
 	std::vector<HttpLocationData *> *getLocationData();
 	HttpServerData *getDefaultServerData();
+
+	static Event *createClientSocketEvent();
+
+	static Event *createPipeEvent();
+
+	static Event *createFileEvent();
 
 private:
 	Event(Event &e);
