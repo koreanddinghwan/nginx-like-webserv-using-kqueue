@@ -90,19 +90,47 @@ void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
 			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
 			std::cout<<"[[[[[[[CLIENT REQUEST END]]]]]]]]"<<std::endl;
 
-			e_udata->getRequestHandler()->handle(&(HttpServer::getInstance().getStringBuffer()));
-			static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->printReq();
+			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
+			//handle request
+			reqHandler->handle(&(HttpServer::getInstance().getStringBuffer()));
+			reqHandler->printReq();
 			//handle response by request
+			
+			/**
+			 * pending state => client로부터 data를 더 받아야하는 상태
+			 * */
+			if (reqHandler->getIsPending())
+				return ;
+			else
+			{
+				/**
+				 * response를 보내야하는 상태임.
+				 * */
+				/**
+				 * if need file i/o
+				 * */
+				/**
+				 * else if need cgi(pipe)
+				 * */
+			}
 		}
 	}
 }
 
+/* Fifos, Pipes */
+/* Returns when there is data to read; data contains the number of bytes available. */
+/* When the last writer disconnects, the filter will set EV_EOF in flags. */
+/* This may be cleared by passing in EV_CLEAR, at which point the filter will */
+/* resume waiting for data to become available before returning. */
 void EventLoop::e_pipeCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[35m"; 
 	std::cout<<"pipe callback"<<std::endl;
-
+	if (e_udata->getServerType() == HTTP_SERVER)
+	{
+		//read from pipe
+	}
 }
 
 void EventLoop::e_fileCallback(struct kevent *e, Event *e_udata)
