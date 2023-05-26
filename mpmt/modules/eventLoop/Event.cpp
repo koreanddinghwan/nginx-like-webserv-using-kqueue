@@ -80,6 +80,9 @@ HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
 Event::~Event()
 {delete static_cast<HttpreqHandler*>(this->requestHandler);}
 
+/**
+ * @deprecated
+ * */
 Event::Event(Event &e)
 {
 	this->serverType = e.getServerType();
@@ -96,5 +99,11 @@ Event::Event(Event &e)
 	this->defaultServerData = e.getDefaultServerData();
 }
 
+/**
+ * @DO NOT USE
+ * */
 const Event& Event::operator=(const Event &e)
 {return *this;}
+
+Event::Event()
+{}
