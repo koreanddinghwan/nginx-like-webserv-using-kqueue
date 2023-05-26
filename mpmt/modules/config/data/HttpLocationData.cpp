@@ -117,6 +117,7 @@ void HttpLocationData::printLocationData() {
 
 	std::cout<<"uri: "<<uri<<std::endl;
 	std::cout<<"proxy_pass: "<<proxy_pass<<std::endl;
+	std::cout<<"cgi_pass: "<<cgi_pass<<std::endl;
 	std::cout<<"fastcgi_pass: "<<fastcgi_pass<<std::endl;
 	std::cout<<"return_status: "<<return_status<<std::endl;
 	std::cout<<"redirect_url: "<<redirect_url<<std::endl;
