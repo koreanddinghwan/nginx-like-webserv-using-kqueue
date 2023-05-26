@@ -1,6 +1,11 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
 
+#include <fcntl.h>
+#include <arpa/inet.h>
+#include <sys/event.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
 #include "../config/Config.hpp"
 #include <cstring>
 #include "../http/HttpReqHandler.hpp"
@@ -51,6 +56,10 @@ typedef struct s_SocketInfo
 } t_SocketInfo;
 
 class Event {
+public:
+		typedef std::vector<HttpLocationData *> t_locationData;
+
+
 private:
 	/* 이 이벤트는 어느 서버에서 처리될 fd인가? */
 	t_ServerType	serverType;
@@ -83,7 +92,7 @@ private:
 	/**
 	 * @brief 현재 이벤트에 대한 location block data
 	 */
-	std::vector<HttpLocationData *> *locationData;
+	t_locationData *locationData;
 
 
 	/**
@@ -97,40 +106,43 @@ public:
 	/* Event(Event &e); */
 	~Event();
 
-public:
+private:
+	/**
+	 * private setter
+	 * */
 	void setServerType(t_ServerType t);
 	void setSocketInfo(t_SocketInfo t);
 	void setServerFd(int t);
 	void setClientFd(int t);
 	void setPipeFd(int t);
 	void setFileFd(int t);
-
 	void setEventType(t_EventType t);
 
 public:
 	void setRequestHandler(IHandler* t);
 	void setResponseHandler(IHandler* t);
 	void setLocationData(std::vector<HttpLocationData *> *t);
-	void setDefaultServerData(HttpServerData *t);
 
 
+public:
+	/**
+	 * getter
+	 * */
 	t_ServerType& getServerType();
 	t_SocketInfo& getSocketInfo();
 	int& getServerFd();
 	int& getClientFd();
 	int& getPipeFd();
 	int& getFileFd();
+
 	t_EventType& getEventType();
 	IHandler* getRequestHandler();
 	IHandler* getResponseHandler();
 	std::vector<HttpLocationData *> *getLocationData();
 	HttpServerData *getDefaultServerData();
 
-	static Event *createClientSocketEvent();
-
-	static Event *createPipeEvent();
-
-	static Event *createFileEvent();
+	static Event* createNewClientSocketEvent(Event *e);
+	static Event* createNewServerSocketEvent(t_locationData *m);
 
 private:
 	Event(Event &e);
