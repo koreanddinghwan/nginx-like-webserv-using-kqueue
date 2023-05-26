@@ -1,4 +1,5 @@
 #include "Event.hpp"
+#include "EventManager.hpp"
 
 
 Event::Event(t_ServerType t)
@@ -15,7 +16,6 @@ Event::Event(t_ServerType t)
 	 * */
 	switch (this->serverType) {
 		case (t_ServerType::HTTP_SERVER):
-			this->requestHandler = new HttpreqHandler();
 			this->defaultServerData = 
 				static_cast<HttpServerData *>(Config::getInstance().getHTTPBlock()->getConfigData());
 			break;
@@ -45,10 +45,14 @@ void Event::setFileFd(int t)
 void Event::setEventType(t_EventType t)
 {this->eventInfo = t;}
 
+void Event::setRequestHandler(IHandler *t)
+{this->requestHandler = t;}
+
+void Event::setResponseHandler(IHandler *t)
+{this->responseHandler = t;}
+
 void Event::setLocationData(std::vector<HttpLocationData *> *t)
 {this->locationData = t;}
-
-
 
 
 
@@ -76,12 +80,19 @@ t_EventType& Event::getEventType()
 IHandler *Event::getRequestHandler()
 {return this->requestHandler;}
 
+IHandler *Event::getResponseHandler()
+{return this->responseHandler;}
+
 std::vector<HttpLocationData *> *Event::getLocationData() {return this->locationData;}
 
 HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
 
 Event::~Event()
-{delete static_cast<HttpreqHandler*>(this->requestHandler);}
+{
+	//interface의 소멸자 호출하면, 연결된 소멸자 모두 호출.
+	delete this->requestHandler;
+	delete this->responseHandler;
+}
 
 /**
  * @deprecated
