@@ -59,6 +59,7 @@ void HttpServer::makeSocketByLocationData(std::vector<HttpLocationData *> *m, Ev
 void HttpServer::init() throw(std::runtime_error)
 {
 	this->H = static_cast<HttpBlock *>(Config::getInstance().getHTTPBlock());
+	this->stringBuffer.resize(1024);
 	this->locationDatasByPortMap = &(H->getLocationDatasByPort());
 
 	std::map<int, std::vector<HttpLocationData *> *>& m = H->getLocationDatasByPort();
@@ -97,6 +98,7 @@ std::vector<struct kevent> & HttpServer::getKevents() { return this->kevents; }
 
 
 char* HttpServer::getHttpBuffer() { return this->HttpBuffer; }
+std::string &HttpServer::getStringBuffer() { return this->stringBuffer; }
 
 HttpServer::HttpServer() {}
 HttpServer::~HttpServer() {}
