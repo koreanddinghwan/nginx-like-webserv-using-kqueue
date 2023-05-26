@@ -49,10 +49,11 @@ void HttpServer::makeSocketByLocationData(std::vector<HttpLocationData *> *m, Ev
 	if (listen(fd, 1024) == -1)
 		throw(std::runtime_error("listen error"));
 
-	e->setFd(fd);
+	e->setServerFd(fd);
 	e->setSocketInfo(socketInfo);
 	e->setEventType(E_SERVER_SOCKET);
-	e->setConfigData(m);
+	e->setLocationData(m);
+	e->setDefaultServerData((Config::getInstance().getHTTPBlock()->getDefaultServerData()));
 }
 
 void HttpServer::init() throw(std::runtime_error)
@@ -74,7 +75,7 @@ void HttpServer::init() throw(std::runtime_error)
 		int port = (*it).first;
 		Event *e = new Event(HTTP_SERVER);
 		makeSocketByLocationData(H->findLocationDatasByPort(port), e);
-		int fd = e->getFd();
+		int fd = e->getServerFd();
 		this->serverSocketFd.push_back((fd));
 		struct kevent kev;
 	
