@@ -36,19 +36,19 @@ IBlock** Config::getBlocks() {
 	return this->blocks;
 }
 
-IGeneralBlock* Config::getGeneralBlock()
+GeneralBlock* Config::getGeneralBlock()
 {
-	return static_cast<IGeneralBlock *>(this->blocks[0]);
+	return static_cast<GeneralBlock *>(this->blocks[0]);
 }
 
-IEventBlock* Config::getEventBlock()
+EventBlock* Config::getEventBlock()
 {
-	return static_cast<IEventBlock*>(this->blocks[1]);
+	return static_cast<EventBlock*>(this->blocks[1]);
 }
 
-IHttpBlock* Config::getHTTPBlock()
+HttpBlock* Config::getHTTPBlock()
 {
-	return static_cast<IHttpBlock *>(this->blocks[2]);
+	return static_cast<HttpBlock *>(this->blocks[2]);
 }
 
 void Config::printConfigData()

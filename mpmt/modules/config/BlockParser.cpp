@@ -109,10 +109,7 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 	if (buf.find("location ") != std::string::npos)
 	{
 		s.split(buf.c_str(), ' ');
-		std::cout<<"===================================================="<<std::endl;
-		std::cout<<s.get()[0]<<std::endl;
-		std::cout<<s.get()[1]<<std::endl;
-		std::cout<<s.get()[2]<<std::endl;
+
 		//check exact match
 		if (s.get()[1] == "=")
 		{

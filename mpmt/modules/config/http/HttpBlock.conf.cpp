@@ -5,6 +5,15 @@
 HttpBlock::HttpBlock(std::ifstream &File) 
 {
 	this->parse(File);
+	// parsing part is done.
+
+	/**
+	 * private 멤버변수 세팅
+	 * */
+
+	/**
+	 * @set locationDatasByPort
+	 * */
 	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
 	for (int i = 0; i < serverBlock.size(); i++)
@@ -15,17 +24,32 @@ HttpBlock::HttpBlock(std::ifstream &File)
 		{
 			int port = static_cast<HttpLocationData *>(locationBlock[j]->getConfigData())->getListen();
 
-			/* 해당 port를 가진 location block이 없ㅇ므. */
+			/**
+			 * 해당 port를 가진 location block이 없음. 
+			 * */
 			if (locationDatasByPort.find(port) == locationDatasByPort.end())
 			{
+				/**
+				 * 동적할당, 소멸자에서 해제
+				 * */
 				std::vector<HttpLocationData *> *tmp = new std::vector<HttpLocationData *>();
 				tmp->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
 				locationDatasByPort[port] = tmp;
 			}
+			/**
+			 * 해당 port를 가진 location block이 있음.
+			 * */
 			else
 				locationDatasByPort.find(port)->second->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
 		}
 	}
+
+	/**
+	 * @set defaultServerData
+	 * Event 구조체가 들고있어야하는 default server block을 세팅한다.  
+	 * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다.  
+	 * */
+	this->defaultServerData = &(static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0])->getServerData());
 }
 
 HttpBlock::~HttpBlock() {
@@ -73,3 +97,5 @@ std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByP
 
 HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
+
+HttpServerData *HttpBlock::getDefaultServerData() {return this->defaultServerData;}
