@@ -51,51 +51,10 @@ void EventLoop::e_serverSocketCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//create client socket
-		Event *new_udata = new Event(HTTP_SERVER);
-
-		EventManager::getInstance().addEvent(new_udata);
-		t_SocketInfo socketInfo;
-		int sockfd = e_udata->getServerFd();
-		socklen_t cliLen = sizeof(socketInfo.socket_addr);
-		int client_fd;
-
-
-		client_fd = accept(sockfd, (struct sockaddr *)&(socketInfo.socket_addr), &cliLen);
-		if (client_fd == -1)
-		{
-			delete new_udata;
-			throw std::runtime_error("Failed to accept client socket\n");
-		}
-
-		/**
-		 * event에 전달할 udata 채우기!
-		 * */
-		/* client socket에 대한 read event입니다.*/
-		new_udata->setEventType(E_CLIENT_SOCKET);
-
-		/**
-		 * client socket의 fd를 등록
-		 * */
-		new_udata->setClientFd(client_fd);
-
-		/**
-		 * client socket의 socketInfo를 등록
-		 * */
-		new_udata->setSocketInfo(socketInfo);
-
-		/**
-		 * client socket에 Location data 등록
-		 * 현재 udata의 Event에 이미 port별로 location data가 있음.
-		 * 그대로 복사
-		 * default server data는 생성자에서 초기화됨.
-		 * */
-		new_udata->setLocationData(e_udata->getLocationData());
-
-		//client socket을 읽기전용으로  kqueue에 등록
-		EV_SET(&(dummyEvent), client_fd, EVFILT_READ, EV_ADD, 0, 0, new_udata);
-		if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-			throw std::runtime_error("Failed to register client socket with kqueue\n");
-
+		//모든 pipe, file의 이벤트는 client socket에서 부터 시작한다.
+		Event *new_udata = Event::createNewClientSocketEvent(e_udata);
+		new_udata->setRequestHandler(new HttpreqHandler());
+		registerClientSocketReadEvent(new_udata);
 	}
 }
 
