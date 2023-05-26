@@ -93,7 +93,7 @@ private:
 
 public:
 	Event(t_ServerType t);
-	Event(Event &e);
+	/* Event(Event &e); */
 	~Event();
 
 public:
@@ -121,6 +121,7 @@ public:
 	HttpServerData *getDefaultServerData();
 
 private:
+	Event(Event &e);
 	Event();
 	const Event& operator=(const Event &e);
 };
