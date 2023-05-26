@@ -9,6 +9,10 @@ Event::Event(t_ServerType t)
 	 * */
 	this->serverType = t;
 
+	/**
+	 * set default handler and default server data
+	 * by server type!
+	 * */
 	switch (this->serverType) {
 		case (t_ServerType::HTTP_SERVER):
 			this->requestHandler = new HttpreqHandler();
