@@ -78,10 +78,7 @@ std::vector<HttpLocationData *> *Event::getLocationData() {return this->location
 HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
 
 Event::~Event()
-{}
-
-Event::Event()
-{}
+{delete static_cast<HttpreqHandler*>(this->requestHandler);}
 
 Event::Event(Event &e)
 {
