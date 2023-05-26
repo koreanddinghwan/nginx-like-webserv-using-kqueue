@@ -2,6 +2,9 @@
 # define EVENTLOOP_HPP
 
 #include <cstdlib>
+#include <sys/_types/_socklen_t.h>
+#include <sys/_types/_ssize_t.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/event.h>
@@ -10,6 +13,7 @@
 #include "../../interface/IBlock.hpp"
 #include "../http/HttpServer.hpp"
 #include "Event.hpp"
+#include "../http/response.hpp"
 
 /**
  * @brief singleton eventloop
