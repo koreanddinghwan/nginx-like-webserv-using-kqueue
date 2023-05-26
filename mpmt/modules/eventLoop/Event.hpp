@@ -78,6 +78,7 @@ private:
 	/* umm,,, request info*/
 	/* @obsovo */
 	IHandler*	requestHandler;
+	IHandler*	responseHandler;
 
 	/**
 	 * @brief 현재 이벤트에 대한 location block data
@@ -105,6 +106,10 @@ public:
 	void setFileFd(int t);
 
 	void setEventType(t_EventType t);
+
+public:
+	void setRequestHandler(IHandler* t);
+	void setResponseHandler(IHandler* t);
 	void setLocationData(std::vector<HttpLocationData *> *t);
 	void setDefaultServerData(HttpServerData *t);
 
@@ -117,6 +122,7 @@ public:
 	int& getFileFd();
 	t_EventType& getEventType();
 	IHandler* getRequestHandler();
+	IHandler* getResponseHandler();
 	std::vector<HttpLocationData *> *getLocationData();
 	HttpServerData *getDefaultServerData();
 
