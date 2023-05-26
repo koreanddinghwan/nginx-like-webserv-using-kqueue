@@ -10,7 +10,7 @@ HttpServer& HttpServer::getInstance()
 void HttpServer::makeSocketByLocationData(std::vector<HttpLocationData *> *m, Event *e)
 {
 	int fd;
-	t_EventType E_SERVER_SOCKET;
+	t_EventType event_type = E_SERVER_SOCKET;
 	t_SocketInfo socketInfo;
 
 	/* create socket */
@@ -51,9 +51,8 @@ void HttpServer::makeSocketByLocationData(std::vector<HttpLocationData *> *m, Ev
 
 	e->setServerFd(fd);
 	e->setSocketInfo(socketInfo);
-	e->setEventType(E_SERVER_SOCKET);
+	e->setEventType(event_type);
 	e->setLocationData(m);
-	e->setDefaultServerData((Config::getInstance().getHTTPBlock()->getDefaultServerData()));
 }
 
 void HttpServer::init() throw(std::runtime_error)
