@@ -58,6 +58,9 @@ private:
 	void e_pipeCallback(struct kevent *e, Event *e_udata);
 	void e_fileCallback(struct kevent *e, Event *e_udata);
 
+	/**
+	 * kqueue에 event를 등록합니다.
+	 * */
 	void registerClientSocketReadEvent(Event *e);
 	void registerPipeReadEvent(Event *e);
 	void registerFileReadEvent(Event *e);
