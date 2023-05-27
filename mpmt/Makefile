@@ -3,7 +3,7 @@ CXX = c++
 CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp
+HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp response.cpp
 HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
 
 HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
@@ -18,7 +18,7 @@ CONFIGOBJS = $(addprefix ./modules/config/, $(CONFIGSRCS:.cpp=.o))
 WEBSERVSRCS = WebServ.cpp WebServManager.cpp
 WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 
-EVENTLOOPSRCS = EventLoop.cpp Event.cpp EventManager.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp
+EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
 LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp
