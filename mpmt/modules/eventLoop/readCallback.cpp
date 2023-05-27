@@ -93,7 +93,6 @@ void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
 
 			//handle request
 			reqHandler->handle(&(HttpServer::getInstance().getStringBuffer()));
-			reqHandler->printReq();
 			//handle response by request
 			
 			/**
@@ -105,7 +104,11 @@ void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
 			{
 				/**
 				 * response를 보내야하는 상태임.
+				 * event disable?
+				 * EV_DISBALE => kevent함수가 event를 받아오지않도록 설정한다.
 				 * */
+				EV_SET(e, client_fd, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
+				static_cast<Response *>(e_udata->getResponseHandler())->handle(e_udata);
 				/**
 				 * if need file i/o
 				 * */
