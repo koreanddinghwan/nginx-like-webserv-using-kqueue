@@ -17,7 +17,6 @@ enum messageStateEnum {
 class HttpreqHandler : public IHandler
 {
 private:
-	//httpRequestInfo *info;
 	/* ======== 패킷 모두 전송 전까지 사용할 변수 ======= */
 	//패킷 전송 방식(chunked, seperate, basic)
 	messageStateEnum _messageState;
@@ -28,13 +27,13 @@ private:
 	std::string _chunkedWithoutBodyBuf;
 
 	int _contentLength;
-	bool _pended;
 	/* ========================================== */
 
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
-	//std::map<std::string, std::string> reqHeaderMap;
+	bool _pended;
+	std::string _sid;
 	/* ========================================== */
 
 public:
@@ -47,6 +46,8 @@ public:
 	//utils
 	void printReq(void);
 	bool getIsPending(void) const;
+	bool getHasSid(void) const;
+	std::string getSid(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
 
 private:
@@ -66,6 +67,11 @@ private:
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);
+
+	//cookie
+	void parseCookie(void);
+	void insertCookieMap(std::string cookies, int *prevPos, int *pos);
+	void saveSid(std::string key, std::string value);
 
 	//chunked
 	void parseChunked(std::string req);
