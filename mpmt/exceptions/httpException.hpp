@@ -11,61 +11,12 @@
 class ExceptionMessageFactory
 {
 	private:
-		const std::vector<const std::string> _100_101 = {
-			"Continue", 
-			"Switching Protocols"
-		};
+		std::vector<std::string> _100_101;
+		std::vector<std::string> _200_206;
+		std::vector<std::string> _300_307;
+		std::vector<std::string> _400_417;
+		std::vector<std::string> _500_505;
 
-		const std::vector<const std::string> _200_206 = {
-			"OK", 
-			"Created", 
-			"Accepted", 
-			"Non-Authoritative Information", 
-			"No Content", 
-			"Reset Content", 
-			"Partial Content"
-		};
-
-		const std::vector<const std::string> _300_307 = {
-			"Multiple Choices", 
-			"Moved Permanently", 
-			"Found", 
-			"See Other", 
-			"Not Modified", 
-			"Use Proxy", 
-			"", //unused
-			"Temporary Redirect"
-		};
-
-		const std::vector<const std::string> _400_417 = {
-			"Bad Request", 
-			"Unauthorized", 
-			"Payment Required", 
-			"Forbidden", 
-			"Not Found", 
-			"Method Not Allowed", 
-			"Not Acceptable", 
-			"Proxy Authentication Required", 
-			"Request Time-out", 
-			"Conflict", 
-			"Gone", 
-			"Length Required", 
-			"Precondition Failed", 
-			"Request Entity Too Large", 
-			"Request-URI Too Large", 
-			"Unsupported Media Type", 
-			"Requested range not satisfiable", 
-			"Expectation Failed"
-		};
-
-		const std::vector<const std::string> _500_505 = {
-			"Internal Server Error", 
-			"Not Implemented", 
-			"Bad Gateway", 
-			"Service Unavailable", 
-			"Gateway Time-out", 
-			"HTTP Version not supported"
-		};
 	public:
 		static ExceptionMessageFactory &getInstance();
 		const std::string &getExceptionMessage(int statusCode) const;
