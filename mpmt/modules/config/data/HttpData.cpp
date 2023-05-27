@@ -22,10 +22,10 @@ void HttpData::operator=(HttpData &c) {
 	}
 }
 
-std::vector<IHttpBlock *> HttpData::getServerBlock() {return this->httpServerBlock;}
+std::vector<HttpServerBlock *> &HttpData::getServerBlock() {return this->httpServerBlock;}
 
 
-void HttpData::setServerBlock(IHttpBlock *serverBlock)
+void HttpData::setServerBlock(HttpServerBlock *serverBlock)
 {
 	this->httpServerBlock.push_back(serverBlock);
 }

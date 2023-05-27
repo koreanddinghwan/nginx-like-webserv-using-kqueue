@@ -26,13 +26,23 @@ HttpServerData::HttpServerData(HttpData &c)
 }
 
 int  HttpServerData::getListen() {return this->listen;}
+
 std::vector<std::string> &HttpServerData::getServerNames() {return this->server_names;}
-std::vector<IHttpBlock *> &HttpServerData::getHttpLocationBlock() {return this->httpLocationBlock;}
+
+std::vector<HttpLocationBlock *> &HttpServerData::getHttpLocationBlock() {return this->httpLocationBlock;}
+
+std::vector<HttpLocationData *> &HttpServerData::getLocationDatas() {return this->_LocationDatas;}
+
 void HttpServerData::setListen(int port) {this->listen  = port;}
+
 void HttpServerData::setServerName(std::string name) {
 	this->server_names.push_back(name);
 }
-void HttpServerData::setHttpLocationBlock(IHttpBlock *n) {this->httpLocationBlock.push_back(n);}
+
+void HttpServerData::setHttpLocationBlock(HttpLocationBlock *n) {
+	this->httpLocationBlock.push_back(n);
+}
+
 void HttpServerData::printServerDataConfig() {
 	this->printConfig();
 	std::cout<<"listen: "<<listen<<std::endl;
