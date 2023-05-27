@@ -60,6 +60,13 @@ void EventLoop::initEventLoop()
 
 void EventLoop::registerInitialEvent(struct kevent *kev)
 {
+	std::cout<<"register initial event"<<std::endl;
+	std::cout<<kev->ident<<std::endl;
+	std::cout<<kev->filter<<std::endl;
+	std::cout<<kev->flags<<std::endl;
+	std::cout<<kev->fflags<<std::endl;
+	std::cout<<kev->data<<std::endl;
+	std::cout<<kev->udata<<std::endl;
 	if (kevent(this->kq_fd, kev, 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register socket event\n");
 }
