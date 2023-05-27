@@ -323,6 +323,9 @@ std::string HttpreqHandler::getBuf() const { return _buf; }
 void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
+const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const
+{ return _info; }
+
 /* ============================================= */
 
 

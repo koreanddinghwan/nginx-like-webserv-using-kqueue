@@ -47,6 +47,7 @@ private:
 	enum e_uri_match_mode uri_match_mode;
 	std::string uri;
 	std::string proxy_pass; //default -
+	std::string cgi_pass; //default -
 	std::string fastcgi_pass; //default -
 	int return_status;
 	std::string redirect_url;
@@ -58,16 +59,18 @@ public:
 	HttpLocationData(HttpServerData &c);
 	void operator=(HttpServerData &c);
 
-	int getUriMatchMode(); 
-	std::string getUri(); 
-	std::string getProxyPass(); 
-	std::string getFastcgiPass(); 
-	int getReturnStatus(); 
-	std::string getRedirectUrl(); 
+	int			getUriMatchMode(); 
+	std::string	&getUri(); 
+	std::string	&getProxyPass(); 
+	std::string	&getCgiPass();
+	std::string	&getFastcgiPass(); 
+	int			getReturnStatus(); 
+	std::string	&getRedirectUrl(); 
 
 	void setUriMatchMode(enum e_uri_match_mode e); 
 	void setUri(std::string u); 
 	void setProxyPass(std::string p); 
+	void setCgiPass(std::string c);
 	void setFastcgiPass(std::string f); 
 	void setReturnStatus(int r);  
 	void setRedirectUrl(std::string r);

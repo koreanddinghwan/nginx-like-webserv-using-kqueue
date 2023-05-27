@@ -1,10 +1,10 @@
 #ifndef HTTPSERVER_HPP
 #define HTTPSERVER_HPP
 
+#include <vector>
 #include "../config/Config.hpp"
 #include "../eventLoop/Event.hpp"
 #include "../config/http/HttpBlock.conf.hpp"
-#include "../eventLoop/EventManager.hpp"
 #include "../config/GeneralBlock.conf.hpp"
 #include "../config/EventBlock.conf.hpp"
 #include "../../interface/IHandler.hpp"
