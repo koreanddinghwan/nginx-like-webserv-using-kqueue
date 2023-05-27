@@ -1,36 +1,56 @@
 #include "response.hpp"
+#include "HttpreqHandler.hpp"
 
 void *Response::handle(void *data)
 {
 	std::cout<<"\033[36m"<<"@@@@@@@@@@@@@@@@Response handle@@@@@@@@@@@@@@@@@"<<std::endl;
-	Event *event = static_cast<Event *>(data);
+	Event *e = static_cast<Event *>(data);
 
 
-	static_cast<HttpreqHandler *>(event->getRequestHandler())->printReq();
+	static_cast<HttpreqHandler *>(e->getRequestHandler())->printReq();
 
-	for (int i = 0; i < (event->getLocationData())->size(); i++)
+	for (int i = 0; i < (e->getLocationData())->size(); i++)
 	{
-		(*event->getLocationData())[i]->printLocationData();
+		(*e->getLocationData())[i]->printLocationData();
 	}
 
-	/**
-	 * @1 check host name and server name
-	 * client request의 hostname과 server name을 비교한다.
-	 * 다르다면, default server
-	 * https://nginx.org/en/docs/http/server_names.html#optimization
-	 * port번호로 바인딩된 해시맵에서 확인
-	 * */
+	if (!checkServerNameExistsInConfig(e))
+	{
+		/**
+		 * find location data by finding in event's default server's location data
+		 * */
+		std::cout << "use default server's location data" << std::endl;
+	}
+	else
+	{
+		/**
+		 * find location data by longest prefix match in event's locationData
+		 * */
+		std::cout << "use longest prefix match" << std::endl;
+	}
+
 
 	return NULL;
 }
 
-bool Response::checkServerName(Event::t_locationData *locationData)
+/**
+ * @1 check host name and server name
+ * client request의 hostname과 server name을 비교한다.
+ * 다르다면, default server
+ * https://nginx.org/en/docs/http/server_names.html#optimization
+ * port번호로 바인딩된 해시맵에서 확인
+ * */
+bool Response::checkServerNameExistsInConfig(Event *e)
 {
-	for (int i = 0; i < locationData->size(); i++)
+	std::vector<std::string> *serverNames = Config::getInstance().getHTTPBlock()->getServerNamesByPort()[(*e->getLocationData())[0]->getListen()];
+
+	std::string host = static_cast<HttpreqHandler *>(e->getRequestHandler())->getRequestInfo().reqHeaderMap.find("Host")->second;
+	for (int i = 0; i < serverNames->size(); i++)
 	{
-		(*locationData)[i]->getServerNames();
+		if (host == serverNames->at(i))
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool Response::checkAllowMethod()
