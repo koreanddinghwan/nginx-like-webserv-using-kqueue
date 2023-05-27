@@ -11,13 +11,24 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	 * private 멤버변수 세팅
 	 * */
 
-	/**
-	 * @set locationDatasByPort
-	 * */
 	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
+		/**
+		 * @set set ServerNamesByPort
+		 * */
+		HttpServerData *serverData = static_cast<HttpServerData *>(serverBlock[i]->getConfigData());
+		int port = serverData->getListen();
+
+		std::vector<std::string> *serverNames = new std::vector<std::string>();
+		for (int i = 0; i < serverData->getServerNames().size(); i++)
+			serverNames->push_back(serverData->getServerNames()[i]);
+		this->serverNamesByPort[port] = serverNames;
+
+		/**
+		 * @set locationDatasByPort
+		 * */
 		std::vector<IHttpBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
 
 		for (int j = 0; j < locationBlock.size(); j++)
@@ -55,6 +66,8 @@ HttpBlock::HttpBlock(std::ifstream &File)
 HttpBlock::~HttpBlock() {
 	for (int i = 0; i < this->confData.getServerBlock().size(); i++)
 		delete  static_cast<HttpServerBlock *>(this->confData.getServerBlock()[i]);
+	for (serverNamesByPortMapIter it = this->serverNamesByPort.begin(); it != this->serverNamesByPort.end(); it++)
+		delete it->second;
 }
 
 
