@@ -55,6 +55,11 @@ private:
 	 */
 	HttpServerData* defaultServerData;
 
+	/**
+	 * @brief serverNamesByPort
+	 * https://nginx.org/en/docs/http/server_names.html#optimization  
+	 * exact name만 담는 map
+	 */
 	serverNamesByPortMap serverNamesByPort;
 
 public:
