@@ -2,6 +2,9 @@
 # define EVENTLOOP_HPP
 
 #include <cstdlib>
+#include <sys/_types/_socklen_t.h>
+#include <sys/_types/_ssize_t.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/event.h>
@@ -10,6 +13,7 @@
 #include "../../interface/IBlock.hpp"
 #include "../http/HttpServer.hpp"
 #include "Event.hpp"
+#include "../http/response.hpp"
 
 /**
  * @brief singleton eventloop
@@ -57,6 +61,16 @@ private:
 	void e_clientSocketCallback(struct kevent *e, Event *e_udata);
 	void e_pipeCallback(struct kevent *e, Event *e_udata);
 	void e_fileCallback(struct kevent *e, Event *e_udata);
+
+	/**
+	 * kqueue에 event를 등록합니다.
+	 * */
+	void registerClientSocketReadEvent(Event *e);
+	void registerPipeReadEvent(Event *e);
+	void registerFileReadEvent(Event *e);
+	void registerClientSocketWriteEvent(Event *e);
+	void registerPipeWriteEvent(Event *e);
+	void registerFileWriteEvent(Event *e);
 };
 
 

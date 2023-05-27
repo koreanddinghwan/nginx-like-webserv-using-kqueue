@@ -123,6 +123,12 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 		}
 	}
 
+	if (buf.find("cgi_pass") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpLocationData&>(confData).setCgiPass(s.get()[1]);
+	}
+
 	if (buf.find("proxy_pass") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');

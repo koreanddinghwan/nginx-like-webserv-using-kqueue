@@ -41,16 +41,18 @@ void HttpLocationData::operator=(HttpServerData &c)
 
 
 int HttpLocationData::getUriMatchMode() {return this->uri_match_mode;}
-std::string HttpLocationData::getUri() {return this->uri;}
-std::string HttpLocationData::getProxyPass() {return this->proxy_pass;}
-std::string HttpLocationData::getFastcgiPass() {return this->fastcgi_pass;}
+std::string& HttpLocationData::getUri() {return this->uri;}
+std::string& HttpLocationData::getProxyPass() {return this->proxy_pass;}
+std::string& HttpLocationData::getCgiPass() {return this->cgi_pass;}
+std::string& HttpLocationData::getFastcgiPass() {return this->fastcgi_pass;}
 int HttpLocationData::getReturnStatus() {return this->return_status;}
-std::string HttpLocationData::getRedirectUrl() {return this->redirect_url;}
+std::string& HttpLocationData::getRedirectUrl() {return this->redirect_url;}
 
 
 void HttpLocationData::setUriMatchMode(enum e_uri_match_mode e) { this->uri_match_mode = e;}
 void HttpLocationData::setUri(std::string u) { this->uri = u;}
 void HttpLocationData::setProxyPass(std::string p) { this->proxy_pass = p;}
+void HttpLocationData::setCgiPass(std::string c) { this->cgi_pass = c;}
 void HttpLocationData::setFastcgiPass(std::string f) { this->fastcgi_pass = f;}
 void HttpLocationData::setReturnStatus(int r) { this->return_status = r;}
 void HttpLocationData::setRedirectUrl(std::string r) { this->redirect_url = r;}
@@ -115,6 +117,7 @@ void HttpLocationData::printLocationData() {
 
 	std::cout<<"uri: "<<uri<<std::endl;
 	std::cout<<"proxy_pass: "<<proxy_pass<<std::endl;
+	std::cout<<"cgi_pass: "<<cgi_pass<<std::endl;
 	std::cout<<"fastcgi_pass: "<<fastcgi_pass<<std::endl;
 	std::cout<<"return_status: "<<return_status<<std::endl;
 	std::cout<<"redirect_url: "<<redirect_url<<std::endl;

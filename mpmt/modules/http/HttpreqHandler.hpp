@@ -44,6 +44,12 @@ public:
 public:
 	void *handle(void *data);
 
+	//utils
+	void printReq(void);
+	bool getIsPending(void) const;
+	const httpRequestInfo &getRequestInfo(void) const;
+
+private:
 	//init
 	void initRequest(std::string req);
 	void initVar(void);
@@ -71,10 +77,6 @@ public:
 	void findMethod(void);
 	void appendBodyBuf(std::string req);
 	
-	//utils
-	void printReq(void);
-	bool getIsPending(void) const;
-
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
 };

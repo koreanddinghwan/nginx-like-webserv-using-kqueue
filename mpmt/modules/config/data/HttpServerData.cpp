@@ -26,8 +26,8 @@ HttpServerData::HttpServerData(HttpData &c)
 }
 
 int  HttpServerData::getListen() {return this->listen;}
-std::vector<std::string> HttpServerData::getServerNames() {return this->server_names;}
-std::vector<IHttpBlock *> HttpServerData::getHttpLocationBlock() {return this->httpLocationBlock;}
+std::vector<std::string> &HttpServerData::getServerNames() {return this->server_names;}
+std::vector<IHttpBlock *> &HttpServerData::getHttpLocationBlock() {return this->httpLocationBlock;}
 void HttpServerData::setListen(int port) {this->listen  = port;}
 void HttpServerData::setServerName(std::string name) {
 	this->server_names.push_back(name);
