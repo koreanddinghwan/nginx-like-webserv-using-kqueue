@@ -70,7 +70,7 @@ IHandler *Event::getResponseHandler()
 
 std::vector<HttpLocationData *> *Event::getLocationData() {return this->locationData;}
 
-/* HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;} */
+HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
 
 Event::~Event()
 {
