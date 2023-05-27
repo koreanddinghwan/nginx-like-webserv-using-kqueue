@@ -2,6 +2,11 @@
 
 Event::Event(t_ServerType t)
 {
+	this->server_socket_fd = -1;
+	this->client_socket_fd = -1;
+	this->pipe_fd = -1;
+	this->file_fd = -1;
+
 	/* @todo 
 	 *
 	 * set handler object by server type
