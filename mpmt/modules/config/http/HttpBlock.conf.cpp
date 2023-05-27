@@ -21,10 +21,18 @@ HttpBlock::HttpBlock(std::ifstream &File)
 		HttpServerData *serverData = static_cast<HttpServerData *>(serverBlock[i]->getConfigData());
 		int port = serverData->getListen();
 
-		std::vector<std::string> *serverNames = new std::vector<std::string>();
-		for (int i = 0; i < serverData->getServerNames().size(); i++)
-			serverNames->push_back(serverData->getServerNames()[i]);
-		this->serverNamesByPort[port] = serverNames;
+		if (this->serverNamesByPort.find(port) == this->serverNamesByPort.end())
+		{
+			std::vector<std::string> *serverNames = new std::vector<std::string>();
+			for (int i = 0; i < serverData->getServerNames().size(); i++)
+				serverNames->push_back(serverData->getServerNames()[i]);
+			this->serverNamesByPort[port] = serverNames;
+		}
+		else
+		{
+			for (int i = 0; i < serverData->getServerNames().size(); i++)
+				this->serverNamesByPort[port]->push_back(serverData->getServerNames()[i]);
+		}
 
 		/**
 		 * @set locationDatasByPort
