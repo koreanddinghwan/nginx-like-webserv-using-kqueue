@@ -1,6 +1,7 @@
 #ifndef EVENTLOOP_HPP
 # define EVENTLOOP_HPP
 
+#include "../../exceptions/httpException.hpp"
 #include <cstdlib>
 #include <sys/_types/_socklen_t.h>
 #include <sys/_types/_ssize_t.h>
@@ -55,12 +56,16 @@ private:
 
 	void readCallback(struct kevent *e);
 	void writeCallback(struct kevent *e);
-	void disconnectionCallback(struct kevent *e);
 
-	void e_serverSocketCallback(struct kevent *e, Event *e_udata);
-	void e_clientSocketCallback(struct kevent *e, Event *e_udata);
-	void e_pipeCallback(struct kevent *e, Event *e_udata);
-	void e_fileCallback(struct kevent *e, Event *e_udata);
+	void e_serverSocketReadCallback(struct kevent *e, Event *e_udata);
+	void e_clientSocketReadCallback(struct kevent *e, Event *e_udata);
+	void e_pipeReadCallback(struct kevent *e, Event *e_udata);
+	void e_fileReadCallback(struct kevent *e, Event *e_udata);
+
+
+	void e_clientSocketWriteCallback(struct kevent *e, Event *e_udata);
+	void e_pipeWriteCallback(struct kevent *e, Event *e_udata);
+	void e_fileWriteCallback(struct kevent *e, Event *e_udata);
 
 	/**
 	 * kqueue에 event를 등록합니다.
@@ -71,6 +76,8 @@ private:
 	void registerClientSocketWriteEvent(Event *e);
 	void registerPipeWriteEvent(Event *e);
 	void registerFileWriteEvent(Event *e);
+	void registerRequestHttpExceptionEvent(Event *e);
+	void registerResponseHttpExceptionEvent(Event *e);
 };
 
 
