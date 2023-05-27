@@ -4,6 +4,7 @@
 #include <iostream>
 #include "./HttpRequestInfo.hpp"
 #include "../../interface/IHandler.hpp"
+#include "../../exceptions/httpException.hpp"
 
 #define CRLF "\r\n"
 #define CRLF2 "\r\n\r\n"
@@ -58,15 +59,16 @@ private:
 	void initPendingState(void);
 
 	//init utils
-	void parseContentLength(void);
+	bool parseContentLength(void);
 	void parseMethod(std::string line);
-	bool checkSeperate(int pos);
+	bool checkSeperate(int CRLF2Pos);
 
 	//parse
 	void parse(void);
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);
+	void saveHost(std::string key, std::string value);
 
 	//cookie
 	void parseCookie(void);

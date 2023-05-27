@@ -90,7 +90,7 @@ void HttpreqHandler::parseMethod(std::string line)
 		_method = _buf.substr(0, pos);
 }
 
-void HttpreqHandler::parseContentLength(void)
+bool HttpreqHandler::parseContentLength(void)
 {
 	int prevPos, pos;
 	char *endptr = NULL;
@@ -98,26 +98,31 @@ void HttpreqHandler::parseContentLength(void)
 
 	prevPos = _buf.find("Content-Length: ");
 	if (prevPos == std::string::npos)
-		return ;
+	{
+		if (!_method.compare("POST"))
+			throw HttpException(411);
+		return false; // contentLength없는 메소드
+	}
 	pos = _buf.find(CRLF, prevPos);
 	if (pos == std::string::npos)
-		return ;
+		return true;
 	//15 == Content-Length길이
 	lengthStr = _buf.substr(prevPos + 15, pos - prevPos - 15);
 	_contentLength = std::strtod(lengthStr.c_str(), &endptr);
+	return (false);
 }
 
-bool HttpreqHandler::checkSeperate(int pos)
+bool HttpreqHandler::checkSeperate(int CRLF2Pos)
 {
 	std::string line;
 
 	parseMethod("");
-	//post가 아니면 contentlength가 없으니까 basic
-	if (_method.compare("POST"))
-		return false;
-	parseContentLength();
-	line = _buf.substr(pos + 4);
-	if (line.length() != _contentLength)
+	if (parseContentLength())
+		return true;
+	line = _buf.substr(CRLF2Pos + 4);
+	if (line.length() > _contentLength)
+		throw HttpException(413);
+	if (line.length() < _contentLength)
 		return true;
 	return false;
 }
@@ -126,10 +131,17 @@ bool HttpreqHandler::checkSeperate(int pos)
 
 int HttpreqHandler::parseChunkedLength(std::string req, int *pos)
 {
+	int endPos;
 	std::string line;
 
-	if (req.find(CRLF2) != std::string::npos)
-		return (0);
+	//chunked end
+	if ((endPos = req.find(CRLF2)) != std::string::npos)
+	{
+		if (req.length() == 5 && req[endPos - 1] == '0')
+			return (0);
+		throw HttpException(411);
+		// 설마 CRLF2 뒤에 문자 더 있겠나
+	}
 	*pos = req.find(CRLF);
 	line = req.substr(0, *pos);
 	return (convertHexToDec(line));
@@ -160,8 +172,8 @@ void HttpreqHandler::parseChunked(std::string req)
 		return ;
 	}
 	line = parseChunkedBody(req, &pos);
-	if (len != line.length())
-		std::cout << "parseChunked 예외처리 해야됨..." << std::endl;
+	if (len < line.length())
+		throw HttpException(413);
 	_bodyBuf.append(line);
 	_contentLength += len;
 	appendBuf(line);
@@ -199,15 +211,15 @@ void HttpreqHandler::appendBodyBuf(std::string req)
 		_bodyBuf.append(req);
 }
 
-void HttpreqHandler::parseSeperate(std::string req)
+void HttpreqHandler::parseSeperate(std::string req) // 여기 하다 말았음여
 {
 	int pos;
 	std::string line;
 
 	if (_method.empty())
 		findMethod();
-	if (!_method.compare("POST")) // POST면 length찾고 body랑 length값 확인해야됨
-	{ 
+	// if (!_method.compare("POST")) // POST면 length찾고 body랑 length값 확인해야됨
+	// { 
 		if (!_contentLength)
 		{
 			parseContentLength();
@@ -219,9 +231,14 @@ void HttpreqHandler::parseSeperate(std::string req)
 		}
 		else
 			appendBodyBuf(req);
+		// }
 		if (_contentLength && _bodyBuf.length() == _contentLength)
 			_pended = false;
-	}
+		else if (_contentLength && _bodyBuf.length() > _contentLength)
+			throw HttpException(413);
+		else if (!_contentLength && _bodyBuf.length())
+			throw HttpException(411);
+	// }
 	else // POST 아니면, body없음, cflf2가 마지막인거임
 	{
 		if (_buf.find(CRLF2) != std::string::npos)
@@ -234,13 +251,8 @@ void HttpreqHandler::parseSeperate(std::string req)
 /* =================== cookie =================== */
 void HttpreqHandler::saveSid(std::string key, std::string value)
 {
-	// if (!key.compare("sid"))
 	if (key == "sid")
-	{
 		_sid = value;
-		return ;
-	}	
-	return ;
 }
 
 void HttpreqHandler::insertCookieMap(std::string line, int *prevPos, int *pos)
@@ -297,6 +309,12 @@ void HttpreqHandler::parseStartLine(std::string line)
 	}
 }
 
+void HttpreqHandler::saveHost(std::string key, std::string value)
+{
+	if (key == "Host")
+		_info.host = value;
+}
+
 bool HttpreqHandler::parseHeader(std::string line){
 	int pos;
 	std::string key, value;
@@ -307,6 +325,7 @@ bool HttpreqHandler::parseHeader(std::string line){
 	key = line.substr(0, pos);
 	value = line.substr(pos + 2);
 	_info.reqHeaderMap.insert(std::make_pair(key,value));
+	saveHost(key, value);
 	return true;
 }
 
