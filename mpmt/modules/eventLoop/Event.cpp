@@ -6,25 +6,7 @@ Event::Event(t_ServerType t)
 	this->client_socket_fd = -1;
 	this->pipe_fd = -1;
 	this->file_fd = -1;
-
-	/* @todo 
-	 *
-	 * set handler object by server type
-	 * */
 	this->serverType = t;
-
-	/**
-	 * set default handler and default server data
-	 * by server type!
-	 * */
-	switch (this->serverType) {
-		case (t_ServerType::HTTP_SERVER):
-			this->defaultServerData = 
-				static_cast<HttpServerData *>(Config::getInstance().getHTTPBlock()->getConfigData());
-			break;
-		default:
-			break;
-	}
 }
 
 void Event::setServerType(t_ServerType t)
@@ -88,7 +70,7 @@ IHandler *Event::getResponseHandler()
 
 std::vector<HttpLocationData *> *Event::getLocationData() {return this->locationData;}
 
-HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
+/* HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;} */
 
 Event::~Event()
 {
