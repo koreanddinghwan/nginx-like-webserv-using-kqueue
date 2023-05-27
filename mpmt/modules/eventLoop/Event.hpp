@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include "../../interface/IServer.hpp"
 #include "../config/data/HttpLocationData.hpp"
-
+#include <unistd.h>
 /* Event Type: */
 
 /* 1. Read (FILT)*/ 
@@ -101,6 +101,13 @@ private:
 
 
 public:
+
+	/**
+	 * @TODO getter and setter
+	 * */
+	std::string errorMessage;
+	int statusCode;
+	
 	Event(t_ServerType t);
 	/* Event(Event &e); */
 	~Event();
@@ -142,6 +149,8 @@ public:
 
 	static Event* createNewServerSocketEvent(int port);
 	static Event* createNewClientSocketEvent(Event *e);
+
+	void closeAllFd();
 
 private:
 	Event(Event &e);
