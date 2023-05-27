@@ -92,7 +92,19 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
-			reqHandler->handle(&(HttpServer::getInstance().getStringBuffer()));
+			try {
+				reqHandler->handle(&(HttpServer::getInstance().getStringBuffer()));
+			} catch (HttpException &exception) {
+				e_udata->errorMessage = exception.what();
+				e_udata->statusCode = exception.getStatusCode();
+
+				/**
+				 * client request exception handling by 
+				 * register write event to client_fd, and finally send error response
+				 * */
+				registerRequestHttpExceptionEvent(e_udata);
+				return ;
+			}
 			//handle response by request
 			
 			/**
@@ -108,6 +120,14 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				 * EV_DISBALE => kevent함수가 event를 받아오지않도록 설정한다.
 				 * */
 				EV_SET(e, client_fd, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
+
+				/**
+				 *
+				 * handle error
+				 * 
+				 * /
+
+
 				static_cast<Response *>(e_udata->getResponseHandler())->handle(e_udata);
 				/**
 				 * if need file i/o
