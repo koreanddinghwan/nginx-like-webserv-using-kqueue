@@ -11,13 +11,32 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	 * private 멤버변수 세팅
 	 * */
 
-	/**
-	 * @set locationDatasByPort
-	 * */
 	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
+		/**
+		 * @set set ServerNamesByPort
+		 * */
+		HttpServerData *serverData = static_cast<HttpServerData *>(serverBlock[i]->getConfigData());
+		int port = serverData->getListen();
+
+		if (this->serverNamesByPort.find(port) == this->serverNamesByPort.end())
+		{
+			std::vector<std::string> *serverNames = new std::vector<std::string>();
+			for (int i = 0; i < serverData->getServerNames().size(); i++)
+				serverNames->push_back(serverData->getServerNames()[i]);
+			this->serverNamesByPort[port] = serverNames;
+		}
+		else
+		{
+			for (int i = 0; i < serverData->getServerNames().size(); i++)
+				this->serverNamesByPort[port]->push_back(serverData->getServerNames()[i]);
+		}
+
+		/**
+		 * @set locationDatasByPort
+		 * */
 		std::vector<IHttpBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
 
 		for (int j = 0; j < locationBlock.size(); j++)
@@ -55,6 +74,8 @@ HttpBlock::HttpBlock(std::ifstream &File)
 HttpBlock::~HttpBlock() {
 	for (int i = 0; i < this->confData.getServerBlock().size(); i++)
 		delete  static_cast<HttpServerBlock *>(this->confData.getServerBlock()[i]);
+	for (serverNamesByPortMapIter it = this->serverNamesByPort.begin(); it != this->serverNamesByPort.end(); it++)
+		delete it->second;
 }
 
 
@@ -85,14 +106,19 @@ void HttpBlock::parse(std::ifstream &File)
 	}
 }
 
+std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByPort()
+{
+	return (this->locationDatasByPort);
+}
+
 std::vector<HttpLocationData *> *HttpBlock::findLocationDatasByPort(int p)
 {
 	return this->locationDatasByPort.find(p)->second;
 }
 
-std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByPort()
+HttpBlock::serverNamesByPortMapRef HttpBlock::getServerNamesByPort()
 {
-	return (this->locationDatasByPort);
+	return this->serverNamesByPort;
 }
 
 HttpBlock::HttpBlock() {}
