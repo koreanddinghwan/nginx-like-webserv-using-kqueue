@@ -2,17 +2,18 @@
 # define HTTPDATA_HPP
 
 #include "HttpConfigData.hpp"
-#include "../../../interface/IHttpBlock.hpp"
 
 /**
  * @brief HttpData
  *
  * data that only have http
  */
+class HttpServerBlock;
+
 class HttpData: public HttpConfigData
 {
 	private:
-		std::vector<IHttpBlock *> httpServerBlock;
+		std::vector<HttpServerBlock *> httpServerBlock;
 
 	public:
 		HttpData();
@@ -20,8 +21,8 @@ class HttpData: public HttpConfigData
 		HttpData(HttpData &c);
 		void operator=(HttpData &c);
 
-		std::vector<IHttpBlock *> getServerBlock();
-		void setServerBlock(IHttpBlock *f);
+		std::vector<HttpServerBlock *> &getServerBlock();
+		void setServerBlock(HttpServerBlock *f);
 
 		void printData();
 };

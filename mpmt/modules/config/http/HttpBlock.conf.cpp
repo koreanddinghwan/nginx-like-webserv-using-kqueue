@@ -11,7 +11,7 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	 * private 멤버변수 세팅
 	 * */
 
-	std::vector<IHttpBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
+	std::vector<HttpServerBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
@@ -37,11 +37,11 @@ HttpBlock::HttpBlock(std::ifstream &File)
 		/**
 		 * @set locationDatasByPort
 		 * */
-		std::vector<IHttpBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
+		std::vector<HttpLocationBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
 
 		for (int j = 0; j < locationBlock.size(); j++)
 		{
-			int port = static_cast<HttpLocationData *>(locationBlock[j]->getConfigData())->getListen();
+			int port = locationBlock[j]->getLocationData().getListen();
 
 			/**
 			 * 해당 port를 가진 location block이 없음. 
@@ -101,7 +101,9 @@ void HttpBlock::parse(std::ifstream &File)
 		if (buf.find("server {") != std::string::npos)
 		{
 			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
-			static_cast<HttpData *>(this->getConfigData())->setServerBlock(new HttpServerBlock(File, static_cast<HttpData *>(this->getConfigData())));
+			this->getHttpData().setServerBlock(
+					new HttpServerBlock(File, (&this->getHttpData()))
+				);
 		}
 	}
 }

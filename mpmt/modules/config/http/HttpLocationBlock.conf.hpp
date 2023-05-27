@@ -23,6 +23,7 @@
 *   proxy_pass      http://127.0.0.1:8080; 
 * } 
 * */
+
 class HttpLocationBlock : public IHttpBlock
 {
 	private:
