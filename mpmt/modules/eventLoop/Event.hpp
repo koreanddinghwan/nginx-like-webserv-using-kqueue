@@ -90,10 +90,9 @@ private:
 	IHandler*	responseHandler;
 
 	/**
-	 * @brief 현재 이벤트에 대한 location block data
-	 */
-	t_locationData *locationData;
-
+	 * @brief 현재 이벤트의 serverdata
+	 * */
+	std::vector<HttpServerData *> serverData;
 
 	/**
 	 * @brief todo: 생성자에서 초기화
@@ -121,8 +120,8 @@ private:
 public:
 	void setRequestHandler(IHandler* t);
 	void setResponseHandler(IHandler* t);
-	void setLocationData(std::vector<HttpLocationData *> *t);
-
+	void setServerDataByPort(int port);
+	void setServerData(std::vector<HttpServerData *> *t);
 
 public:
 	/**
@@ -138,11 +137,11 @@ public:
 	t_EventType& getEventType();
 	IHandler* getRequestHandler();
 	IHandler* getResponseHandler();
-	std::vector<HttpLocationData *> *getLocationData();
+	std::vector<HttpServerData *> *getServerData();
 	HttpServerData *getDefaultServerData();
 
+	static Event* createNewServerSocketEvent(int port);
 	static Event* createNewClientSocketEvent(Event *e);
-	static Event* createNewServerSocketEvent(t_locationData *m);
 
 private:
 	Event(Event &e);
