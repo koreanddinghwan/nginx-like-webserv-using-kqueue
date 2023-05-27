@@ -53,7 +53,7 @@ struct httpRequestInfo
 	std::map<std::string, std::string> reqHeaderMap;
 	std::map<std::string, std::string> reqCookieMap;
 		/*Requeset headers*/
-		char *Host;
+		std::string host;
 		//char *UserAgent;
 		//char *Accept;
 		//char *AcceptLanguage;
