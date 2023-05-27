@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <set>
 
 /**
  * @brief make Http block
@@ -19,6 +20,10 @@ class HttpBlock: public IHttpBlock
 	public:
 		typedef std::map<int, std::vector<HttpLocationData *> *> locationDatasByPortMap;
 		typedef std::map<int, std::vector<HttpLocationData *> *>& locationDatasByPortMapRef;
+
+		typedef std::map<int, std::vector<std::string> *> serverNamesByPortMap;
+		typedef std::map<int, std::vector<std::string> *> &serverNamesByPortMapRef;
+		
 		/**
 		 * @brief location block iterator
 		 * int : port number
@@ -26,6 +31,12 @@ class HttpBlock: public IHttpBlock
 		 */
 		typedef std::map<int, std::vector<HttpLocationData *> *>::iterator locationDatasByPortMapIter;
 
+		/**
+		 * @brief server name iterator
+		 * int : port number
+		 * vector<std::string> : server names
+		 */
+		typedef std::map<int, std::vector<std::string> *>::iterator serverNamesByPortMapIter;
 
 private:
 	HttpData confData;
@@ -43,6 +54,8 @@ private:
 	 * defaultServerData를 사용한다.
 	 */
 	HttpServerData* defaultServerData;
+
+	serverNamesByPortMap serverNamesByPort;
 
 public:
 	HttpBlock(std::ifstream &File);
@@ -66,7 +79,10 @@ public:
 	 * */
 	HttpServerData* getDefaultServerData();
 
-
+	/**
+	 * get server Names By Port
+	 * */
+	serverNamesByPortMapRef getServerNamesByPort();
 
 private:
 	/**
