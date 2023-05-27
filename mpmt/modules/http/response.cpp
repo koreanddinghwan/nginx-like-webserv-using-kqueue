@@ -17,17 +17,13 @@ void *Response::handle(void *data)
 	if (!checkServerNameExistsInConfig(e))
 	{
 		/**
-		 * find location data by finding in event's default server's location data
+		 * server name이 없다면, default server사용
 		 * */
-		std::cout << "use default server's location data" << std::endl;
 	}
-	else
-	{
-		/**
-		 * find location data by longest prefix match in event's locationData
-		 * */
-		std::cout << "use longest prefix match" << std::endl;
-	}
+	/**
+	 * find location data by longest prefix match in event's locationData
+	 * */
+	std::cout << "use longest prefix match" << std::endl;
 
 
 	return NULL;

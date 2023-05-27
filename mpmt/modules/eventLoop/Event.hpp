@@ -95,10 +95,10 @@ private:
 	t_locationData *locationData;
 
 
-	/*/1** */
-	/* * @brief todo: 생성자에서 초기화 */
-	/* *1/ */
-	/*HttpServerData *defaultServerData; */
+	/**
+	 * @brief todo: 생성자에서 초기화
+	 */
+	HttpServerData *defaultServerData;
 
 
 public:
@@ -139,7 +139,7 @@ public:
 	IHandler* getRequestHandler();
 	IHandler* getResponseHandler();
 	std::vector<HttpLocationData *> *getLocationData();
-	/* HttpServerData *getDefaultServerData(); */
+	HttpServerData *getDefaultServerData();
 
 	static Event* createNewClientSocketEvent(Event *e);
 	static Event* createNewServerSocketEvent(t_locationData *m);
