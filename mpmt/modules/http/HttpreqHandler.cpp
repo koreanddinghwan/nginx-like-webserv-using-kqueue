@@ -230,6 +230,53 @@ void HttpreqHandler::parseSeperate(std::string req)
 }
 /* ============================================= */
 
+
+/* =================== cookie =================== */
+void HttpreqHandler::saveSid(std::string key, std::string value)
+{
+	// if (!key.compare("sid"))
+	if (key == "sid")
+	{
+		_sid = value;
+		return ;
+	}	
+	return ;
+}
+
+void HttpreqHandler::insertCookieMap(std::string line, int *prevPos, int *pos)
+{
+	std::string key, value;
+
+	*prevPos += line.length() + 2;
+	*pos = line.find("=");
+	key = line.substr(0, *pos);
+	value = line.substr(*pos + 1);
+	_info.reqCookieMap.insert(std::make_pair(key,value));
+	saveSid(key, value);
+
+}
+
+void HttpreqHandler::parseCookie(void)
+{
+	int pos, prevPos = 0;
+	std::string cookies;
+	std::string line;
+	std::map<std::string, std::string>::iterator it;
+
+	if ((it = _info.reqHeaderMap.find("Cookie")) == _info.reqHeaderMap.end())
+		return ;
+	cookies = it->second;
+	while ((pos = cookies.find("; ", prevPos)) != std::string::npos)
+	{
+		line = cookies.substr(prevPos, pos - prevPos);
+		insertCookieMap(line, &prevPos, &pos);
+	}
+	line = cookies.substr(prevPos);
+	insertCookieMap(line, &prevPos, &pos);
+}
+/* ============================================= */
+
+
 /* =================== parse =================== */
 void HttpreqHandler::parseStartLine(std::string line) 
 {
@@ -301,6 +348,7 @@ void HttpreqHandler::parse(void)
 		}
 	}
 	//body
+	parseCookie();
 	parseBody();
 }
 /* ============================================= */
@@ -317,17 +365,23 @@ HttpreqHandler::~HttpreqHandler()
 {
 	//delete this->info;
 }
+/* ============================================= */
 
+
+/* =============== utils ================== */
 std::string HttpreqHandler::getBuf() const { return _buf; }
 
 void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
+
+bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : false); }
+
+std::string HttpreqHandler::getSid(void) const { return _sid;}
+
 const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const
 { return _info; }
-
 /* ============================================= */
-
 
 void HttpreqHandler::printReq(void)
 {
@@ -341,7 +395,11 @@ void HttpreqHandler::printReq(void)
 		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
 	std::cout<<"\nBody"<<std::endl<<std::endl;
 	std::cout<<"\033[35m"<<_info.body<<std::endl<<std::endl;
-	//std::cout<<_messageState<<std::endl;
+	std::cout<<"Cookie"<<std::endl<<std::endl;
+	for (std::map<std::string, std::string>::iterator it = _info.reqCookieMap.begin(); it != _info.reqCookieMap.end(); it++)
+		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
+	if (getHasSid())
+		std::cout << _sid << "??"<< std::endl;
 	std::cout<<"\033[35m"<<"=============Request Result End============"<<std::endl;
 }
 
