@@ -11,19 +11,19 @@ void EventLoop::readCallback(struct kevent *e)
 	switch (e_udata->getEventType()){
 		//check us server socket
 		case E_SERVER_SOCKET:
-			e_serverSocketCallback(e, e_udata);
+			e_serverSocketReadCallback(e, e_udata);
 			break;
 		//check is client socket read
 		case E_CLIENT_SOCKET:
-			e_clientSocketCallback(e, e_udata);
+			e_clientSocketReadCallback(e, e_udata);
 			break;
 		//check is pipe read
 		case E_PIPE:
-			e_pipeCallback(e, e_udata);
+			e_pipeReadCallback(e, e_udata);
 			break;
 		//check is file read
 		case E_FILE:
-			e_fileCallback(e, e_udata);
+			e_fileReadCallback(e, e_udata);
 			break;
 		default:
 			std::cout<<"unknown event type"<<std::endl;
@@ -38,7 +38,7 @@ void EventLoop::readCallback(struct kevent *e)
  * client socket을 생성하고, client socket에 대한 read event를 등록한다.
  * @param e
  */
-void EventLoop::e_serverSocketCallback(struct kevent *e, Event *e_udata)
+void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[33m"; 
 	std::cout<<"SERVER SOCKET CALLBACK"<<std::endl;
@@ -58,7 +58,7 @@ void EventLoop::e_serverSocketCallback(struct kevent *e, Event *e_udata)
 	}
 }
 
-void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
+void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[34m"; 
 	std::cout<<"client socket callback"<<std::endl;
@@ -125,7 +125,7 @@ void EventLoop::e_clientSocketCallback(struct kevent *e, Event *e_udata)
 /* When the last writer disconnects, the filter will set EV_EOF in flags. */
 /* This may be cleared by passing in EV_CLEAR, at which point the filter will */
 /* resume waiting for data to become available before returning. */
-void EventLoop::e_pipeCallback(struct kevent *e, Event *e_udata)
+void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[35m"; 
 	std::cout<<"pipe callback"<<std::endl;
@@ -135,7 +135,7 @@ void EventLoop::e_pipeCallback(struct kevent *e, Event *e_udata)
 	}
 }
 
-void EventLoop::e_fileCallback(struct kevent *e, Event *e_udata)
+void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[36m"; 
 	std::cout<<"file callback"<<std::endl;
