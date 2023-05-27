@@ -7,6 +7,7 @@ Event::Event(t_ServerType t)
 	this->pipe_fd = -1;
 	this->file_fd = -1;
 	this->serverType = t;
+	this->statusCode = -1;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -198,6 +199,18 @@ Event *Event::createNewServerSocketEvent(int port)
 	e->setSocketInfo(socketInfo);
 	e->setEventType(event_type);
 	return e;
+}
+
+void Event::closeAllFd()
+{
+	if (this->server_socket_fd != -1)
+		close(this->server_socket_fd);
+	if (this->client_socket_fd != -1)
+		close(this->client_socket_fd);
+	if (this->pipe_fd != -1)
+		close(this->pipe_fd);
+	if (this->file_fd != -1)
+		close(this->file_fd);
 }
 
 /**
