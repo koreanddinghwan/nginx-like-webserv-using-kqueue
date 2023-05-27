@@ -21,13 +21,16 @@ WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
+EXCEPTIONSRCS = configParseException.cpp httpException.cpp
+EXCEPTIONOBJS = $(addprefix ./exceptions/, $(EXCEPTIONSRCS:.cpp=.o))
+
 LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp
 LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
 
 MAINSRCS = main.cpp
 MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
 
-OBJS = $(LIBOBJS) $(MAINOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS) $(HTTPOBJS)
+OBJS = $(LIBOBJS) $(MAINOBJS) $(EXCEPTIONOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS) $(HTTPOBJS)
 
 all : $(NAME)
 
