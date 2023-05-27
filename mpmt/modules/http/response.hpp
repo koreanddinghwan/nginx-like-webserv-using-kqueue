@@ -20,17 +20,17 @@ public:
 	/**
 	 * check server name and hostname
 	 * */
-	bool checkServerName(Event::t_locationData *locationData);
+	bool checkServerNameExistsInConfig(Event *e);
+
+	/**
+	 * setLocationData by longest prefix match
+	 * */
+	void setLocationData(Event *e);
 
 	/**
 	 * need to check allowed method
 	 * */
 	bool checkAllowMethod();
-
-
-	/**
-	 * check 
-	 * */
 
 	bool checkIsNeedCgi();
 	bool checkIsNeedFile();
