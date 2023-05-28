@@ -228,6 +228,12 @@ std::string *Event::getBuffer()
 void Event::setBuffer(std::string *t)
 {this->buffer = t;}
 
+std::string &Event::getRoute()
+{return this->route;}
+
+void Event::setRoute(std::string t)
+{this->route = t;}
+
 /**
  * @deprecated
  * */
