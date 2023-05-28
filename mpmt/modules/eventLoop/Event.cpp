@@ -68,6 +68,11 @@ void Event::setServerData(std::vector<HttpServerData *> *t)
 	this->defaultServerData = t->at(0);
 }
 
+void Event::setDefaultServerData(HttpServerData *t)
+{
+	this->defaultServerData = t;
+}
+
 t_ServerType& Event::getServerType()
 {return this->serverType;}
 
@@ -222,11 +227,6 @@ std::string *Event::getBuffer()
 {return this->buffer;}
 void Event::setBuffer(std::string *t)
 {this->buffer = t;}
-
-std::string &Event::getErrorMessage()
-{return this->errorMessage;}
-void Event::setErrorMessage(std::string t)
-{this->errorMessage = t;}
 
 /**
  * @deprecated
