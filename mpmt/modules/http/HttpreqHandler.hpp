@@ -36,6 +36,7 @@ private:
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
+	Event *_event;
 	bool _pended;
 	std::string _sid;
 	/* ========================================== */
@@ -90,6 +91,7 @@ private:
 	
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
+	void checkMethod(void);
 };
 
 int convertHexToDec(std::string line);
