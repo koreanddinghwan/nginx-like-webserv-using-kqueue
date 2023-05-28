@@ -31,10 +31,10 @@ void HttpServerBlock::parse(std::ifstream &File)
 		{
 			File.seekg(cur_offset);
 			std::cout<<"\033[31m"<<"make new location block"<<buf<<std::endl;
-			this->serverData.setHttpLocationBlock(static_cast<IHttpBlock *>(new HttpLocationBlock(File, static_cast<HttpServerData *>(this->getConfigData()))));
+			this->serverData.setHttpLocationBlock((new HttpLocationBlock(File, static_cast<HttpServerData *>(this->getConfigData()))));
 		}
 	}
 	if (this->serverData.getHttpLocationBlock().size() == 0)
-		this->serverData.setHttpLocationBlock(static_cast<IHttpBlock *>(new HttpLocationBlock(static_cast<HttpServerData *>(this->getConfigData()))));
+		this->serverData.setHttpLocationBlock((new HttpLocationBlock(static_cast<HttpServerData *>(this->getConfigData()))));
 	std::cout<<"end of server block"<<std::endl;
 }
