@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include "../../interface/IServer.hpp"
 #include "../config/data/HttpLocationData.hpp"
-
+#include <unistd.h>
 /* Event Type: */
 
 /* 1. Read (FILT)*/ 
@@ -90,16 +90,18 @@ private:
 	IHandler*	responseHandler;
 
 	/**
-	 * @brief 현재 이벤트에 대한 location block data
-	 */
-	t_locationData *locationData;
-
+	 * @brief 현재 이벤트의 serverdata
+	 * */
+	std::vector<HttpServerData *> serverData;
 
 	/**
 	 * @brief todo: 생성자에서 초기화
 	 */
 	HttpServerData *defaultServerData;
 
+	std::string *buffer;
+	std::string errorMessage;
+	int statusCode;
 
 public:
 	Event(t_ServerType t);
@@ -121,28 +123,39 @@ private:
 public:
 	void setRequestHandler(IHandler* t);
 	void setResponseHandler(IHandler* t);
-	void setLocationData(std::vector<HttpLocationData *> *t);
-
+	void setServerDataByPort(int port);
+	void setServerData(std::vector<HttpServerData *> *t);
 
 public:
 	/**
 	 * getter
 	 * */
-	t_ServerType& getServerType();
-	t_SocketInfo& getSocketInfo();
-	int& getServerFd();
-	int& getClientFd();
-	int& getPipeFd();
-	int& getFileFd();
+	t_ServerType&	getServerType();
+	t_SocketInfo&	getSocketInfo();
+	int&			getServerFd();
+	int&			getClientFd();
+	int&			getPipeFd();
+	int&			getFileFd();
 
-	t_EventType& getEventType();
-	IHandler* getRequestHandler();
-	IHandler* getResponseHandler();
-	std::vector<HttpLocationData *> *getLocationData();
-	HttpServerData *getDefaultServerData();
+	t_EventType&	getEventType();
+	IHandler*		getRequestHandler();
+	IHandler*		getResponseHandler();
+	std::vector<HttpServerData *>	*getServerData();
+	HttpServerData					*getDefaultServerData();
 
-	static Event* createNewClientSocketEvent(Event *e);
-	static Event* createNewServerSocketEvent(t_locationData *m);
+	static Event*	createNewServerSocketEvent(int port);
+	static Event*	createNewClientSocketEvent(Event *e);
+
+	void closeAllFd();
+
+	int&	getStatusCode();
+	void	setStatusCode(int t);
+
+	std::string	*getBuffer();
+	void	setBuffer(std::string *t);
+
+	std::string	&getErrorMessage();
+	void		setErrorMessage(std::string t);
 
 private:
 	Event(Event &e);

@@ -19,14 +19,15 @@ void HttpServer::init() throw(std::runtime_error)
 	{
 		/* port별로 server socket event를 생성.*/
 		int port = (*it).first;
-		Event *e = Event::createNewServerSocketEvent(H->findLocationDatasByPort(port));
+		Event *e = Event::createNewServerSocketEvent(port);
 
 		int fd = e->getServerFd();
 		this->serverSocketFd.push_back((fd));
 		struct kevent kev;
 	
 		/* todo =>event 넣기*/
-		EV_SET(&kev, fd, EVFILT_READ, EV_ADD, 0, 0, e);
+		std::cout<<e<<std::endl;
+		EV_SET(&kev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 		this->kevents.push_back(kev);
 	}
 }
