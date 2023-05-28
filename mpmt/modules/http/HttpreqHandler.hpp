@@ -2,24 +2,25 @@
 # define HTTPREQHANDLER_HPP
 
 #include <iostream>
+#include "../eventLoop/Event.hpp"
 #include "./HttpRequestInfo.hpp"
 #include "../../interface/IHandler.hpp"
+#include "../../exceptions/httpException.hpp"
 
 #define CRLF "\r\n"
 #define CRLF2 "\r\n\r\n"
 
 enum messageStateEnum {
 	chunked = 1,
-	seperate,
+	separate,
 	basic
 };
 
 class HttpreqHandler : public IHandler
 {
 private:
-	//httpRequestInfo *info;
 	/* ======== 패킷 모두 전송 전까지 사용할 변수 ======= */
-	//패킷 전송 방식(chunked, seperate, basic)
+	//패킷 전송 방식(chunked, separate, basic)
 	messageStateEnum _messageState;
 
 	std::string	_buf;
@@ -28,13 +29,16 @@ private:
 	std::string _chunkedWithoutBodyBuf;
 
 	int _contentLength;
-	bool _pended;
+	bool _hasContentLength;
+	bool _findCRLF2;
 	/* ========================================== */
 
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
-	//std::map<std::string, std::string> reqHeaderMap;
+	Event *_event;
+	bool _pended;
+	std::string _sid;
 	/* ========================================== */
 
 public:
@@ -47,6 +51,8 @@ public:
 	//utils
 	void printReq(void);
 	bool getIsPending(void) const;
+	bool getHasSid(void) const;
+	std::string getSid(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
 
 private:
@@ -57,28 +63,37 @@ private:
 	void initPendingState(void);
 
 	//init utils
-	void parseContentLength(void);
+	bool parseContentLength(void);
 	void parseMethod(std::string line);
-	bool checkSeperate(int pos);
+	bool checkSeparate(int CRLF2Pos);
 
 	//parse
 	void parse(void);
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);
+	void saveHost(std::string key, std::string value);
+
+	//cookie
+	void parseCookie(void);
+	void insertCookieMap(std::string cookies, int *prevPos, int *pos);
+	void saveSid(std::string key, std::string value);
 
 	//chunked
 	void parseChunked(std::string req);
 	int parseChunkedLength(std::string req, int *pos);
 	std::string parseChunkedBody(std::string req, int *pos);
 
-	//seperate
-	void parseSeperate(std::string req);
+	//separate
+	void parseSeparate(std::string req);
 	void findMethod(void);
 	void appendBodyBuf(std::string req);
 	
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
+	void checkStartLine(void);
+	void checkMethod(void);
+	void checkHttpVersion(void);
 };
 
 int convertHexToDec(std::string line);
