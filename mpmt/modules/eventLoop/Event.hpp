@@ -99,6 +99,7 @@ private:
 	 */
 	HttpServerData *defaultServerData;
 
+	std::string route;
 	std::string *buffer;
 	int statusCode;
 
@@ -153,6 +154,9 @@ public:
 
 	std::string	*getBuffer();
 	void	setBuffer(std::string *t);
+
+	std::string&	getRoute();
+	void			setRoute(std::string t);
 
 private:
 	Event(Event &e);
