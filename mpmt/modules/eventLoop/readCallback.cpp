@@ -1,4 +1,5 @@
 #include "EventLoop.hpp"
+#include <sys/event.h>
 
 void EventLoop::readCallback(struct kevent *e)
 {
@@ -103,10 +104,16 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				 * register write event to client_fd, and finally send error response
 				 * */
 				registerRequestHttpExceptionEvent(e_udata);
+				/**
+				 * in here, the read event for this client_fd disabled
+				 * and the write event to client socket add and enabled
+				 * */
 				return ;
 			}
+
+
+
 			//handle response by request
-			
 			/**
 			 * pending state => client로부터 data를 더 받아야하는 상태
 			 * */
@@ -124,34 +131,51 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				/**
 				 *
 				 * handle error
-				 * 
-				 * /
+				 *
+				 * 1. check host name
+				 * 2. check the uri
+				 * */
 
 
 				static_cast<Response *>(e_udata->getResponseHandler())->handle(e_udata);
 				/**
 				 * if need file i/o
+				 * first, if method == POST -> file write event
+				 * second, if method == GET && not CGI_PASS -> file read event
+				 * then?
 				 * */
 				/**
 				 * else if need cgi(pipe)
+				 * 1. open pipe and set NON_BLOCK
+				 * 2. set readfilter && E_pipeevent to server side pipe
+				 * 3. fork
+				 * 		3-1. parent: return ;
+				 * 		3-2. child: execve by cgi environment in response handler
 				 * */
 			}
 		}
 	}
 }
 
-/* Fifos, Pipes */
-/* Returns when there is data to read; data contains the number of bytes available. */
-/* When the last writer disconnects, the filter will set EV_EOF in flags. */
-/* This may be cleared by passing in EV_CLEAR, at which point the filter will */
-/* resume waiting for data to become available before returning. */
+/**
+* Fifos, Pipes
+* Returns when there is data to read; data contains the number of bytes available.
+* When the last writer disconnects, the filter will set EV_EOF in flags.
+* This may be cleared by passing in EV_CLEAR, at which point the filter will
+* resume waiting for data to become available before returning.
+**/
+
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[35m"; 
 	std::cout<<"pipe callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//read from pipe
+		//eof flag있어야 writer가 작성 끝낸거임.
+		if (e->flags & EV_EOF)
+		{
+			//process pipe read 
+		}
 	}
 }
 
@@ -159,5 +183,12 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[36m"; 
 	std::cout<<"file callback"<<std::endl;
-
+	if (e_udata->getServerType() == HTTP_SERVER)
+	{
+		//eof flag있어야 writer가 작성 끝낸거임.
+		if (e->flags & EV_EOF)
+		{
+			//process pipe read 
+		}
+	}
 }
