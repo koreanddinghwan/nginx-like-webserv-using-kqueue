@@ -2,6 +2,7 @@
 # define HTTPREQHANDLER_HPP
 
 #include <iostream>
+#include "../eventLoop/Event.hpp"
 #include "./HttpRequestInfo.hpp"
 #include "../../interface/IHandler.hpp"
 #include "../../exceptions/httpException.hpp"
@@ -11,7 +12,7 @@
 
 enum messageStateEnum {
 	chunked = 1,
-	seperate,
+	separate,
 	basic
 };
 
@@ -19,7 +20,7 @@ class HttpreqHandler : public IHandler
 {
 private:
 	/* ======== 패킷 모두 전송 전까지 사용할 변수 ======= */
-	//패킷 전송 방식(chunked, seperate, basic)
+	//패킷 전송 방식(chunked, separate, basic)
 	messageStateEnum _messageState;
 
 	std::string	_buf;
@@ -28,6 +29,8 @@ private:
 	std::string _chunkedWithoutBodyBuf;
 
 	int _contentLength;
+	bool _hasContentLength;
+	bool _findCRLF2;
 	/* ========================================== */
 
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
@@ -61,7 +64,7 @@ private:
 	//init utils
 	bool parseContentLength(void);
 	void parseMethod(std::string line);
-	bool checkSeperate(int CRLF2Pos);
+	bool checkSeparate(int CRLF2Pos);
 
 	//parse
 	void parse(void);
@@ -80,8 +83,8 @@ private:
 	int parseChunkedLength(std::string req, int *pos);
 	std::string parseChunkedBody(std::string req, int *pos);
 
-	//seperate
-	void parseSeperate(std::string req);
+	//separate
+	void parseSeparate(std::string req);
 	void findMethod(void);
 	void appendBodyBuf(std::string req);
 	

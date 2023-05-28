@@ -45,10 +45,10 @@ int main()
 	//	"{\n\t바디입니다\n바디고요\n바디라고합니다 사실 get에는 없지만 일단 확인 해보는겁니다...\n";
 
 
-	cookie = "POST /test HTTP/1.1\r\nHost: foo.example\r\nCookie: PHPSESSID=298zf09hf012fh2; sid=34; csrftoken=u32t4o3tb3gg43; _gat=1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
-	basic_post = "POST /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
+	cookie = "GET /test HTTP/1.1\r\nHost: foo.example\r\nCookie: PHPSESSID=298zf09hf012fh2; sid=34; csrftoken=u32t4o3tb3gg43; _gat=1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
+	basic_post = "GET /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 27\r\n\r\nfield1=value1&field2=value2";
 	basic_get = "GET /test HTTP/1.1\r\nHost: foo.example\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n";
-	chunked = "POST /test HTTP/1.1\r\n"
+	chunked = "GET /test HTTP/1.1\r\n"
 			"Content-Type: text/plain\r\n"
 			"Transfer-Encoding: chunked\r\n\r\n";
 			c1 = "7\r\nMozilla\r\n";
@@ -56,7 +56,7 @@ int main()
 			c3 = "0\r\n\r\n";
 			// 어디선 "0\r\n\r\n" 고 어디는 "0\r\n"라 나중에 수정해야됨
 
-	sep1 = "POST /test HTTP/1.1\r\nHost: fo";
+	sep1 = "GET /test HTTP/1.1\r\nHost: fo";
 	sep2 ="o.example\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Lengt";
 	sep3 = "h: 27\r\n\r\nfield1=value1&field2=value2";
 
