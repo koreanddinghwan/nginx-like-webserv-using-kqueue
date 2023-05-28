@@ -93,12 +93,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
+			e_udata->setBuffer(&HttpServer::getInstance().getStringBuffer());
 			try {
-				reqHandler->handle(&(HttpServer::getInstance().getStringBuffer()));
+				reqHandler->handle(e_udata);
 			} catch (HttpException &exception) {
-				e_udata->errorMessage = exception.what();
-				e_udata->statusCode = exception.getStatusCode();
-
 				/**
 				 * client request exception handling by 
 				 * register write event to client_fd, and finally send error response
