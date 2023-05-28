@@ -15,6 +15,7 @@
 #include "../http/HttpServer.hpp"
 #include "Event.hpp"
 #include "../http/response.hpp"
+#include "../http/setHttpResponse.hpp"
 
 /**
  * @brief singleton eventloop
@@ -76,8 +77,14 @@ private:
 	void registerClientSocketWriteEvent(Event *e);
 	void registerPipeWriteEvent(Event *e);
 	void registerFileWriteEvent(Event *e);
-	void registerRequestHttpExceptionEvent(Event *e);
-	void registerResponseHttpExceptionEvent(Event *e);
+
+
+	void unregisterClientSocketReadEvent(Event *e);
+	void unregisterPipeReadEvent(Event *e);
+	void unregisterFileReadEvent(Event *e);
+	void unregisterClientSocketWriteEvent(Event *e);
+	void unregisterPipeWriteEvent(Event *e);
+	void unregisterFileWriteEvent(Event *e);
 };
 
 
