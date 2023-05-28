@@ -3,7 +3,10 @@ CXX = c++
 CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp response.cpp
+FACTORYSRCS = MethodFactory.cpp
+FACTORYOBJS = $(addprefix ./factory/, $(FACTORYSRCS:.cpp=.o))
+
+HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp response.cpp setHttpResponse.cpp
 HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
 
 HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
@@ -30,7 +33,7 @@ LIBOBJS = $(addprefix ./lib/, $(LIBSRCS:.cpp=.o))
 MAINSRCS = main.cpp
 MAINOBJS = $(addprefix ./, $(MAINSRCS:.cpp=.o))
 
-OBJS = $(LIBOBJS) $(MAINOBJS) $(EXCEPTIONOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS) $(HTTPOBJS)
+OBJS = $(LIBOBJS) $(MAINOBJS) $(EXCEPTIONOBJS) $(EVENTLOOPOBJS) $(HTTPCONFIGOBJS) $(FACTORYOBJS) $(CONFIGOBJS) $(HTTPDATAOBJS) $(WEBSERVOBJS) $(HTTPOBJS)
 
 all : $(NAME)
 
