@@ -99,15 +99,11 @@ private:
 	 */
 	HttpServerData *defaultServerData;
 
-
-public:
-
-	/**
-	 * @TODO getter and setter
-	 * */
+	std::string *buffer;
 	std::string errorMessage;
 	int statusCode;
-	
+
+public:
 	Event(t_ServerType t);
 	/* Event(Event &e); */
 	~Event();
@@ -134,23 +130,32 @@ public:
 	/**
 	 * getter
 	 * */
-	t_ServerType& getServerType();
-	t_SocketInfo& getSocketInfo();
-	int& getServerFd();
-	int& getClientFd();
-	int& getPipeFd();
-	int& getFileFd();
+	t_ServerType&	getServerType();
+	t_SocketInfo&	getSocketInfo();
+	int&			getServerFd();
+	int&			getClientFd();
+	int&			getPipeFd();
+	int&			getFileFd();
 
-	t_EventType& getEventType();
-	IHandler* getRequestHandler();
-	IHandler* getResponseHandler();
-	std::vector<HttpServerData *> *getServerData();
-	HttpServerData *getDefaultServerData();
+	t_EventType&	getEventType();
+	IHandler*		getRequestHandler();
+	IHandler*		getResponseHandler();
+	std::vector<HttpServerData *>	*getServerData();
+	HttpServerData					*getDefaultServerData();
 
-	static Event* createNewServerSocketEvent(int port);
-	static Event* createNewClientSocketEvent(Event *e);
+	static Event*	createNewServerSocketEvent(int port);
+	static Event*	createNewClientSocketEvent(Event *e);
 
 	void closeAllFd();
+
+	int&	getStatusCode();
+	void	setStatusCode(int t);
+
+	std::string	*getBuffer();
+	void	setBuffer(std::string *t);
+
+	std::string	&getErrorMessage();
+	void		setErrorMessage(std::string t);
 
 private:
 	Event(Event &e);

@@ -213,6 +213,21 @@ void Event::closeAllFd()
 		close(this->file_fd);
 }
 
+int &Event::getStatusCode()
+{return this->statusCode;}
+void Event::setStatusCode(int t)
+{this->statusCode = t;}
+
+std::string *Event::getBuffer()
+{return this->buffer;}
+void Event::setBuffer(std::string *t)
+{this->buffer = t;}
+
+std::string &Event::getErrorMessage()
+{return this->errorMessage;}
+void Event::setErrorMessage(std::string t)
+{this->errorMessage = t;}
+
 /**
  * @deprecated
  * */
