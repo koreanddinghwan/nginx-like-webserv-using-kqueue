@@ -6,25 +6,8 @@ Event::Event(t_ServerType t)
 	this->client_socket_fd = -1;
 	this->pipe_fd = -1;
 	this->file_fd = -1;
-
-	/* @todo 
-	 *
-	 * set handler object by server type
-	 * */
 	this->serverType = t;
-
-	/**
-	 * set default handler and default server data
-	 * by server type!
-	 * */
-	switch (this->serverType) {
-		case (t_ServerType::HTTP_SERVER):
-			this->defaultServerData = 
-				static_cast<HttpServerData *>(Config::getInstance().getHTTPBlock()->getConfigData());
-			break;
-		default:
-			break;
-	}
+	this->statusCode = -1;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -54,10 +37,36 @@ void Event::setRequestHandler(IHandler *t)
 void Event::setResponseHandler(IHandler *t)
 {this->responseHandler = t;}
 
-void Event::setLocationData(std::vector<HttpLocationData *> *t)
-{this->locationData = t;}
+void Event::setServerDataByPort(int port)
+{
+	std::vector<HttpServerBlock *> *serverBlock = &(Config::getInstance().getHTTPBlock()->getHttpData().getServerBlock());
 
+	int count = 0;
 
+	for (int i = 0; i < serverBlock->size();i++)
+	{
+		if (serverBlock->at(i)->getServerData().getListen() == port)
+		{
+			if (count == 0)
+				this->defaultServerData = &(serverBlock->at(i)->getServerData());
+			this->serverData.push_back(&(serverBlock->at(i)->getServerData()));
+
+			for (int j = 0; j < serverBlock->at(i)->getServerData().getHttpLocationBlock().size(); j++)
+			{
+				this->serverData.back()->getLocationDatas().push_back(
+						&(serverBlock->at(i)->getServerData().getHttpLocationBlock().at(j)->getLocationData())
+						);
+			}
+			count++;
+		}
+	}
+}
+
+void Event::setServerData(std::vector<HttpServerData *> *t)
+{
+	this->serverData = *t;
+	this->defaultServerData = t->at(0);
+}
 
 t_ServerType& Event::getServerType()
 {return this->serverType;}
@@ -86,7 +95,10 @@ IHandler *Event::getRequestHandler()
 IHandler *Event::getResponseHandler()
 {return this->responseHandler;}
 
-std::vector<HttpLocationData *> *Event::getLocationData() {return this->locationData;}
+std::vector<HttpServerData *> *Event::getServerData()
+{
+	return &(this->serverData);
+}
 
 HttpServerData *Event::getDefaultServerData(){return this->defaultServerData;}
 
@@ -101,6 +113,11 @@ Event *Event::createNewClientSocketEvent(Event *e)
 {
 
 	Event *new_udata = new Event(HTTP_SERVER);
+
+	/**
+	 * client 는 serverSocket을 통해 연결되므로, serverSocketEvent가 가진 serverData를 그대로 가져온다.
+	 * */
+	new_udata->setServerData(e->getServerData());
 
 	t_SocketInfo socketInfo;
 	int sockfd = e->getServerFd();
@@ -130,20 +147,14 @@ Event *Event::createNewClientSocketEvent(Event *e)
 	 * client socket의 socketInfo를 등록
 	 * */
 	new_udata->setSocketInfo(socketInfo);
-
-	/**
-	 * client socket에 Location data 등록
-	 * 현재 udata의 Event에 이미 port별로 location data가 있음.
-	 * 그대로 복사
-	 * default server data는 생성자에서 초기화됨.
-	 * */
-	new_udata->setLocationData(e->getLocationData());
 	return new_udata;
 }
 
-Event *Event::createNewServerSocketEvent(t_locationData *m)
+Event *Event::createNewServerSocketEvent(int port)
 {
 	Event *e = new Event(HTTP_SERVER);
+	e->setServerDataByPort(port);
+
 	int fd;
 	t_EventType event_type = E_SERVER_SOCKET;
 	t_SocketInfo socketInfo;
@@ -163,14 +174,14 @@ Event *Event::createNewServerSocketEvent(t_locationData *m)
 		throw(std::runtime_error("setsockopt error"));
 
 	// Disable Nagle algorithm
-	socketInfo.nagle_off = (*m)[0]->getTcpNoDelay();
+	socketInfo.nagle_off = e->getServerData()->at(0)->getTcpNoDelay();
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &socketInfo.nagle_off, sizeof(socketInfo.nagle_off)) == -1) 
 		throw(std::runtime_error("setsockopt error"));
 
 	/* set server_addr */
 	socketInfo.socket_addr.sin_family = AF_INET;
 	socketInfo.socket_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	socketInfo.socket_addr.sin_port = htons((*m)[0]->getListen());
+	socketInfo.socket_addr.sin_port = htons(e->getServerData()->at(0)->getListen());
 
 	/* bind */
 	if (bind(fd, (struct sockaddr *)&socketInfo.socket_addr, sizeof((socketInfo.socket_addr))) == -1)
@@ -187,28 +198,41 @@ Event *Event::createNewServerSocketEvent(t_locationData *m)
 	e->setServerFd(fd);
 	e->setSocketInfo(socketInfo);
 	e->setEventType(event_type);
-	e->setLocationData(m);
 	return e;
 }
+
+void Event::closeAllFd()
+{
+	if (this->server_socket_fd != -1)
+		close(this->server_socket_fd);
+	if (this->client_socket_fd != -1)
+		close(this->client_socket_fd);
+	if (this->pipe_fd != -1)
+		close(this->pipe_fd);
+	if (this->file_fd != -1)
+		close(this->file_fd);
+}
+
+int &Event::getStatusCode()
+{return this->statusCode;}
+void Event::setStatusCode(int t)
+{this->statusCode = t;}
+
+std::string *Event::getBuffer()
+{return this->buffer;}
+void Event::setBuffer(std::string *t)
+{this->buffer = t;}
+
+std::string &Event::getErrorMessage()
+{return this->errorMessage;}
+void Event::setErrorMessage(std::string t)
+{this->errorMessage = t;}
 
 /**
  * @deprecated
  * */
 Event::Event(Event &e)
-{
-	/* this->serverType = e.getServerType(); */
-	/* this->socketInfo = e.getSocketInfo(); */
-
-	/* this->server_socket_fd = e.getServerFd(); */
-	/* this->client_socket_fd = e.getClientFd(); */
-	/* this->pipe_fd = e.getPipeFd(); */
-	/* this->file_fd = e.getFileFd(); */
-
-	/* this->eventInfo = e.getEventType(); */
-	/* this->requestHandler = e.getRequestHandler(); */
-	/* this->locationData = e.getLocationData(); */
-	/* this->defaultServerData = e.getDefaultServerData(); */
-}
+{}
 
 /**
  * @DO NOT USE
