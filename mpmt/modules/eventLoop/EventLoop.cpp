@@ -75,15 +75,3 @@ void EventLoop::registerInitialEvent(struct kevent *kev)
 EventLoop::EventLoop() {}
 
 EventLoop::~EventLoop() {}
-
-/**
- * @brief depreciated
- *
- * @param e
- */
-void EventLoop::disconnectionCallback(struct kevent *e)
-{
-	EV_SET(&(this->dummyEvent), e->ident, e->filter, EV_DELETE, 0, 0, NULL);
-	if (kevent(this->kq_fd, &(this->dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to delete with kqueue\n");
-}
