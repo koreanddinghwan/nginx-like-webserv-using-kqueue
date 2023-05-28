@@ -34,11 +34,14 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//status check
-		if (e_udata->statusCode >= 400)
+		if (e_udata->getStatusCode() >= 400)
 		{
-			write(e_udata->getClientFd(), e_udata->errorMessage.c_str(), e_udata->errorMessage.length());
+			write(e_udata->getClientFd(), e_udata->getErrorMessage().c_str(), e_udata->getErrorMessage().length());
 			e_udata->closeAllFd();
 			delete e_udata;
 		}
 	}
 }
+
+void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata){}
+void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata){}
