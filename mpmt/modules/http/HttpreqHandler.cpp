@@ -2,8 +2,8 @@
 
 void *HttpreqHandler::handle(void *data) 
 {
-	Event *e = static_cast<Event *>(data);
-	std::string *req = e->getBuffer();
+	_event = static_cast<Event *>(data);
+	std::string *req = _event->getBuffer();
 
 	/*
 	 처음 들어온 req massage
@@ -26,7 +26,7 @@ void *HttpreqHandler::handle(void *data)
 		parse();
 		printReq();
 	}	
-	return e;
+	return _event;
 }
 
 void HttpreqHandler::initMessageState(void)
@@ -124,12 +124,18 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 	if (!hasContentLen)
 	{
 		if (!line.empty())
+		{
+			_event->setStatusCode(411);
 			throw HttpException(411);
+		}
 	}
 	else if (hasContentLen)
 	{
 		if (line.length() > _contentLength)
+		{
+			_event->setStatusCode(413);
 			throw HttpException(413);
+		}
 		if (line.length() < _contentLength)
 		{
 			appendBodyBuf(line);
@@ -137,6 +143,16 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 		}
 	}
 	return false;
+}
+
+void HttpreqHandler::checkMethod(void)
+{
+	if ( _method == "GET" || _method == "POST" || _method == "DELETE" ||
+		_method == "PUT" || _method == "PATCH" || _method == "HEAD")
+		{
+			_event->setStatusCode(405);
+			throw HttpException(405);
+		}
 }
 
 /* =============== constructor ================== */

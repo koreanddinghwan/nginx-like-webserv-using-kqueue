@@ -13,6 +13,7 @@ int HttpreqHandler::parseChunkedLength(std::string req, int *pos)
 	{
 		if (req.length() == 5 && req[endPos - 1] == '0')
 			return (0);
+		_event->setStatusCode(411);
 		throw HttpException(411);
 		// 설마 CRLF2 뒤에 문자 더 있겠나
 	}
@@ -47,7 +48,10 @@ void HttpreqHandler::parseChunked(std::string req)
 	}
 	line = parseChunkedBody(req, &pos);
 	if (len < line.length())
+	{
+		_event->setStatusCode(413);
 		throw HttpException(413);
+	}
 	_bodyBuf.append(line);
 	_contentLength += len;
 	appendBuf(line);
@@ -106,7 +110,10 @@ void HttpreqHandler::parseSeparate(std::string req)
 		if (_contentLength == _bodyBuf.length())
 			_pended = false;
 		else if (_contentLength < _bodyBuf.length())
+		{
+			_event->setStatusCode(413);
 			throw HttpException(413);
+		}
 	}
 }
 /* ============================================= */
@@ -171,6 +178,7 @@ void HttpreqHandler::parseStartLine(std::string line)
 		}
 		prevPos += subLine.length() + 1;
 	}
+	checkMethod();
 }
 
 void HttpreqHandler::saveHost(std::string key, std::string value)
