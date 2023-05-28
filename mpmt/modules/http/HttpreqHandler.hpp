@@ -91,7 +91,9 @@ private:
 	
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
+	void checkStartLine(void);
 	void checkMethod(void);
+	void checkHttpVersion(void);
 };
 
 int convertHexToDec(std::string line);

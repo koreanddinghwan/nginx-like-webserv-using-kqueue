@@ -3,7 +3,7 @@ CXX = c++
 CXXFLAGS = -std=c++98 -g3 -fsanitize=address
 INC = .
 
-HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp response.cpp
+HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp RequestParse.cpp HttpResHandler.cpp response.cpp
 HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
 
 HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp

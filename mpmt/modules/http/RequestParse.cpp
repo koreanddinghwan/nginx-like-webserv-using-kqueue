@@ -14,7 +14,7 @@ int HttpreqHandler::parseChunkedLength(std::string req, int *pos)
 		if (req.length() == 5 && req[endPos - 1] == '0')
 			return (0);
 		_event->setStatusCode(411);
-		throw HttpException(411);
+		throw std::exception();
 		// 설마 CRLF2 뒤에 문자 더 있겠나
 	}
 	*pos = req.find(CRLF);
@@ -50,7 +50,7 @@ void HttpreqHandler::parseChunked(std::string req)
 	if (len < line.length())
 	{
 		_event->setStatusCode(413);
-		throw HttpException(413);
+		throw std::exception();
 	}
 	_bodyBuf.append(line);
 	_contentLength += len;
@@ -112,7 +112,7 @@ void HttpreqHandler::parseSeparate(std::string req)
 		else if (_contentLength < _bodyBuf.length())
 		{
 			_event->setStatusCode(413);
-			throw HttpException(413);
+			throw std::exception();
 		}
 	}
 }
@@ -178,7 +178,7 @@ void HttpreqHandler::parseStartLine(std::string line)
 		}
 		prevPos += subLine.length() + 1;
 	}
-	checkMethod();
+	checkStartLine();
 }
 
 void HttpreqHandler::saveHost(std::string key, std::string value)

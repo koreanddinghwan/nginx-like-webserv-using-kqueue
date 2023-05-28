@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include "../config/Config.hpp"
 #include <cstring>
-#include "../http/HttpReqHandler.hpp"
 #include <netinet/in.h>
 #include "../../interface/IServer.hpp"
 #include "../config/data/HttpLocationData.hpp"

@@ -24,7 +24,7 @@ void *HttpreqHandler::handle(void *data)
 	if (!_pended)
 	{
 		parse();
-		printReq();
+		// printReq();
 	}	
 	return _event;
 }
@@ -117,16 +117,18 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 {
 	std::string line;
 	bool hasContentLen;
+	int pos;
 
 	parseMethod("");
 	hasContentLen = parseContentLength();
-	line = _buf.substr(CRLF2Pos + 4);
+	pos = _buf.find("", CRLF2Pos);
+	line = _buf.substr(CRLF2Pos + 4, pos - CRLF2Pos);
 	if (!hasContentLen)
 	{
 		if (!line.empty())
 		{
 			_event->setStatusCode(411);
-			throw HttpException(411);
+			throw std::exception();
 		}
 	}
 	else if (hasContentLen)
@@ -134,7 +136,7 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 		if (line.length() > _contentLength)
 		{
 			_event->setStatusCode(413);
-			throw HttpException(413);
+			throw std::exception();//std Exception code안맞춰서 날려라
 		}
 		if (line.length() < _contentLength)
 		{
@@ -147,12 +149,27 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 
 void HttpreqHandler::checkMethod(void)
 {
-	if ( _method == "GET" || _method == "POST" || _method == "DELETE" ||
+	if (_method == "GET" || _method == "POST" || _method == "DELETE" ||
 		_method == "PUT" || _method == "PATCH" || _method == "HEAD")
-		{
-			_event->setStatusCode(405);
-			throw HttpException(405);
-		}
+		return ;
+	_event->setStatusCode(405);
+	throw std::exception();
+
+}
+
+void HttpreqHandler::checkHttpVersion(void)
+{
+	if (_info.httpVersion != "HTTP/1.1")
+	{
+		_event->setStatusCode(400);
+		throw std::exception();
+	}
+}
+
+void HttpreqHandler::checkStartLine(void)
+{
+	checkMethod();
+	checkHttpVersion();
 }
 
 /* =============== constructor ================== */
@@ -180,8 +197,7 @@ bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : fals
 
 std::string HttpreqHandler::getSid(void) const { return _sid;}
 
-const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const
-{ return _info; }
+const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info; }
 /* ============================================= */
 
 void HttpreqHandler::printReq(void)
