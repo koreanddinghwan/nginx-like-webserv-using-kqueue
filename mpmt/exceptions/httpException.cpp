@@ -66,7 +66,7 @@ ExceptionMessageFactory &ExceptionMessageFactory::getInstance()
 	return instance;
 }
 
-const std::string &ExceptionMessageFactory::getExceptionMessage(int statusCode) const
+inline const std::string &ExceptionMessageFactory::getExceptionMessage(int statusCode) const
 {
 	if (statusCode >= 500)
 		return this->_500_505[statusCode - 500];
