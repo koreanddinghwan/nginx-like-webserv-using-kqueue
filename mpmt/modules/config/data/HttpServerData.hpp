@@ -2,8 +2,8 @@
 # define HTTPSERVERDATA_HPP
 
 #include "HttpData.hpp"
-#include "../../../interface/IHttpBlock.hpp"
 
+class HttpLocationData;
 class HttpLocationBlock;
 class HttpData;
 
@@ -12,7 +12,9 @@ class HttpServerData : public HttpData
 	private:
 		int listen;
 		std::vector<std::string> server_names;
-		std::vector<IHttpBlock *> httpLocationBlock;
+		std::vector<HttpLocationBlock *> httpLocationBlock;
+		std::vector<HttpLocationData *> _LocationDatas;
+
 	public:
 		HttpServerData();
 		~HttpServerData();
@@ -21,10 +23,11 @@ class HttpServerData : public HttpData
  
 		int  getListen();
 		std::vector<std::string> &getServerNames();
-		std::vector<IHttpBlock *> &getHttpLocationBlock();
+		std::vector<HttpLocationBlock *> &getHttpLocationBlock();
+		std::vector<HttpLocationData *> &getLocationDatas();
 		void setListen(int port);
 		void setServerName(std::string name);
-		void setHttpLocationBlock(IHttpBlock *n);
+		void setHttpLocationBlock(HttpLocationBlock *n);
 		void printServerDataConfig();
 };
 
