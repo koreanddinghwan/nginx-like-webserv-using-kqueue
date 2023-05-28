@@ -19,7 +19,7 @@ class ExceptionMessageFactory
 
 	public:
 		static ExceptionMessageFactory &getInstance();
-		const std::string &getExceptionMessage(int statusCode) const;
+		inline const std::string &getExceptionMessage(int statusCode) const;
 
 	private:
 		ExceptionMessageFactory();
