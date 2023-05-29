@@ -1,4 +1,5 @@
 #include "EventLoop.hpp"
+#include <exception>
 #include <sys/event.h>
 
 void EventLoop::readCallback(struct kevent *e)
@@ -96,12 +97,13 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			e_udata->setBuffer(&HttpServer::getInstance().getStringBuffer());
 			try {
 				reqHandler->handle(e_udata);
-			} catch (HttpException &exception) {
+			} catch (std::exception &exception) {
 				/**
 				 * client request exception handling by 
 				 * register write event to client_fd, and finally send error response
 				 * */
-				registerRequestHttpExceptionEvent(e_udata);
+				unregisterClientSocketReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
 				/**
 				 * in here, the read event for this client_fd disabled
 				 * and the write event to client socket add and enabled
@@ -119,23 +121,21 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				return ;
 			else
 			{
-				/**
-				 * response를 보내야하는 상태임.
-				 * event disable?
-				 * EV_DISBALE => kevent함수가 event를 받아오지않도록 설정한다.
-				 * */
-				EV_SET(e, client_fd, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
+				try {
+					/**
+					 * set http response
+					 * */
+					setHttpResponse(e_udata);
+				} catch (std::exception &e) {
+					/**
+					 * http response가 설정 중간에 exception이 발생할 경우
+					 * limited method => 405
+					 * */
+					unregisterClientSocketReadEvent(e_udata);
+					registerClientSocketReadEvent(e_udata);
+					return ;
+				}
 
-				/**
-				 *
-				 * handle error
-				 *
-				 * 1. check host name
-				 * 2. check the uri
-				 * */
-
-
-				static_cast<Response *>(e_udata->getResponseHandler())->handle(e_udata);
 				/**
 				 * if need file i/o
 				 * first, if method == POST -> file write event

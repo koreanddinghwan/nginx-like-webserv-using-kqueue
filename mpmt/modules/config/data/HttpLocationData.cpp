@@ -8,14 +8,14 @@ HttpLocationData::HttpLocationData():
 {
 	std::cout<<"Default location block"<<std::endl;
 	//allow all methods default
-	std::memset(&(this->lim_methods), ALLOW, sizeof(limited_methods));
+	std::memset(&(this->lim_methods), ALLOW, sizeof(t_limited_methods));
 }
 
 HttpLocationData::~HttpLocationData() {}
 HttpLocationData::HttpLocationData(HttpServerData &c)
 {
 	//allow all methods default
-	std::memset(&(this->lim_methods), ALLOW, sizeof(limited_methods));
+	std::memset(&(this->lim_methods), ALLOW, sizeof(t_limited_methods));
 	uri_match_mode = PREFIX;
 	return_status = -1;
 	(*this) = c;
@@ -40,14 +40,14 @@ void HttpLocationData::operator=(HttpServerData &c)
 }
 
 
-int HttpLocationData::getUriMatchMode() {return this->uri_match_mode;}
+HttpLocationData::e_uri_match_mode &HttpLocationData::getUriMatchMode() {return this->uri_match_mode;}
 std::string& HttpLocationData::getUri() {return this->uri;}
 std::string& HttpLocationData::getProxyPass() {return this->proxy_pass;}
 std::string& HttpLocationData::getCgiPass() {return this->cgi_pass;}
 std::string& HttpLocationData::getFastcgiPass() {return this->fastcgi_pass;}
-int HttpLocationData::getReturnStatus() {return this->return_status;}
+int &HttpLocationData::getReturnStatus() {return this->return_status;}
 std::string& HttpLocationData::getRedirectUrl() {return this->redirect_url;}
-
+HttpLocationData::t_limited_methods &HttpLocationData::getLimitedMethods() {return this->lim_methods;}
 
 void HttpLocationData::setUriMatchMode(enum e_uri_match_mode e) { this->uri_match_mode = e;}
 void HttpLocationData::setUri(std::string u) { this->uri = u;}
@@ -68,7 +68,7 @@ void HttpLocationData::setRedirectUrl(std::string r) { this->redirect_url = r;}
 void HttpLocationData::setLimitedMethods(std::vector<std::string> r)
 {
 	//deny all methods first
-	std::memset(&(this->lim_methods), DENY, sizeof(limited_methods));
+	std::memset(&(this->lim_methods), DENY, sizeof(t_limited_methods));
 	for (int i = 1; i <r.size(); i++)
 	{
 		//allowing get also allow head. check nginx documentation that representate `limit_except`

@@ -68,6 +68,11 @@ void Event::setServerData(std::vector<HttpServerData *> *t)
 	this->defaultServerData = t->at(0);
 }
 
+void Event::setDefaultServerData(HttpServerData *t)
+{
+	this->defaultServerData = t;
+}
+
 t_ServerType& Event::getServerType()
 {return this->serverType;}
 
@@ -181,7 +186,7 @@ Event *Event::createNewServerSocketEvent(int port)
 	/* set server_addr */
 	socketInfo.socket_addr.sin_family = AF_INET;
 	socketInfo.socket_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	socketInfo.socket_addr.sin_port = htons(e->getServerData()->at(0)->getListen());
+	socketInfo.socket_addr.sin_port = htons(port);
 
 	/* bind */
 	if (bind(fd, (struct sockaddr *)&socketInfo.socket_addr, sizeof((socketInfo.socket_addr))) == -1)
@@ -223,10 +228,11 @@ std::string *Event::getBuffer()
 void Event::setBuffer(std::string *t)
 {this->buffer = t;}
 
-std::string &Event::getErrorMessage()
-{return this->errorMessage;}
-void Event::setErrorMessage(std::string t)
-{this->errorMessage = t;}
+std::string &Event::getRoute()
+{return this->route;}
+
+void Event::setRoute(std::string t)
+{this->route = t;}
 
 /**
  * @deprecated
