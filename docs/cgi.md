@@ -58,6 +58,26 @@ int main () {
 <br><br>
 
 
+# CGI RFC
+
+[RFC 3875](https://datatracker.ietf.org/doc/html/rfc3875)
+
+CGI 1.1 버전을 명시한 RFC는 다음과 같다.  
+
+- CGI를 웹서버가 외부 프로그램 혹은 스크립트와 상호작용하기 위한 표준 프로토콜.
+- RFC에서는 웹 서버가 CGI 프로그램에 제공해야하는 CGI 환경변수를 설명하고있다.
+- 환경변수에 요청방법, 요청헤더, 서버 세부정보 및 클라이언트 정보 등을 만들어놓는다.
+
+
+<br>
+
+- 레거시한 CGI는 매 요청마다 fork를 사용하는 방식으로 동작한다. 
+- 매 요청마다 fork를 사용해 프로세스를 복사하는 방식은 리소스가 많이 소모된다는 단점이있다.
+- 이러한 부하로 인해 `FastCGI, WCGI`등 다양한 변형이 생겨났다.
+- subject에서 요구하는 것은 legacy cgi라고 추측(만약, fastcgi라면 cgi_tester에 localhost에 port가 바인딩되어있어야한다. 확인해야한다.)
+
+<br><br>
+
 # RFC 3875
 
 # Intro

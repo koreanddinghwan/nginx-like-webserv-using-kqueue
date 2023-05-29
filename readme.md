@@ -12,13 +12,14 @@
 
 ## mandatory
 
-[Webserver vs Web application server](https://github.com/koreanddinghwan/webserv_tutorial/blobl/main/docs/webServer.md)  
+[Webserver vs Web application server](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/webServer.md)  
 [i/o multiplexing과 블로킹, 비동기 개념정리](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/iomultiplexing.md)  
 [kqueue정리](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/kqueue.md)
 [socket 프로그래밍](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/sockets.md)  
 [멀티프로세싱](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/multiprocessing.md)  
 [CGI란](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/cgi.md)  
 [nginx에 대해](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/nginx.md)
+[configuration 설명](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/configs.md)
 
 ## bonus
 
