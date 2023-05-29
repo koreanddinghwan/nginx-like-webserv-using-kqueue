@@ -186,7 +186,7 @@ Event *Event::createNewServerSocketEvent(int port)
 	/* set server_addr */
 	socketInfo.socket_addr.sin_family = AF_INET;
 	socketInfo.socket_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	socketInfo.socket_addr.sin_port = htons(e->getServerData()->at(0)->getListen());
+	socketInfo.socket_addr.sin_port = htons(port);
 
 	/* bind */
 	if (bind(fd, (struct sockaddr *)&socketInfo.socket_addr, sizeof((socketInfo.socket_addr))) == -1)
