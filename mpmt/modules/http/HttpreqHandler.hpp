@@ -103,5 +103,6 @@ private:
 
 int convertHexToDec(std::string line);
 std::string encodePercentEncoding(const std::string& str);
+std::string urlDecode(std::string &SRC);
 
 #endif
