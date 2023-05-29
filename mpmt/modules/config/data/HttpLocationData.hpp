@@ -37,21 +37,21 @@ public:
 		/* PREFERENTIAL */
 	};
 
-	struct limited_methods
+	typedef struct s_limited_methods
 	{
 		// GET, HEAD, POST, PUT, DELETE, MKCOL, COPY, MOVE, OPTIONS, PROPFIND, PROPPATCH, LOCK, UNLOCK, or PATCH.
 		bool methods[14];
-	};
+	} t_limited_methods;
 
 private:
-	enum e_uri_match_mode uri_match_mode;
-	std::string uri;
-	std::string proxy_pass; //default -
-	std::string cgi_pass; //default -
-	std::string fastcgi_pass; //default -
-	int return_status;
-	std::string redirect_url;
-	limited_methods lim_methods;
+	enum e_uri_match_mode	uri_match_mode;
+	std::string				uri;
+	std::string				proxy_pass; //default -
+	std::string				cgi_pass; //default -
+	std::string				fastcgi_pass; //default -
+	int						return_status;
+	std::string				redirect_url;
+	t_limited_methods		lim_methods;
 
 public:
 	HttpLocationData();
@@ -59,13 +59,14 @@ public:
 	HttpLocationData(HttpServerData &c);
 	void operator=(HttpServerData &c);
 
-	int			getUriMatchMode(); 
-	std::string	&getUri(); 
-	std::string	&getProxyPass(); 
-	std::string	&getCgiPass();
-	std::string	&getFastcgiPass(); 
-	int			getReturnStatus(); 
-	std::string	&getRedirectUrl(); 
+	e_uri_match_mode&	getUriMatchMode(); 
+	std::string&		getUri(); 
+	std::string&		getProxyPass(); 
+	std::string&		getCgiPass();
+	std::string&		getFastcgiPass(); 
+	int&				getReturnStatus();
+	std::string&		getRedirectUrl(); 
+	t_limited_methods&	getLimitedMethods();
 
 	void setUriMatchMode(enum e_uri_match_mode e); 
 	void setUri(std::string u); 

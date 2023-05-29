@@ -34,9 +34,13 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//status check
+		//make response message before write
 		if (e_udata->getStatusCode() >= 400)
 		{
-			write(e_udata->getClientFd(), e_udata->getErrorMessage().c_str(), e_udata->getErrorMessage().length());
+			/**
+			 * write buffer in response
+			 * */
+			/* write(e_udata->getClientFd(), e_udata->getErrorMessage().c_str(), e_udata->getErrorMessage().length()); */
 			e_udata->closeAllFd();
 			delete e_udata;
 		}

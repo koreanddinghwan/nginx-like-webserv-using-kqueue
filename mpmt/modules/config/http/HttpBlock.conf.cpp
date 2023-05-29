@@ -15,67 +15,26 @@ HttpBlock::HttpBlock(std::ifstream &File)
 
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
-		/**
-		 * @set set ServerNamesByPort
-		 * */
-		HttpServerData *serverData = static_cast<HttpServerData *>(serverBlock[i]->getConfigData());
-		int port = serverData->getListen();
+		int serverPort = serverBlock.at(i)->getServerData().getListen();
+		int flag = 0;
 
-		if (this->serverNamesByPort.find(port) == this->serverNamesByPort.end())
+		for (int i = 0; i < this->identicalPorts.size(); i++)
 		{
-			std::vector<std::string> *serverNames = new std::vector<std::string>();
-			for (int i = 0; i < serverData->getServerNames().size(); i++)
-				serverNames->push_back(serverData->getServerNames()[i]);
-			this->serverNamesByPort[port] = serverNames;
-		}
-		else
-		{
-			for (int i = 0; i < serverData->getServerNames().size(); i++)
-				this->serverNamesByPort[port]->push_back(serverData->getServerNames()[i]);
-		}
-
-		/**
-		 * @set locationDatasByPort
-		 * */
-		std::vector<HttpLocationBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
-
-		for (int j = 0; j < locationBlock.size(); j++)
-		{
-			int port = locationBlock[j]->getLocationData().getListen();
-
-			/**
-			 * 해당 port를 가진 location block이 없음. 
-			 * */
-			if (locationDatasByPort.find(port) == locationDatasByPort.end())
+			if (this->identicalPorts[i] == serverPort)
 			{
-				/**
-				 * 동적할당, 소멸자에서 해제
-				 * */
-				std::vector<HttpLocationData *> *tmp = new std::vector<HttpLocationData *>();
-				tmp->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
-				locationDatasByPort[port] = tmp;
+				flag = 1;
+				break;
 			}
-			/**
-			 * 해당 port를 가진 location block이 있음.
-			 * */
-			else
-				locationDatasByPort.find(port)->second->push_back(static_cast<HttpLocationData *>(&static_cast<HttpLocationBlock *>(locationBlock[j])->getLocationData()));
 		}
+		if (!flag)
+			this->identicalPorts.push_back(serverPort);
 	}
-
-	/**
-	 * @set defaultServerData
-	 * Event 구조체가 들고있어야하는 default server block을 세팅한다.  
-	 * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다.  
-	 * */
-	this->defaultServerData = &(static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0])->getServerData());
 }
 
-HttpBlock::~HttpBlock() {
+HttpBlock::~HttpBlock() 
+{
 	for (int i = 0; i < this->confData.getServerBlock().size(); i++)
 		delete  static_cast<HttpServerBlock *>(this->confData.getServerBlock()[i]);
-	for (serverNamesByPortMapIter it = this->serverNamesByPort.begin(); it != this->serverNamesByPort.end(); it++)
-		delete it->second;
 }
 
 
@@ -108,22 +67,9 @@ void HttpBlock::parse(std::ifstream &File)
 	}
 }
 
-std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByPort()
-{
-	return (this->locationDatasByPort);
-}
-
-std::vector<HttpLocationData *> *HttpBlock::findLocationDatasByPort(int p)
-{
-	return this->locationDatasByPort.find(p)->second;
-}
-
-HttpBlock::serverNamesByPortMapRef HttpBlock::getServerNamesByPort()
-{
-	return this->serverNamesByPort;
-}
-
 HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
 HttpData& HttpBlock::getHttpData() {return confData;}
-HttpServerData *HttpBlock::getDefaultServerData() {return this->defaultServerData;}
+
+std::vector<int>& HttpBlock::getIdenticalPorts()
+{return this->identicalPorts;}
