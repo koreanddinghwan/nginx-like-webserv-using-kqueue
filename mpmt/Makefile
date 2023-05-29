@@ -6,7 +6,7 @@ INC = .
 FACTORYSRCS = MethodFactory.cpp
 FACTORYOBJS = $(addprefix ./factory/, $(FACTORYSRCS:.cpp=.o))
 
-HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp HttpResHandler.cpp RequestParse.cpp response.cpp setHttpResponse.cpp
+HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp responseHandler.cpp RequestParse.cpp HttpResponseInfo.cpp 
 HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
 
 HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
@@ -21,7 +21,7 @@ CONFIGOBJS = $(addprefix ./modules/config/, $(CONFIGSRCS:.cpp=.o))
 WEBSERVSRCS = WebServ.cpp WebServManager.cpp
 WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 
-EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp
+EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp setHttpResponse.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
 EXCEPTIONSRCS = configParseException.cpp httpException.cpp

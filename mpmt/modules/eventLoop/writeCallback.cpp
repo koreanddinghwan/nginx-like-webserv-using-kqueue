@@ -34,18 +34,11 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//status check
-		//make response message before write
-
-		/**
-		 * set response message
-		 * */
-
 		/**
 		 * size of e->data만큼 작성
 		 * */
-		int wroteByte = write(e_udata->getClientFd(), NULL, e->data);
 
+		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, e->data);
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)

@@ -15,8 +15,8 @@
 #include "../../interface/IBlock.hpp"
 #include "../http/HttpServer.hpp"
 #include "Event.hpp"
-#include "../http/response.hpp"
-#include "../http/setHttpResponse.hpp"
+#include "../http/responseHandler.hpp"
+#include "../http/HttpreqHandler.hpp"
 
 /**
  * @brief singleton eventloop
