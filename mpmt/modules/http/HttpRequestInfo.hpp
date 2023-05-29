@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <map>
+# include <vector>
 # include <string>
 
 /*
@@ -28,50 +29,38 @@
 #define HTTPV11 "HTTP/1.1" // HTTP/1.1
 #define HTTPV20 "HTTP/2.0" // HTTP/2.0
 
-// enum RequestBodyType
-// {
-// 	SingleResource = 1,
-	
-// };
-
 //필수적인 것만 파싱하고, 너미지는 char *others에 넣는게 나을듯요
 struct httpRequestInfo
 {
-	enum method {
-		GET = 1,
-		POST,
-		DELETE
-	};
+	// enum method {
+	// 	GET = 1,
+	// 	POST,
+	// 	DELETE,
+	// 	PUT,
+	// 	PATCH,
+	// 	HEAD
+	// };
+
 	/*Start line*/
 	std::string method; //get,post,delete
 	std::string path; //request target, url임 대부분
 	std::string httpVersion; //http 버전
 
+	std::vector<std::pair<std::string, std::string> > queryParamsV; //쿼리파람 있으면 사용
 
 	/*Headers*/
 	//request Header만 담을 map(map은 순서 보장 안하니까 상의하고 다른 자료구조로 바꾸기)
 	std::map<std::string, std::string> reqHeaderMap;
 	std::map<std::string, std::string> reqCookieMap;
-		/*Requeset headers*/
-		std::string host;
-		//char *UserAgent;
-		//char *Accept;
-		//char *AcceptLanguage;
-		//char *AcceptEncoding;
-
-		///*General headers*/
-		//int Connection;
-		//int UpgradeInsecureRequesets;
-
-		/*Representation Headers*/
-		// char *ContentType;
-		// int ContentLength;
 	
-	/*body*/
-		std::string body;
+	/* Requeset headers */
+	std::string host;
+	std::string contentLength;
+	std::string contentType;
+	std::string queryParam;
 
-	/*others*/
-	// char *others;
+	/*body*/
+	std::string body;
 };
 
 #endif
