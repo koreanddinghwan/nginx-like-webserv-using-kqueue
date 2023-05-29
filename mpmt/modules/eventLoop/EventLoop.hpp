@@ -31,11 +31,6 @@ public:
 	static EventLoop& getInstance();
 
 	/**
-	 * @brief init event
-	 */
-	void initEvent();
-
-	/**
 	 * @brief init eventloop
 	 * 핵심모듈
 	 */
@@ -49,10 +44,15 @@ private:
 	struct sockaddr_in dummy_addr;
 
 private:
+	/**
+	 * @brief initialize events that each server has
+	 */
+	void initServerEvents();
+
+
 	EventLoop();
 	~EventLoop();
 	void printCurrentData();
-	void registerInitialEvent(struct kevent *kev);
 
 
 	void readCallback(struct kevent *e);

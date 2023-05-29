@@ -17,9 +17,7 @@ void EventLoop::initEventLoop()
 	if (kq_fd == -1) 
 		throw std::runtime_error("Failed to create kqueue\n");
 
-	// initially register event to kqueue
-	for (int i = 0; i < HttpServer::getInstance().getKevents().size(); i++)
-		registerInitialEvent(&(HttpServer::getInstance().getKevents()[i]));
+	this->initServerEvents();
 
 	int max_events = static_cast<EventBlock *>(Config::getInstance().getEventBlock())->getEventConfigData().worker_connections; 
 
@@ -58,17 +56,21 @@ void EventLoop::initEventLoop()
 	}
 }
 
-void EventLoop::registerInitialEvent(struct kevent *kev)
+void EventLoop::initServerEvents()
 {
-	std::cout<<"register initial event"<<std::endl;
-	std::cout<<kev->ident<<std::endl;
-	std::cout<<kev->filter<<std::endl;
-	std::cout<<kev->flags<<std::endl;
-	std::cout<<kev->fflags<<std::endl;
-	std::cout<<kev->data<<std::endl;
-	std::cout<<kev->udata<<std::endl;
-	if (kevent(this->kq_fd, kev, 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register socket event\n");
+	// initially register event to kqueue
+	for (std::vector<struct kevent>::iterator it = HttpServer::getInstance().getKevents().begin(); it != HttpServer::getInstance().getKevents().end(); it++)
+	{
+		std::cout<<"register initial event"<<std::endl;
+		std::cout<<it->ident<<std::endl;
+		std::cout<<it->filter<<std::endl;
+		std::cout<<it->flags<<std::endl;
+		std::cout<<it->fflags<<std::endl;
+		std::cout<<it->data<<std::endl;
+		std::cout<<it->udata<<std::endl;
+		if (kevent(this->kq_fd, &(*it), 1, NULL, 0, NULL) == -1) 
+			throw std::runtime_error("Failed to register socket event\n");
+	}
 }
 
 
