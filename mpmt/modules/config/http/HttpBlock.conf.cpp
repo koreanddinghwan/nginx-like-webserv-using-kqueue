@@ -16,25 +16,6 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
 		/**
-		 * @set set ServerNamesByPort
-		 * */
-		HttpServerData *serverData = static_cast<HttpServerData *>(serverBlock[i]->getConfigData());
-		int port = serverData->getListen();
-
-		if (this->serverNamesByPort.find(port) == this->serverNamesByPort.end())
-		{
-			std::vector<std::string> *serverNames = new std::vector<std::string>();
-			for (int i = 0; i < serverData->getServerNames().size(); i++)
-				serverNames->push_back(serverData->getServerNames()[i]);
-			this->serverNamesByPort[port] = serverNames;
-		}
-		else
-		{
-			for (int i = 0; i < serverData->getServerNames().size(); i++)
-				this->serverNamesByPort[port]->push_back(serverData->getServerNames()[i]);
-		}
-
-		/**
 		 * @set locationDatasByPort
 		 * */
 		std::vector<HttpLocationBlock *> locationBlock = static_cast<HttpServerData *>(serverBlock[i]->getConfigData())->getHttpLocationBlock();
@@ -63,19 +44,18 @@ HttpBlock::HttpBlock(std::ifstream &File)
 		}
 	}
 
-	/**
-	 * @set defaultServerData
-	 * Event 구조체가 들고있어야하는 default server block을 세팅한다.  
-	 * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다.  
-	 * */
-	this->defaultServerData = &(static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0])->getServerData());
+	/*/1** */
+	/* * @set defaultServerData */
+	/* * Event 구조체가 들고있어야하는 default server block을 세팅한다. */  
+	/* * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다. */  
+	/* * *1/ */
+	/*this->defaultServerData = &(static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0])->getServerData()); */
 }
 
-HttpBlock::~HttpBlock() {
+HttpBlock::~HttpBlock() 
+{
 	for (int i = 0; i < this->confData.getServerBlock().size(); i++)
 		delete  static_cast<HttpServerBlock *>(this->confData.getServerBlock()[i]);
-	for (serverNamesByPortMapIter it = this->serverNamesByPort.begin(); it != this->serverNamesByPort.end(); it++)
-		delete it->second;
 }
 
 
@@ -113,15 +93,6 @@ std::map<int, std::vector<HttpLocationData *> *>& HttpBlock::getLocationDatasByP
 	return (this->locationDatasByPort);
 }
 
-std::vector<HttpLocationData *> *HttpBlock::findLocationDatasByPort(int p)
-{
-	return this->locationDatasByPort.find(p)->second;
-}
-
-HttpBlock::serverNamesByPortMapRef HttpBlock::getServerNamesByPort()
-{
-	return this->serverNamesByPort;
-}
 
 HttpBlock::HttpBlock() {}
 IConfigData* HttpBlock::getConfigData() {return &confData;}
