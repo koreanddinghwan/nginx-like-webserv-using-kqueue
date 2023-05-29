@@ -30,7 +30,6 @@ private:
 
 	int _contentLength;
 	bool _hasContentLength;
-	bool _findCRLF2;
 	/* ========================================== */
 
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
@@ -48,13 +47,13 @@ public:
 public:
 	void *handle(void *data);
 
-	//utils
-	void printReq(void);
+	//getter
 	bool getIsPending(void) const;
 	bool getHasSid(void) const;
 	std::string getSid(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
 
+	void printReq(void);
 private:
 	//init
 	void initRequest(std::string req);
@@ -72,7 +71,8 @@ private:
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);
-	void saveHost(std::string key, std::string value);
+	void saveGenericHeader(std::string key, std::string value);
+	void parseQueryParam(std::string line, int *prevPos, int *pos);
 
 	//cookie
 	void parseCookie(void);
@@ -89,11 +89,15 @@ private:
 	void findMethod(void);
 	void appendBodyBuf(std::string req);
 	
+
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
+
+	//check start Line
 	void checkStartLine(void);
 	void checkMethod(void);
 	void checkHttpVersion(void);
+	void checkQueryParam(void);
 };
 
 int convertHexToDec(std::string line);
