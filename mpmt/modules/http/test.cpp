@@ -14,11 +14,4 @@ int main(void)
 	responseHandler *Res = new responseHandler();
 
 	Res->handle(NULL);
-	
-
-	std::cout << "===========" << http_status_codes(404) << "==============" << std::endl;
-	std::cout << "===========" << msg.getStatusMsg() << "==============" << std::endl;
-	std::cout << "===========" << res.getStatusCode() << "==============" << std::endl;
-	std::cout << "===========" << res.getStatusMsg() << "==============" << std::endl;
-
 }
