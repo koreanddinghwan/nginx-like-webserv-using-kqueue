@@ -79,6 +79,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
 		HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
+		e_udata->readByte = read_len;
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
