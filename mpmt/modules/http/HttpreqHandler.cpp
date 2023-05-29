@@ -1,10 +1,10 @@
 #include "HttpreqHandler.hpp"
 
-void *HttpreqHandler::handle(void *e) 
+void *HttpreqHandler::handle(void *data) 
 {
-	std::string *req;
-	
-	req = static_cast<std::string *>(e);
+	_event = static_cast<Event *>(data);
+	std::string *req = _event->getBuffer();
+
 	/*
 	 처음 들어온 req massage
 	*/
@@ -15,8 +15,8 @@ void *HttpreqHandler::handle(void *e)
 		appendBuf(*req);
 		if (_pended && _messageState == chunked)
 			parseChunked(*req);
-		else if (_pended && _messageState == seperate)
-			parseSeperate(*req);
+		else if (_pended && _messageState == separate)
+			parseSeparate(*req);
 	}
 	/*
 	fulfilled state message
@@ -24,9 +24,9 @@ void *HttpreqHandler::handle(void *e)
 	if (!_pended)
 	{
 		parse();
-		printReq();
+		// printReq();
 	}	
-	return e;
+	return _event;
 }
 
 void HttpreqHandler::initMessageState(void)
@@ -35,9 +35,10 @@ void HttpreqHandler::initMessageState(void)
 
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
-		_messageState = seperate;
+		_messageState = separate;
 	else
 	{
+		_findCRLF2 = true;
 		pos = _buf.find("Transfer-Encoding: chunked");
 		if (pos != std::string::npos) // chunked는 septerate하게 안들어온다고 가정, 나중에 수정해야될수도
 		{	
@@ -46,8 +47,8 @@ void HttpreqHandler::initMessageState(void)
 		}
 		else
 		{
-			if (checkSeperate(bodyPos))
-				_messageState = seperate;
+			if (checkSeparate(bodyPos))
+				_messageState = separate;
 			else
 				_messageState = basic;
 		}
@@ -67,6 +68,8 @@ void HttpreqHandler::initVar(void)
 	_method.clear();
 	_bodyBuf.clear();
 	_chunkedWithoutBodyBuf.clear();
+	_hasContentLength = false;
+	_findCRLF2 = false;
 }
 
 void HttpreqHandler::initRequest(std::string req)
@@ -90,7 +93,11 @@ void HttpreqHandler::parseMethod(std::string line)
 		_method = _buf.substr(0, pos);
 }
 
-void HttpreqHandler::parseContentLength(void)
+/*
+	init의 경우 checkSep에서 넘어왔을 때
+	CRLF2찾은 경우만 들어옴
+*/
+bool HttpreqHandler::parseContentLength(void) // findContentLength
 {
 	int prevPos, pos;
 	char *endptr = NULL;
@@ -98,213 +105,72 @@ void HttpreqHandler::parseContentLength(void)
 
 	prevPos = _buf.find("Content-Length: ");
 	if (prevPos == std::string::npos)
-		return ;
+		return (false);
 	pos = _buf.find(CRLF, prevPos);
-	if (pos == std::string::npos)
-		return ;
 	//15 == Content-Length길이
 	lengthStr = _buf.substr(prevPos + 15, pos - prevPos - 15);
 	_contentLength = std::strtod(lengthStr.c_str(), &endptr);
+	return (true); // 헤더랑 밸류 모두 있음, 메소드 모름
 }
 
-bool HttpreqHandler::checkSeperate(int pos)
+bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 {
 	std::string line;
+	bool hasContentLen;
+	int pos;
 
 	parseMethod("");
-	//post가 아니면 contentlength가 없으니까 basic
-	if (_method.compare("POST"))
-		return false;
-	parseContentLength();
-	line = _buf.substr(pos + 4);
-	if (line.length() != _contentLength)
-		return true;
+	hasContentLen = parseContentLength();
+	pos = _buf.find("", CRLF2Pos);
+	line = _buf.substr(CRLF2Pos + 4, pos - CRLF2Pos);
+	if (!hasContentLen)
+	{
+		if (!line.empty())
+		{
+			_event->setStatusCode(411);
+			throw std::exception();
+		}
+	}
+	else if (hasContentLen)
+	{
+		if (line.length() > _contentLength)
+		{
+			_event->setStatusCode(413);
+			throw std::exception();//std Exception code안맞춰서 날려라
+		}
+		if (line.length() < _contentLength)
+		{
+			appendBodyBuf(line);
+			return true;
+		}
+	}
 	return false;
 }
 
-/* =============== chunked parse =============== */
-
-int HttpreqHandler::parseChunkedLength(std::string req, int *pos)
+void HttpreqHandler::checkMethod(void)
 {
-	std::string line;
-
-	if (req.find(CRLF2) != std::string::npos)
-		return (0);
-	*pos = req.find(CRLF);
-	line = req.substr(0, *pos);
-	return (convertHexToDec(line));
-}
-
-std::string HttpreqHandler::parseChunkedBody(std::string req, int *pos)
-{
-	std::string line;
-	int	endPos;
-
-	endPos = req.find(CRLF, *pos + 2);
-	line = req.substr(*pos + 2, endPos - *pos - 2);
-	return (line);
-}
-
-void HttpreqHandler::parseChunked(std::string req)
-{
-	int pos, len = 0;
-	std::string line, body;
-	
-	len = parseChunkedLength(req, &pos);
-	if (len == 0)
-	{
-		_pended = false;
-		_buf.clear();
-		_buf.append(_chunkedWithoutBodyBuf);
-		_buf.append(_bodyBuf);
+	if (_method == "GET" || _method == "POST" || _method == "DELETE" ||
+		_method == "PUT" || _method == "PATCH" || _method == "HEAD")
 		return ;
-	}
-	line = parseChunkedBody(req, &pos);
-	if (len != line.length())
-		std::cout << "parseChunked 예외처리 해야됨..." << std::endl;
-	_bodyBuf.append(line);
-	_contentLength += len;
-	appendBuf(line);
+	_event->setStatusCode(405);
+	throw std::exception();
+
 }
 
-/* ============================================= */
-
-/* ============== seperate parse =============== */
-
-void HttpreqHandler::findMethod(void)
+void HttpreqHandler::checkHttpVersion(void)
 {
-	int pos;
-	std::string line;
-
-	if ((pos = _buf.find(CRLF)) != std::string::npos)
+	if (_info.httpVersion != "HTTP/1.1")
 	{
-		line = _buf.substr(0, pos);
-		parseMethod(line);
+		_event->setStatusCode(400);
+		throw std::exception();
 	}
 }
 
-void HttpreqHandler::appendBodyBuf(std::string req)
+void HttpreqHandler::checkStartLine(void)
 {
-	int pos;
-	std::string line;
-
-	if ((pos = _buf.find(CRLF2)) == std::string::npos)
-		return ;
-	if (!_bodyBuf.length())
-	{
-		line = _buf.substr(pos + 4);
-		_bodyBuf.append(line);
-	}
-	else
-		_bodyBuf.append(req);
+	checkMethod();
+	checkHttpVersion();
 }
-
-void HttpreqHandler::parseSeperate(std::string req)
-{
-	int pos;
-	std::string line;
-
-	if (_method.empty())
-		findMethod();
-	if (!_method.compare("POST")) // POST면 length찾고 body랑 length값 확인해야됨
-	{ 
-		if (!_contentLength)
-		{
-			parseContentLength();
-			if ((pos = _buf.find(CRLF2)) != std::string::npos)
-			{
-				line = _buf.substr(pos);
-				appendBodyBuf(line);
-			}
-		}
-		else
-			appendBodyBuf(req);
-		if (_contentLength && _bodyBuf.length() == _contentLength)
-			_pended = false;
-	}
-	else // POST 아니면, body없음, cflf2가 마지막인거임
-	{
-		if (_buf.find(CRLF2) != std::string::npos)
-			_pended = false;
-	}
-}
-/* ============================================= */
-
-/* =================== parse =================== */
-void HttpreqHandler::parseStartLine(std::string line) 
-{
-	int pos, prevPos = 0;
-	std::string subLine;
-
-	while ((pos = line.find(" ", prevPos)) != std::string::npos)
-	{
-		subLine = line.substr(prevPos, pos - prevPos);
-		if (_info.method.empty())
-			_info.method = subLine;
-		else if (_info.path.empty())
-		{
-			_info.path = subLine;
-			_info.httpVersion = line.substr(pos + 1);
-		}
-		prevPos += subLine.length() + 1;
-	}
-}
-
-bool HttpreqHandler::parseHeader(std::string line){
-	int pos;
-	std::string key, value;
-
-	pos = line.find(": ");
-	if (pos == std::string::npos)
-		return false;// 종료, header 끝나고 body로 넘어가야됨
-	key = line.substr(0, pos);
-	value = line.substr(pos + 2);
-	_info.reqHeaderMap.insert(std::make_pair(key,value));
-	return true;
-}
-
-void HttpreqHandler::parseBody(void)
-{
-	int pos;
-	std::string line;
-
-	if (_info.method.compare("POST")) 
-		return ;
-	pos = _buf.find(CRLF2);
-	line = _buf.substr(pos + 4);
-	/* 
-		get, delete는 body가 없긴 한데 테스터가 어떻게 넣어줄지 몰라서
-		조건 method 확인하는 거 + line.empty() 수정하기 +
-		congig max_client_length && header contentLength 확인하고 수정..할거 많네 
-	*/
-	//if (_info.method.compare("POST") && !line.empty())
-		_info.body = line;
-}
-
-void HttpreqHandler::parse(void)
-{
-	int pos, prevPos = 0;
-	std::string line;
-
-	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)
-	{
-		line = _buf.substr(prevPos, pos - prevPos);
-		prevPos += line.length() + 2;
-		//startLine
-		if (_info.method.empty())
-			parseStartLine(line);
-		//header
-		else
-		{
-			if (!parseHeader(line))
-				break ;
-		}
-	}
-	//body
-	parseBody();
-}
-/* ============================================= */
-
 
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler()
@@ -317,17 +183,22 @@ HttpreqHandler::~HttpreqHandler()
 {
 	//delete this->info;
 }
+/* ============================================= */
 
+
+/* =============== utils ================== */
 std::string HttpreqHandler::getBuf() const { return _buf; }
 
 void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
-const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const
-{ return _info; }
 
+bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : false); }
+
+std::string HttpreqHandler::getSid(void) const { return _sid;}
+
+const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info; }
 /* ============================================= */
-
 
 void HttpreqHandler::printReq(void)
 {
@@ -341,7 +212,9 @@ void HttpreqHandler::printReq(void)
 		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
 	std::cout<<"\nBody"<<std::endl<<std::endl;
 	std::cout<<"\033[35m"<<_info.body<<std::endl<<std::endl;
-	//std::cout<<_messageState<<std::endl;
+	std::cout<<"Cookie"<<std::endl<<std::endl;
+	for (std::map<std::string, std::string>::iterator it = _info.reqCookieMap.begin(); it != _info.reqCookieMap.end(); it++)
+		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
 	std::cout<<"\033[35m"<<"=============Request Result End============"<<std::endl;
 }
 

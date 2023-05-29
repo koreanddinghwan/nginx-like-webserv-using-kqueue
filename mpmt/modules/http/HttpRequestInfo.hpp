@@ -28,11 +28,11 @@
 #define HTTPV11 "HTTP/1.1" // HTTP/1.1
 #define HTTPV20 "HTTP/2.0" // HTTP/2.0
 
-enum RequestBodyType
-{
-	SingleResource = 1,
+// enum RequestBodyType
+// {
+// 	SingleResource = 1,
 	
-};
+// };
 
 //필수적인 것만 파싱하고, 너미지는 char *others에 넣는게 나을듯요
 struct httpRequestInfo
@@ -51,8 +51,9 @@ struct httpRequestInfo
 	/*Headers*/
 	//request Header만 담을 map(map은 순서 보장 안하니까 상의하고 다른 자료구조로 바꾸기)
 	std::map<std::string, std::string> reqHeaderMap;
+	std::map<std::string, std::string> reqCookieMap;
 		/*Requeset headers*/
-		//char *Host;
+		std::string host;
 		//char *UserAgent;
 		//char *Accept;
 		//char *AcceptLanguage;
@@ -63,14 +64,14 @@ struct httpRequestInfo
 		//int UpgradeInsecureRequesets;
 
 		/*Representation Headers*/
-		char *ContentType;
-		int ContentLength;
+		// char *ContentType;
+		// int ContentLength;
 	
 	/*body*/
 		std::string body;
 
 	/*others*/
-	char *others;
+	// char *others;
 };
 
 #endif
