@@ -33,15 +33,15 @@ void responseHandler::setResBuf() const {
 	this->_res->setBuf(); 
 };
 
-std::string responseHandler::getResBody() const {
+std::string& responseHandler::getResBody() const {
 	return this->_res->getBody();
 };
 
-std::string responseHandler::getResHeader() const {
+std::string& responseHandler::getResHeader() const {
 	return this->_res->getHeader();
 };
 
-std::string responseHandler::getResBuf() const {
+std::string& responseHandler::getResBuf() const {
 	return this->_res->getBuf();
 };
 
