@@ -25,6 +25,9 @@ void responseHandler::setResBody(std::string body) const {
 	this->_res->setBody(body); 
 };
 
+void responseHandler::setResLocation(std::string location) const { 
+	this->_res->setLocation(location); 
+};
 void responseHandler::setResHeader(std::string HttpV) const { 
 	this->_res->setHeaders(HttpV); 
 };
@@ -49,7 +52,12 @@ void *responseHandler::handle(void *event) {
 	Event *e = static_cast<Event *>(event);
 
 	this->setRes(302);
-	this->setResBody("bodybody");
+	//change a value below,
+	//if (e->something->content for responseBody)
+	//	this->setResBody(e->something->content);
+	//if (e->something->redirectLocation)
+	//	this->setResLocation(e->something->redirectLoaction);
+
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
 	this->setResHeader(HTTPV11);
 	std::cout << "=====================\n" << this->getResHeader() << "=====================\n" << std::endl;
