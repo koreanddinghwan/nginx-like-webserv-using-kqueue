@@ -181,10 +181,14 @@ void HttpreqHandler::parseStartLine(std::string line)
 	checkStartLine();
 }
 
-void HttpreqHandler::saveHost(std::string key, std::string value)
+void HttpreqHandler::saveGenericHeader(std::string key, std::string value)
 {
 	if (key == "Host")
 		_info.host = value;
+	if (key == "Content-Length")
+		_info.contentLength = value;
+	if (key == "Content-Type")
+		_info.contentType = value;
 }
 
 bool HttpreqHandler::parseHeader(std::string line){
@@ -197,7 +201,7 @@ bool HttpreqHandler::parseHeader(std::string line){
 	key = line.substr(0, pos);
 	value = line.substr(pos + 2);
 	_info.reqHeaderMap.insert(std::make_pair(key,value));
-	saveHost(key, value);
+	saveGenericHeader(key, value);
 	return true;
 }
 
