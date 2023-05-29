@@ -4,19 +4,19 @@
 void *HttpreqHandler::handle(void *data) 
 {
 	_event = static_cast<Event *>(data);
-	std::string *req = _event->getBuffer();
+	std::string req = _event->getBuffer()->erase(_event->readByte);
 	/*
 	 처음 들어온 req massage
 	*/
 	if (_buf.empty())
-		initRequest(*req);
+		initRequest(req);
 	else
 	{
-		appendBuf(*req);
+		appendBuf(req);
 		if (_pended && _messageState == chunked)
-			parseChunked(*req);
+			parseChunked(req);
 		else if (_pended && _messageState == separate)
-			parseSeparate(*req);
+			parseSeparate(req);
 	}
 	/*
 	fulfilled state message
@@ -116,12 +116,10 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 {
 	std::string line;
 	bool hasContentLen;
-	int pos;
 
 	parseMethod("");
 	hasContentLen = parseContentLength();
-	pos = _buf.find("", CRLF2Pos);
-	line = _buf.substr(CRLF2Pos + 4, pos - CRLF2Pos);
+	line = _buf.substr(CRLF2Pos + 4);
 	if (!hasContentLen)
 	{
 		if (!line.empty())
@@ -151,7 +149,6 @@ void HttpreqHandler::checkMethod(void)
 	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
 		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
 		return ;
-	std::cout << _info.method << " " << _info.method.length() << std::endl;
 	_event->setStatusCode(405);
 	throw std::exception();
 
@@ -193,7 +190,7 @@ void HttpreqHandler::checkQueryParam(void)
 		// 쿼리파람이 uri의 마지막이라고 생각하면
 		line = _info.queryParam.substr(prevPos);
 		parseQueryParam(line, &prevPos, &pos);
-		_info.path.erase(questionPos, _info.queryParam.length() + 1);
+		_info.path.erase(_info.queryParam.length() + 1);
 	}
 }
 
