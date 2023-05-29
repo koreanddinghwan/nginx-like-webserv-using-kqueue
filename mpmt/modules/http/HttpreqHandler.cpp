@@ -4,7 +4,6 @@ void *HttpreqHandler::handle(void *data)
 {
 	_event = static_cast<Event *>(data);
 	std::string *req = _event->getBuffer();
-
 	/*
 	 처음 들어온 req massage
 	*/
@@ -24,7 +23,7 @@ void *HttpreqHandler::handle(void *data)
 	if (!_pended)
 	{
 		parse();
-		// printReq();
+		printReq();
 	}	
 	return _event;
 }
@@ -38,7 +37,6 @@ void HttpreqHandler::initMessageState(void)
 		_messageState = separate;
 	else
 	{
-		_findCRLF2 = true;
 		pos = _buf.find("Transfer-Encoding: chunked");
 		if (pos != std::string::npos) // chunked는 septerate하게 안들어온다고 가정, 나중에 수정해야될수도
 		{	
@@ -69,7 +67,6 @@ void HttpreqHandler::initVar(void)
 	_bodyBuf.clear();
 	_chunkedWithoutBodyBuf.clear();
 	_hasContentLength = false;
-	_findCRLF2 = false;
 }
 
 void HttpreqHandler::initRequest(std::string req)
@@ -109,6 +106,7 @@ bool HttpreqHandler::parseContentLength(void) // findContentLength
 	pos = _buf.find(CRLF, prevPos);
 	//15 == Content-Length길이
 	lengthStr = _buf.substr(prevPos + 15, pos - prevPos - 15);
+	_info.contentLength = lengthStr;
 	_contentLength = std::strtod(lengthStr.c_str(), &endptr);
 	return (true); // 헤더랑 밸류 모두 있음, 메소드 모름
 }
@@ -166,10 +164,42 @@ void HttpreqHandler::checkHttpVersion(void)
 	}
 }
 
+void HttpreqHandler::parseQueryParam(std::string line, int *prevPos, int *pos)
+{
+	std::string key, value;
+
+	*prevPos += line.length() + 1;
+	*pos = line.find("=");
+	key = line.substr(0, *pos);
+	value = line.substr(*pos + 1);
+	_info.queryParamsV.push_back(std::make_pair(key, value));
+}
+
+void HttpreqHandler::checkQueryParam(void)
+{
+	int pos, prevPos, questionPos = 0;
+	std::string line;
+
+	if ((questionPos = _info.path.find("?")) != std::string::npos)
+	{
+		_info.queryParam = _info.path.substr(questionPos + 1);
+		while((pos = _info.queryParam.find("&", prevPos)) != std::string::npos)
+		{
+			line = _info.queryParam.substr(prevPos, pos - prevPos);
+			parseQueryParam(line, &prevPos, &pos);
+		}
+		// 쿼리파람이 uri의 마지막이라고 생각하면
+		line = _info.queryParam.substr(prevPos);
+		parseQueryParam(line, &prevPos, &pos);
+		_info.path.erase(questionPos, _info.queryParam.length() + 1);
+	}
+}
+
 void HttpreqHandler::checkStartLine(void)
 {
 	checkMethod();
 	checkHttpVersion();
+	checkQueryParam();
 }
 
 /* =============== constructor ================== */
@@ -203,18 +233,23 @@ const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info
 void HttpreqHandler::printReq(void)
 {
 	std::cout<<"\033[35m"<<"=============Request Result============"<<std::endl;
+
 	std::cout<<"\033[35m"<<"Start Line"<<std::endl<<std::endl;
 	std::cout<<"\033[35m"<<_info.method<<std::endl;
 	std::cout<<"\033[35m"<<_info.path<<std::endl;
 	std::cout<<"\033[35m"<<_info.httpVersion<<std::endl<<std::endl;
+
 	std::cout<<"Header"<<std::endl<<std::endl;
 	for (std::map<std::string, std::string>::iterator it = _info.reqHeaderMap.begin(); it != _info.reqHeaderMap.end(); it++)
 		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
+
 	std::cout<<"\nBody"<<std::endl<<std::endl;
 	std::cout<<"\033[35m"<<_info.body<<std::endl<<std::endl;
+
 	std::cout<<"Cookie"<<std::endl<<std::endl;
 	for (std::map<std::string, std::string>::iterator it = _info.reqCookieMap.begin(); it != _info.reqCookieMap.end(); it++)
 		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
+
 	std::cout<<"\033[35m"<<"=============Request Result End============"<<std::endl;
 }
 
@@ -244,4 +279,28 @@ int convertHexToDec(std::string line)
 		dec += hex;
 	}
 	return (dec);
+}
+
+//https://stackoverflow.com/questions/154536/encode-decode-urls-in-c
+std::string encodePercentEncoding(const std::string& str)
+{
+  std::ostringstream escaped;
+  escaped.fill('0');
+  escaped << std::hex;
+
+  for (std::string::const_iterator i = str.begin(), n = str.end(); i != n; ++i)
+  {
+    std::string::value_type c = (*i);
+    // Keep alphanumeric and other accepted characters intact
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
+    {
+      escaped << c;
+      continue;
+    }
+    // Any other characters are percent-encoded
+    escaped << std::uppercase;
+    escaped << '%' << std::setw(2) << static_cast<int>(static_cast<unsigned char>(c));
+    escaped << std::nouppercase;
+  }
+  return (escaped.str());
 }
