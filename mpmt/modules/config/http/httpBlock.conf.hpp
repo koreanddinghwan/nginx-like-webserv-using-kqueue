@@ -17,41 +17,18 @@
  */
 class HttpBlock: public IHttpBlock
 {
-	public:
-		typedef std::map<int, std::vector<HttpLocationData *> *> locationDatasByPortMap;
-		typedef std::map<int, std::vector<HttpLocationData *> *>& locationDatasByPortMapRef;
-
-		
-		/**
-		 * @brief location block iterator
-		 * int : port number
-		 * vector<HttpLocationData *> : location blocks
-		 */
-		typedef std::map<int, std::vector<HttpLocationData *> *>::iterator locationDatasByPortMapIter;
-
 private:
 	HttpData confData;
-
-	/**
-	 * @brief locationDatasByPort
-	 * locationDatasByPort는 port를 key로, 해당 port를 가진 location block들을 value로 가지는 map이다.
-	 * socket open을 위해 httpServer에서 사용된다.
-	 */
-	std::map<int, std::vector<HttpLocationData *>* > locationDatasByPort;
+	std::vector<int> identicalPorts;
 
 public:
 	HttpBlock(std::ifstream &File);
 
-	HttpData& getHttpData();
 	IConfigData* getConfigData();
+	HttpData& getHttpData();
+	std::vector<int>& getIdenticalPorts();
 	~HttpBlock();
 	
-	/**
-	 * get Location Datas By Port
-	 * */
-	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
-
-
 private:
 	/**
 	 * Do not enable default constructor
