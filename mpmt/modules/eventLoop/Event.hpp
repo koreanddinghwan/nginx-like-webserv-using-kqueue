@@ -113,6 +113,7 @@ public:
 	HttpLocationData *locationData;
 	std::string serverName;
 	int wrote;
+	int readByte;
 
 public:
 	Event(t_ServerType t);
