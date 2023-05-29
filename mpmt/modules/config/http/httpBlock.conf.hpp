@@ -59,11 +59,6 @@ public:
 	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
 
 
-	/**
-	 * get default Server Data
-	 * */
-	HttpServerData* getDefaultServerData();
-
 private:
 	/**
 	 * Do not enable default constructor
