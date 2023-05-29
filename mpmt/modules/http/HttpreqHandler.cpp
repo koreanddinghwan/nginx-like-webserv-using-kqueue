@@ -1,4 +1,5 @@
 #include "HttpreqHandler.hpp"
+#include <stdexcept>
 
 void *HttpreqHandler::handle(void *data) 
 {
@@ -147,9 +148,10 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 
 void HttpreqHandler::checkMethod(void)
 {
-	if (_method == "GET" || _method == "POST" || _method == "DELETE" ||
-		_method == "PUT" || _method == "PATCH" || _method == "HEAD")
+	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
+		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
 		return ;
+	std::cout << _info.method << " " << _info.method.length() << std::endl;
 	_event->setStatusCode(405);
 	throw std::exception();
 
@@ -303,4 +305,22 @@ std::string encodePercentEncoding(const std::string& str)
     escaped << std::nouppercase;
   }
   return (escaped.str());
+}
+
+std::string urlDecode(std::string &SRC)
+{
+    std::string ret;
+    char ch;
+    int i, ii;
+    for (i=0; i<SRC.length(); i++) {
+        if (SRC[i]=='%') {
+            sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+            ch=static_cast<char>(ii);
+            ret+=ch;
+            i=i+2;
+        } else {
+            ret+=SRC[i];
+        }
+    }
+    return (ret);
 }
