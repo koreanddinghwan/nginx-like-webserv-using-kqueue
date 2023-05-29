@@ -1,6 +1,10 @@
 #ifndef HTTPREQUESTINFO_HPP
 # define HTTPREQUESTINFO_HPP
 
+# include <iostream>
+# include <map>
+# include <string>
+
 /*
  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
  * GET / HTTP/1.1
@@ -20,53 +24,54 @@
  * Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
  * */
 
-
-enum method {
-	GET = 1,
-	POST,
-	DELETE
-};
-
 #define HTTPV10 "HTTP/1.0" // HTTP/1.0
 #define HTTPV11 "HTTP/1.1" // HTTP/1.1
 #define HTTPV20 "HTTP/2.0" // HTTP/2.0
 
-enum RequestBodyType
-{
-	SingleResource = 1,
+// enum RequestBodyType
+// {
+// 	SingleResource = 1,
 	
-};
+// };
 
 //필수적인 것만 파싱하고, 너미지는 char *others에 넣는게 나을듯요
 struct httpRequestInfo
 {
+	enum method {
+		GET = 1,
+		POST,
+		DELETE
+	};
 	/*Start line*/
-	method Method; //get,post,delete
-	char *Path; //request target, url임 대부분
-	char *HttpVersion; //http 버전
+	std::string method; //get,post,delete
+	std::string path; //request target, url임 대부분
+	std::string httpVersion; //http 버전
 
 
 	/*Headers*/
+	//request Header만 담을 map(map은 순서 보장 안하니까 상의하고 다른 자료구조로 바꾸기)
+	std::map<std::string, std::string> reqHeaderMap;
+	std::map<std::string, std::string> reqCookieMap;
 		/*Requeset headers*/
-		char *Host;
-		char *UserAgent;
-		char *Accept;
-		char *AcceptLanguage;
-		char *AcceptEncoding;
+		std::string host;
+		//char *UserAgent;
+		//char *Accept;
+		//char *AcceptLanguage;
+		//char *AcceptEncoding;
 
-		/*General headers*/
-		int Connection;
-		int UpgradeInsecureRequesets;
+		///*General headers*/
+		//int Connection;
+		//int UpgradeInsecureRequesets;
 
 		/*Representation Headers*/
-		char *ContentType;
-		int ContentLength;
+		// char *ContentType;
+		// int ContentLength;
 	
 	/*body*/
-
+		std::string body;
 
 	/*others*/
-	char *others;
+	// char *others;
 };
 
 #endif

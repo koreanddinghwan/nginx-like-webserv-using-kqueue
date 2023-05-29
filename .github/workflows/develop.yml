@@ -10,7 +10,7 @@ on:
 jobs:
   compile:
     name: compilation test
-    runs-on: ubuntu-latest
+    runs-on: macos-12
     
 
 
@@ -24,6 +24,7 @@ jobs:
     - name: Compile test
       run: |
         cd mpmt
+        make fclean
         make 
         if
         [ $? != 0 ]; then

@@ -4,7 +4,8 @@
 class IWebservManager
 {
 public:
-	virtual void run() = 0;
+	virtual void initConfig(int ac, char **av) const = 0;
+	virtual void initLoop() = 0;
 };
 
 

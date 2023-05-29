@@ -4,8 +4,8 @@
 class IHandler
 {
 public:
-	~IHandler() {}
-	virtual void *handle(void *data)  = 0;
+	virtual void *handle(void *data) = 0;
+	virtual ~IHandler() {}
 };
 
 #endif
