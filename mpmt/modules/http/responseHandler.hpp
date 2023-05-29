@@ -18,9 +18,9 @@ public:
 	void setResBody(std::string body) const;
 	void setResHeader(std::string HttpV) const;
 	void setResBuf() const;
-	std::string getResBody() const;
-	std::string getResHeader() const;
-	std::string getResBuf() const;
+	std::string& getResBody() const;
+	std::string& getResHeader() const;
+	std::string& getResBuf() const;
 	void *handle(void *event);
 private:
 	responseHandler& operator=(const responseHandler &rhs);
