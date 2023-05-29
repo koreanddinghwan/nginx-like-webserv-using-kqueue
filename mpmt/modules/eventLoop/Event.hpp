@@ -77,7 +77,7 @@ private:
 	 */
 	int	server_socket_fd;
 	int client_socket_fd;
-	int pipe_fd;
+	int pipe_fd[2];
 	int file_fd;
 
 	t_EventType	eventInfo;
@@ -99,8 +99,19 @@ private:
 	HttpServerData *defaultServerData;
 
 	std::string route;
+	std::string dir;
+	std::string resource;
 	std::string *buffer;
 	int statusCode;
+	std::vector<std::string> cgiEnv;
+
+public:
+	/**
+	 * @breif 현재 이벤트의 locationData
+	 */
+	HttpLocationData *locationData;
+	std::string serverName;
+	int wrote;
 
 public:
 	Event(t_ServerType t);
@@ -115,16 +126,19 @@ private:
 	void setSocketInfo(t_SocketInfo t);
 	void setServerFd(int t);
 	void setClientFd(int t);
-	void setPipeFd(int t);
+	void setPipeFd(int i, int t);
 	void setFileFd(int t);
-	void setEventType(t_EventType t);
+	void setResource(std::string t);
+	void setDir(std::string t);
 
 public:
+	void setEventType(t_EventType t);
 	void setRequestHandler(IHandler* t);
 	void setResponseHandler(IHandler* t);
 	void setServerDataByPort(int port);
 	void setServerData(std::vector<HttpServerData *> *t);
 	void setDefaultServerData(HttpServerData *t);
+	void separateResourceAndDir();
 
 public:
 	/**
@@ -134,7 +148,7 @@ public:
 	t_SocketInfo&					getSocketInfo();
 	int&							getServerFd();
 	int&							getClientFd();
-	int&							getPipeFd();
+	int*							getPipeFd();
 	int&							getFileFd();
 
 	t_EventType&					getEventType();
@@ -156,6 +170,10 @@ public:
 
 	std::string&	getRoute();
 	void			setRoute(std::string t);
+
+	std::string&	getDir();
+	std::string&	getResource();
+	std::vector<std::string>& getCgiEnv();
 
 private:
 	Event(Event &e);
