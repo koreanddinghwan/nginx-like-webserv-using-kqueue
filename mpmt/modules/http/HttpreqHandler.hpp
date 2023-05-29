@@ -2,6 +2,7 @@
 # define HTTPREQHANDLER_HPP
 
 #include <iostream>
+#include <sstream>
 #include "../eventLoop/Event.hpp"
 #include "./HttpRequestInfo.hpp"
 #include "../../interface/IHandler.hpp"
@@ -101,5 +102,6 @@ private:
 };
 
 int convertHexToDec(std::string line);
+std::string encodePercentEncoding(const std::string& str);
 
 #endif
