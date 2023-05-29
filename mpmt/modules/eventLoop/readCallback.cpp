@@ -53,7 +53,7 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 
 		//handler 객체 설정
 		new_udata->setRequestHandler(new HttpreqHandler());
-		new_udata->setResponseHandler(new Response());
+		new_udata->setResponseHandler(new responseHandler(15));
 
 		//kqueue에 event 등록
 		registerClientSocketReadEvent(new_udata);

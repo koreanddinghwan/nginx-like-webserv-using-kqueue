@@ -32,11 +32,13 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * @TODO
 	 * make response message here
 	 * */
+	e->getResponseHandler()->handle(e);
 
 	/**
 	 * @TODO
 	 * wrote byte set;
 	 * */
+	e->wrote = static_cast<responseHandler *>(e->getResponseHandler())->getResBuf().size();
 
 	//client socket을 쓰기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
