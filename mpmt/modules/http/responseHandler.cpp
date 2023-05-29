@@ -4,6 +4,7 @@
 responseHandler::responseHandler() {
 };
 
+
 responseHandler::responseHandler(const int &status) {
 	this->_res = new Response(status);
 };
@@ -23,6 +24,14 @@ void responseHandler::setRes(const int statusCode) {
 
 void responseHandler::setResBody(std::string body) const { 
 	this->_res->setBody(body); 
+};
+
+void responseHandler::setResStatusCode(const int& statusCode) const { 
+	this->_res->setStatusCode(statusCode); 
+};
+
+void responseHandler::setResStatusMsg(const int& statusCode) const { 
+	this->_res->setStatusMsg(statusCode); 
 };
 
 void responseHandler::setResLocation(std::string location) const { 
@@ -48,15 +57,22 @@ std::string& responseHandler::getResBuf() const {
 	return this->_res->getBuf();
 };
 
+
+
 void *responseHandler::handle(void *event) {
+
 	Event *e = static_cast<Event *>(event);
 
-	this->setRes(302);
 	//change a value below,
+	//
+	//this->setRes(e->somthing->statusCode);
 	//if (e->something->content for responseBody)
 	//	this->setResBody(e->something->content);
+	//this->_res->setStatusCode(e->getStatusCode());
+	//this->_res->setStatusMsg(e->getStatusCode());
 	//if (e->something->redirectLocation)
 	//	this->setResLocation(e->something->redirectLoaction);
+
 
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
 	this->setResHeader(HTTPV11);

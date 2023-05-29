@@ -40,14 +40,14 @@ void Response::setHeaders(std::string httpV) {
 	this->_headers = httpV + " " + toString(this->_statusCode) + " " + this->_statusMsg + "\r\n" + "Content-Type: " + "text/html" + "\r\n";
 	if ((this->_statusCode == 301 && this->_location != "") || (this->_statusCode == 302 && this->_location != ""))
 		this->_headers += "Location: " + this->_location + "\r\n";
-	this->_body != "" ? this->_headers += "Content-Length: " + toString(this->_body.length()) + "\r\n\r\n" : this->_headers += "\r\n\r\n";
+	this->_body != "" ? this->_headers += "Content-Length: " + toString(this->_body.size()) + "\r\n\r\n" : this->_headers += "\r\n\r\n";
 }	
 void Response::setLocation(std::string location) {
-	this->_body = location;
+	this->_location = location;
 };
 
 void Response::setBody(std::string body) {
-	this->_body = body;
+	this->_body += body;
 }
 
 void Response::setBuf(){

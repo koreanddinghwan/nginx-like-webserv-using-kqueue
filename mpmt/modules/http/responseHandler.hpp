@@ -17,6 +17,9 @@ public:
 	void setRes(const int statusCode);
 	void setResBody(std::string body) const;
 	void setResHeader(std::string HttpV) const;
+	void setResLocation(std::string location) const;
+	void setResStatusCode(const int& statusCode) const;
+	void setResStatusMsg(const int& statusCode) const;
 	void setResBuf() const;
 	std::string& getResBody() const;
 	std::string& getResHeader() const;
