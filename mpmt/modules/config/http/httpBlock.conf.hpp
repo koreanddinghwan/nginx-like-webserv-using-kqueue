@@ -21,8 +21,6 @@ class HttpBlock: public IHttpBlock
 		typedef std::map<int, std::vector<HttpLocationData *> *> locationDatasByPortMap;
 		typedef std::map<int, std::vector<HttpLocationData *> *>& locationDatasByPortMapRef;
 
-		typedef std::map<int, std::vector<std::string> *> serverNamesByPortMap;
-		typedef std::map<int, std::vector<std::string> *> &serverNamesByPortMapRef;
 		
 		/**
 		 * @brief location block iterator
@@ -30,13 +28,6 @@ class HttpBlock: public IHttpBlock
 		 * vector<HttpLocationData *> : location blocks
 		 */
 		typedef std::map<int, std::vector<HttpLocationData *> *>::iterator locationDatasByPortMapIter;
-
-		/**
-		 * @brief server name iterator
-		 * int : port number
-		 * vector<std::string> : server names
-		 */
-		typedef std::map<int, std::vector<std::string> *>::iterator serverNamesByPortMapIter;
 
 private:
 	HttpData confData;
@@ -55,13 +46,6 @@ private:
 	 */
 	HttpServerData* defaultServerData;
 
-	/**
-	 * @brief serverNamesByPort
-	 * https://nginx.org/en/docs/http/server_names.html#optimization  
-	 * exact name만 담는 map
-	 */
-	serverNamesByPortMap serverNamesByPort;
-
 public:
 	HttpBlock(std::ifstream &File);
 
@@ -74,20 +58,11 @@ public:
 	 * */
 	std::map<int, std::vector<HttpLocationData *> *>& getLocationDatasByPort();
 
-	/**
-	 * find Location Datas By Port
-	 * */
-	std::vector<HttpLocationData *>* findLocationDatasByPort(int p);
 
 	/**
 	 * get default Server Data
 	 * */
 	HttpServerData* getDefaultServerData();
-
-	/**
-	 * get server Names By Port
-	 * */
-	serverNamesByPortMapRef getServerNamesByPort();
 
 private:
 	/**
