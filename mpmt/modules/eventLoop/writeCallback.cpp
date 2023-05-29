@@ -1,4 +1,5 @@
 #include "EventLoop.hpp"
+#include <sys/errno.h>
 
 void EventLoop::writeCallback(struct kevent *e)
 {
@@ -35,14 +36,33 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 	{
 		//status check
 		//make response message before write
-		if (e_udata->getStatusCode() >= 400)
+
+		/**
+		 * set response message
+		 * */
+
+		/**
+		 * size of e->data만큼 작성
+		 * */
+		int wroteByte = write(e_udata->getClientFd(), NULL, e->data);
+
+		if (wroteByte == -1)
 		{
-			/**
-			 * write buffer in response
-			 * */
-			/* write(e_udata->getClientFd(), e_udata->getErrorMessage().c_str(), e_udata->getErrorMessage().length()); */
-			e_udata->closeAllFd();
-			delete e_udata;
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+				return;
+			else
+			{
+				//관련 exception 처리 필요
+				throw std::runtime_error("Failed to read from client socket, unknown err\n");
+			}
+		}
+
+		else
+		{
+			e_udata->wrote -= wroteByte; 
+			if (e_udata->wrote == 0)
+				//작성완료.
+				unregisterClientSocketWriteEvent(e_udata);
 		}
 	}
 }
