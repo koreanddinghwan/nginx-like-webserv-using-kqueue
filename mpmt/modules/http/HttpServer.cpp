@@ -10,39 +10,17 @@ void HttpServer::init() throw(std::runtime_error)
 {
 	this->H = static_cast<HttpBlock *>(Config::getInstance().getHTTPBlock());
 	this->stringBuffer.resize(1024);
-	this->locationDatasByPortMap = &(H->getLocationDatasByPort());
 
-	std::map<int, std::vector<HttpLocationData *> *>& m = H->getLocationDatasByPort();
-
-	/* port별로 server data를 순회한다.*/
-	for (HttpBlock::locationDatasByPortMapIter it = m.begin(); it != m.end(); it++)
+	for (std::vector<int>::iterator it = this->H->getIdenticalPorts().begin(); it != this->H->getIdenticalPorts().end(); it++)
 	{
-		/* port별로 server socket event를 생성.*/
-		int port = (*it).first;
+		int port = (*it);
 		Event *e = Event::createNewServerSocketEvent(port);
 
-		int fd = e->getServerFd();
-		this->serverSocketFd.push_back((fd));
 		struct kevent kev;
-	
-		/* todo =>event 넣기*/
-		std::cout<<e<<std::endl;
-		EV_SET(&kev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
+		EV_SET(&kev, e->getServerFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 		this->kevents.push_back(kev);
 	}
 }
-
-bool HttpServer::isServerSocket(int socket_fd)
-{
-	for (std::vector<int>::iterator it = this->serverSocketFd.begin(); it != this->serverSocketFd.end(); it++)
-	{
-		if (*it == socket_fd)
-			return true;
-	}
-	return false;
-}
-
-HttpBlock::locationDatasByPortMap *HttpServer::getLocationDatasByPortMap() { return this->locationDatasByPortMap; }
 
 std::vector<struct kevent> & HttpServer::getKevents() { return this->kevents; }
 

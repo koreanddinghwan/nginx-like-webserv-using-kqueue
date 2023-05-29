@@ -21,15 +21,19 @@
 class HttpServer : public IServer {
 private:
 	HttpBlock *H;
-	HttpBlock::locationDatasByPortMap *locationDatasByPortMap;
+
+	/**
+	 * @brief http server의 kevent를 저장합니다.
+	 * event loop 에서 맨 처음에 이 kevent들을 등록합니다.
+	 */
 	std::vector<struct kevent> kevents;
-	std::vector<int> serverSocketFd;
-	/*     clientFd, obejct*/
-	/* std::map<int, request> requestMap; */
+
 
 	//1024로 설정. 나중에 수정 필요
 	//nginx의 client_body_buffer_size, client_header_buffer_size 확인할 것.
 	//https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
+	//default : 1024 for header
+	//default : 1m(1024kb)== 1048576 for body
 	char HttpBuffer[1024];
 
 	//is it needed?
@@ -51,19 +55,13 @@ public:
    */
   void init() throw(std::runtime_error);
 
-  /**
-   * @brief server socket인지 확인합니다.
-   *
-   * @param socket_fd
-   *
-   * @return 
-   */
-  bool isServerSocket(int socket_fd);
-
-  void makeSocketByLocationData(std::vector<HttpLocationData *> *m, Event *e);
- 
   std::vector<struct kevent> &getKevents();
-  HttpBlock::locationDatasByPortMap *getLocationDatasByPortMap(); 
+
+  /**
+   * @brief http server의 buffer를 리턴합니다.
+   *
+   * @return char * of http buffer
+   */
   char* getHttpBuffer();
   std::string &getStringBuffer();
 
