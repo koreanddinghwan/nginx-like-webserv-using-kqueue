@@ -1,6 +1,7 @@
 #ifndef EVENTLOOP_HPP
 # define EVENTLOOP_HPP
 
+#include "../../factory/MethodFactory.hpp"
 #include "../../exceptions/httpException.hpp"
 #include <cstdlib>
 #include <sys/_types/_socklen_t.h>
@@ -85,6 +86,10 @@ private:
 	void unregisterClientSocketWriteEvent(Event *e);
 	void unregisterPipeWriteEvent(Event *e);
 	void unregisterFileWriteEvent(Event *e);
+
+	int getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath);
+	void setHttpResponse(Event *e);
+	bool processCgi(Event *e);
 };
 
 

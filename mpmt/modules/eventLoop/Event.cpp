@@ -4,7 +4,8 @@ Event::Event(t_ServerType t)
 {
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
-	this->pipe_fd = -1;
+	this->pipe_fd[0] = -1;
+	this->pipe_fd[1] = -1;
 	this->file_fd = -1;
 	this->serverType = t;
 	this->statusCode = -1;
@@ -22,8 +23,8 @@ void Event::setServerFd(int t)
 void Event::setClientFd(int t)
 {this->client_socket_fd = t;}
 
-void Event::setPipeFd(int t)
-{this->pipe_fd = t;}
+void Event::setPipeFd(int i, int t)
+{this->pipe_fd[i] = t;}
 
 void Event::setFileFd(int t)
 {this->file_fd = t;}
@@ -85,7 +86,7 @@ int& Event::getServerFd()
 int& Event::getClientFd()
 {return this->client_socket_fd;}
 
-int& Event::getPipeFd()
+int* Event::getPipeFd()
 {return this->pipe_fd;}
 
 int& Event::getFileFd()
@@ -212,8 +213,10 @@ void Event::closeAllFd()
 		close(this->server_socket_fd);
 	if (this->client_socket_fd != -1)
 		close(this->client_socket_fd);
-	if (this->pipe_fd != -1)
-		close(this->pipe_fd);
+	if (this->pipe_fd[0] != -1)
+		close(this->pipe_fd[0]);
+	if (this->pipe_fd[1] != -1)
+		close(this->pipe_fd[1]);
 	if (this->file_fd != -1)
 		close(this->file_fd);
 }
@@ -233,6 +236,29 @@ std::string &Event::getRoute()
 
 void Event::setRoute(std::string t)
 {this->route = t;}
+
+std::string&	Event::getDir()
+{return this->dir;}
+void			Event::setDir(std::string t)
+{this->dir = t;}
+
+std::string&	Event::getResource()
+{return this->resource;}
+void			Event::setResource(std::string t)
+{this->resource = t;}
+
+void Event::separateResourceAndDir()
+{
+	int slashIndex = this->route.rfind('/');
+
+	this->setDir(this->route.substr(0, slashIndex));
+	this->setResource(this->route.substr(slashIndex + 1));
+}
+
+std::vector<std::string> &Event::getCgiEnv()
+{
+	return this->cgiEnv;
+}
 
 /**
  * @deprecated
