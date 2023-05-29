@@ -4,6 +4,8 @@
 
 # include <iostream>
 # include <sstream>
+# include <cstdlib>
+
 # include "commonHttpInfo.hpp"
 #define HTTPV10 "HTTP/1.0" // HTTP/1.0
 #define HTTPV11 "HTTP/1.1" // HTTP/1.1
@@ -24,22 +26,24 @@ class Response {
 
 		void setHeaders(std::string httpV);	
 		void setBody(std::string body);
+		void setLocation(std::string location);
 		void setBuf();
 
-		std::string getBody() const;
-		std::string getHeader() const;
-		std::string getBuf() const;
+		std::string& getBody();
+		std::string& getHeader();
+		std::string& getBuf();
 
-		std::string getStatusMsg() const;
+		std::string& getStatusMsg();
 		int getStatusCode() const;
 		
 	//destoryer
 	protected:
 		int _statusCode;
 		std::string _statusMsg;
-		std::stringstream _headers;
-		std::stringstream _body;
-		std::ostringstream _buf;
+		std::string _location;
+		std::string _headers;
+		std::string _body;
+		std::string _buf;
 };
 
 #endif
