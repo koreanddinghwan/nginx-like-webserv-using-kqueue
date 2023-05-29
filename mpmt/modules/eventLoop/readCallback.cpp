@@ -68,6 +68,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 	if (e->flags == EV_EOF)
 	{
 		close(e->ident);
+		//remove event
 		std::cout<<"client disconnected"<<std::endl;
 	}
 
@@ -83,6 +84,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
 			else
+				//관련 exception 처리 필요
+				//event 삭제?
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else
@@ -132,7 +135,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 					 * limited method => 405
 					 * */
 					unregisterClientSocketReadEvent(e_udata);
-					registerClientSocketReadEvent(e_udata);
+					registerClientSocketWriteEvent(e_udata);
 					return ;
 				}
 
@@ -162,17 +165,46 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 * This may be cleared by passing in EV_CLEAR, at which point the filter will
 * resume waiting for data to become available before returning.
 **/
-
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[35m"; 
 	std::cout<<"pipe callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//eof flag있어야 writer가 작성 끝낸거임.
+		//eof flag있어야 writer가 disconnected한거
 		if (e->flags & EV_EOF)
 		{
-			//process pipe read 
+			//pipe의 writer는 즉 cgi process임.
+			//이제 이 fd는 close해도 됨.
+			close(e->ident);
+
+			unregisterPipeReadEvent(e_udata);
+			registerClientSocketWriteEvent(e_udata);
+			return;
+		}
+
+		//read from pipe
+		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1024);
+		if (read_len == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return;
+			else
+				//관련 exception 처리 필요
+				//event 삭제?
+				throw std::runtime_error("Failed to read from pipe, unknown err\n");
+		}
+		else
+		{
+			//read from pipe
+			std::cout<<"[[[[[[[PIPE READ START]]]]]]]]"<<std::endl;
+			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
+			std::cout<<"[[[[[[[PIPE READ END]]]]]]]]"<<std::endl;
+
+
+			/**
+			 * @TODO response body에 읽은 데이터 추가.
+			 * */
 		}
 	}
 }
@@ -186,7 +218,6 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 		//eof flag있어야 writer가 작성 끝낸거임.
 		if (e->flags & EV_EOF)
 		{
-			//process pipe read 
 		}
 	}
 }
