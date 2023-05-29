@@ -226,7 +226,7 @@ void HttpreqHandler::parse(void)
 		prevPos += line.length() + 2;
 		//startLine
 		if (_info.method.empty())
-			parseStartLine(encodePercentEncoding(line));
+			parseStartLine(urlDecode(line));
 		//header
 		else
 		{
