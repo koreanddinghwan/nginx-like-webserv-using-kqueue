@@ -21,13 +21,14 @@ int main(void)
 		test.seekg(0, std::ios::end);
 		test.read(&s[0], size);
 	}
-	int i = 0;
+	/* int i = 0;
 	std::cout<< s << std::endl;
 	while (i < 3) {
 		Res->setResBody(s);
 		Res->setResBody("======================================\n");
 		i++;
-	}
+	} */
+	Res->setResBody("");
 	Res->setResStatusCode(301);
 	Res->setResStatusMsg(301);
 
