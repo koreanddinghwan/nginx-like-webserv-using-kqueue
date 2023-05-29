@@ -16,20 +16,19 @@ HttpBlock::HttpBlock(std::ifstream &File)
 	for (int i = 0; i < serverBlock.size(); i++)
 	{
 		int serverPort = serverBlock.at(i)->getServerData().getListen();
+		int flag = 0;
 
-		if (std::find(this->identicalPorts.begin(), this->identicalPorts.end(), serverPort) != this->identicalPorts.end())
+		for (int i = 0; i < this->identicalPorts.size(); i++)
 		{
-			//insert
-			this->identicalPorts.push_back(serverPort);
+			if (this->identicalPorts[i] == serverPort)
+			{
+				flag = 1;
+				break;
+			}
 		}
+		if (!flag)
+			this->identicalPorts.push_back(serverPort);
 	}
-
-	/*/1** */
-	/* * @set defaultServerData */
-	/* * Event 구조체가 들고있어야하는 default server block을 세팅한다. */  
-	/* * 파싱이 완료된 상태이므로, 접근해서 세팅만하면된다. */  
-	/* * *1/ */
-	/*this->defaultServerData = &(static_cast<HttpServerBlock *>(this->confData.getServerBlock()[0])->getServerData()); */
 }
 
 HttpBlock::~HttpBlock() 
