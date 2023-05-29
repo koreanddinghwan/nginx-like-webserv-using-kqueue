@@ -13,8 +13,6 @@ int main(void)
 	std::ifstream test ("index.html", std::ios_base::in);
 	std::string s;
 	responseHandler *Res = new responseHandler(400);
-	std::cout << "========" << Res->getResStatusCode() << std::endl;
-	std::cout << "========" << Res->getResStatusMsg() << std::endl;
 
 	if (test.is_open()) {
 		test.seekg(0, std::ios::end);
@@ -30,8 +28,6 @@ int main(void)
 		Res->setResBody("======================================\n");
 		i++;
 	}
-	std::cout << "===============" << Res->getResBody().capacity() << "================\n" <<std::endl;
-	std::cout << "===============" << Res->getResBody().size() << "================\n" <<std::endl;
 	Res->setResStatusCode(301);
 	Res->setResStatusMsg(301);
 
