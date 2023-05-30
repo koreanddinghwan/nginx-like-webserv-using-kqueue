@@ -79,6 +79,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
+		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		
 		std::cout<<"read len = " <<read_len<<std::endl;
 
 		if (read_len != -1)
