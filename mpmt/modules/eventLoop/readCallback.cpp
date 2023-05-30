@@ -188,23 +188,24 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[35m"; 
-	std::cout<<"pipe callback"<<std::endl;
+	std::cout<<"pipe read callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//eof flag있어야 writer가 disconnected한거
-		if (e->flags & EV_EOF)
+		if (e->flags == EV_EOF)
 		{
 			//pipe의 writer는 즉 cgi process임.
 			//이제 이 fd는 close해도 됨.
-			close(e->ident);
-
 			unregisterPipeReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
+			e_udata->setEventType(E_CLIENT_SOCKET);
 			return;
 		}
 
 		//read from pipe
 		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1024);
+		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		std::cout<<"read len = " <<read_len<<std::endl;
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -214,6 +215,15 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//event 삭제?
 				throw std::runtime_error("Failed to read from pipe, unknown err\n");
 		}
+		else if (read_len == 0)
+			{
+				//pipe의 writer는 즉 cgi process임.
+				//이제 이 fd는 close해도 됨.
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				e_udata->setEventType(E_CLIENT_SOCKET);
+				return;
+			}
 		else
 		{
 			//read from pipe
@@ -223,8 +233,10 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 
 
 			/**
-			 * @TODO response body에 읽은 데이터 추가.
+			 * response body에 읽은 데이터 추가.
 			 * */
+			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getStringBuffer());
 		}
 	}
 }
