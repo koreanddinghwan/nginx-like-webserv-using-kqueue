@@ -37,6 +37,7 @@ void HttpLocationData::operator=(HttpServerData &c)
 	this->setListen(c.getListen());
 	for (int i = 0; i < c.getServerNames().size(); i++)
 		this->setServerName(c.getServerNames()[i]);
+	this->setUploadStore(c.getUploadStore());
 }
 
 
@@ -121,7 +122,7 @@ void HttpLocationData::printLocationData() {
 	std::cout<<"fastcgi_pass: "<<fastcgi_pass<<std::endl;
 	std::cout<<"return_status: "<<return_status<<std::endl;
 	std::cout<<"redirect_url: "<<redirect_url<<std::endl;
-	std::cout<<"allowed_methods: ";
+	std::cout<<"allowed_methods: "<<std::endl;
 	for (int i = 0; i < 14; i++)
 	{
 		std::string text;
