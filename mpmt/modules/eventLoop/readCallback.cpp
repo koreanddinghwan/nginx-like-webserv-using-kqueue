@@ -82,10 +82,6 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 		
 		std::cout<<"read len = " <<read_len<<std::endl;
-
-		if (read_len != -1)
-			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
-		e_udata->readByte = read_len;
 		std::cout<<"data::"<< e->data<<std::endl;
 		if (read_len == -1)
 		{
@@ -115,6 +111,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 		{
+
+			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
+			e_udata->readByte = read_len;
+
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
 			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
 			std::cout<<"[[[[[[[CLIENT REQUEST END]]]]]]]]"<<std::endl;
