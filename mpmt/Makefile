@@ -6,7 +6,7 @@ INC = .
 FACTORYSRCS = MethodFactory.cpp
 FACTORYOBJS = $(addprefix ./factory/, $(FACTORYSRCS:.cpp=.o))
 
-HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp responseHandler.cpp RequestParse.cpp HttpResponseInfo.cpp ws_HttpIndexModule.cpp ws_HttpAutoIndexModule.cpp
+HTTPSRCS = HttpServer.cpp HttpreqHandler.cpp responseHandler.cpp RequestParse.cpp HttpResponseInfo.cpp ws_HttpIndexModule.cpp ws_HttpAutoIndexModule.cpp ws_HttpUploadModule.cpp
 HTTPOBJS = $(addprefix ./modules/http/, $(HTTPSRCS:.cpp=.o))
 
 HTTPDATASRCS = HttpConfigData.cpp HttpData.cpp HttpLocationData.cpp HttpServerData.cpp
