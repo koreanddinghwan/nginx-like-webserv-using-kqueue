@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "../http/ws_HttpIndexModule.hpp"
 #include "../http/ws_HttpAutoIndexModule.hpp"
+#include "../http/ws_HttpUploadModule.hpp"
 #include "../http/HttpReqHandler.hpp"
 #include "Event.hpp"
 
@@ -83,6 +84,15 @@ void EventLoop::setHttpResponse(Event *e)
 		 * throw exception.
 		 * if event loop catch this exception, then the httpexception event will be registered.
 		 * */
+		throw std::exception();
+	}
+
+	/**
+	 * check clientMaxBodySize
+	 * */
+	if (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length())
+	{
+		e->setStatusCode(413);
 		throw std::exception();
 	}
 
@@ -241,6 +251,17 @@ void EventLoop::setHttpResponse(Event *e)
 	if (methodIndex == POST)
 	{
 		std::cout<<"method is POST"<<std::endl;
+		if (!e->locationData->getUploadStore().empty())
+		{
+			if (ws_HttpUploadModule::processEvent(e) == false)
+			{
+				e->setStatusCode(500);
+				throw std::exception();
+			}
+			e->setStatusCode(201);
+			unregisterClientSocketReadEvent(e);
+			registerFileWriteEvent(e);
+		}
 	}
 
 	if (methodIndex == DELETE)
