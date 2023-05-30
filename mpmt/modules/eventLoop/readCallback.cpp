@@ -116,7 +116,6 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 		{
-
 			HttpServer::getInstance().getStringBuffer() = HttpServer::getInstance().getHttpBuffer();
 			e_udata->readByte = read_len;
 
