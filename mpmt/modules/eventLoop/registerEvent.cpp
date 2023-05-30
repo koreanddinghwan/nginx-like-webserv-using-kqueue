@@ -60,6 +60,7 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 
 void EventLoop::registerFileWriteEvent(Event *e)
 {
+	e->fileWroteByte = 0;
 	e->setEventType(E_FILE);
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
@@ -121,4 +122,5 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file write with kqueue\n");
+	close(e->file_fd);
 }
