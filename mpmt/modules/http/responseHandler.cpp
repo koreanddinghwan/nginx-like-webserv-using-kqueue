@@ -68,7 +68,7 @@ void *responseHandler::handle(void *event) {
 	/**
 	 * 1. apply event's status code
 	 * */
-	this->_res->setStatusCode(e->getStatusCode());
+	this->setResStatusCode(e->getStatusCode());
 
 	/**
 	 * 2. generate message
