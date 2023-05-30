@@ -196,11 +196,11 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		//eof flag있어야 writer가 disconnected한거
 		if (e->flags == EV_EOF)
 		{
+			std::cout<<"PIPE::EOF"<<std::endl;
 			//pipe의 writer는 즉 cgi process임.
 			//이제 이 fd는 close해도 됨.
 			unregisterPipeReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
-			e_udata->setEventType(E_CLIENT_SOCKET);
 			return;
 		}
 
@@ -223,7 +223,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//이제 이 fd는 close해도 됨.
 				unregisterPipeReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
-				e_udata->setEventType(E_CLIENT_SOCKET);
 				return;
 			}
 		else
