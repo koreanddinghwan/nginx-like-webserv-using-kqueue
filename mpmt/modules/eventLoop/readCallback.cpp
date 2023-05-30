@@ -236,8 +236,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			/**
 			 * response body에 읽은 데이터 추가.
 			 * */
-			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
-			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getStringBuffer());
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 		}
 	}
 }
