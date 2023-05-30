@@ -101,8 +101,12 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket write with kqueue\n");
 
-	close(e->getClientFd());
-	delete e;
+	delete e->getResponseHandler();
+	delete e->getRequestHandler();
+
+	e->setRequestHandler(new HttpreqHandler());
+	e->setResponseHandler(new responseHandler(-1));
+	registerClientSocketReadEvent(e);
 }
 
 void EventLoop::unregisterPipeWriteEvent(Event *e)
