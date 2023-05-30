@@ -1,3 +1,4 @@
+#include "Event.hpp"
 #include "EventLoop.hpp"
 #include <exception>
 #include <sys/event.h>
@@ -64,30 +65,51 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[34m"; 
 	std::cout<<"client socket callback"<<std::endl;
-	//socket의 readfilter-> EOF flag는 client의 disconnect.
-	if (e->flags == EV_EOF)
-	{
-		close(e->ident);
-		//remove event
-		std::cout<<"client disconnected"<<std::endl;
-	}
-
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
+		//socket의 readfilter-> EOF flag는 client의 disconnect.
+		if (e->flags == EV_EOF)
+		{
+			unregisterClientSocketReadEvent(e_udata);
+			//remove event
+			std::cout<<"client disconnected"<<std::endl;
+		}
+
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
-		HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
+		std::cout<<"read len = " <<read_len<<std::endl;
+
+		if (read_len != -1)
+			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
 		e_udata->readByte = read_len;
+		std::cout<<"data::"<< e->data<<std::endl;
 		if (read_len == -1)
 		{
+			std::cout<<"errno:"<<errno<<std::endl;
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
+			else if (errno == ECONNRESET)
+			{
+				//remove event
+				unregisterClientSocketReadEvent(e_udata);
+				//client socket close
+				close(client_fd);
+				//client socket event delete
+				delete e_udata;
+				std::cout<<"client disconnected"<<std::endl;
+				return;
+			}
 			else
 				//관련 exception 처리 필요
 				//event 삭제?
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
+		}
+		else if (read_len == 0)
+		{
+			unregisterClientSocketReadEvent(e_udata);
+			registerClientSocketWriteEvent(e_udata);
 		}
 		else
 		{
@@ -100,12 +122,16 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			//handle request
 			e_udata->setBuffer(&HttpServer::getInstance().getStringBuffer());
 			try {
+				std::cout<<"use handle"<<std::endl;
 				reqHandler->handle(e_udata);
+				std::cout<<"use handle end"<<std::endl;
 			} catch (std::exception &exception) {
 				/**
 				 * client request exception handling by 
 				 * register write event to client_fd, and finally send error response
 				 * */
+				std::cout<<"catch some exception"<<std::endl;
+				std::cout<<"statudcode"<<e_udata->getStatusCode()<<std::endl;
 				unregisterClientSocketReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
 				/**
@@ -120,40 +146,33 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			//handle response by request
 			/**
 			 * pending state => client로부터 data를 더 받아야하는 상태
+			 *
+			 * read_len : read return 0 when eof
 			 * */
-			if (reqHandler->getIsPending())
+			if (reqHandler->getIsPending() && read_len != 0)
+			{
+				std::cout<<"pending"<<std::endl;
 				return ;
+			}
 			else
 			{
 				try {
 					/**
 					 * set http response
 					 * */
+					std::cout<<"setting response"<<std::endl;
 					setHttpResponse(e_udata);
 				} catch (std::exception &e) {
 					/**
 					 * http response가 설정 중간에 exception이 발생할 경우
 					 * limited method => 405
 					 * */
+					std::cout<<"catch some exception in setting response"<<std::endl;
+					std::cout<<"statudcode"<<e_udata->getStatusCode()<<std::endl;
 					unregisterClientSocketReadEvent(e_udata);
 					registerClientSocketWriteEvent(e_udata);
 					return ;
 				}
-
-				/**
-				 * if need file i/o
-				 * first, if method == POST -> file write event
-				 * second, if method == GET && not CGI_PASS -> file read event
-				 * then?
-				 * */
-				/**
-				 * else if need cgi(pipe)
-				 * 1. open pipe and set NON_BLOCK
-				 * 2. set readfilter && E_pipeevent to server side pipe
-				 * 3. fork
-				 * 		3-1. parent: return ;
-				 * 		3-2. child: execve by cgi environment in response handler
-				 * */
 			}
 		}
 	}
