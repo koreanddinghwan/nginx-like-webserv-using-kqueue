@@ -1,9 +1,11 @@
+#include "Event.hpp"
 #include "EventLoop.hpp"
 #include <sys/event.h>
 #include <sys/socket.h>
 
 void EventLoop::registerClientSocketReadEvent(Event *e)
 {
+	e->setEventType(E_CLIENT_SOCKET);
 	//client socket을 읽기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
@@ -12,6 +14,7 @@ void EventLoop::registerClientSocketReadEvent(Event *e)
 
 void EventLoop::registerPipeReadEvent(Event *e)
 {
+	e->setEventType(E_PIPE);
 	EV_SET(&(dummyEvent), e->getPipeFd()[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register pipe read with kqueue\n");
@@ -19,13 +22,16 @@ void EventLoop::registerPipeReadEvent(Event *e)
 
 void EventLoop::registerFileReadEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->getFileFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
+	e->setEventType(E_FILE);
+	e->fileReadByte = 0;
+	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register file read with kqueue\n");
 }
 
 void EventLoop::registerClientSocketWriteEvent(Event *e)
 {
+	e->setEventType(E_CLIENT_SOCKET);
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
 	 * */
@@ -54,7 +60,8 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 
 void EventLoop::registerFileWriteEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->getFileFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
+	e->setEventType(E_FILE);
+	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register file write with kqueue\n");
 }
