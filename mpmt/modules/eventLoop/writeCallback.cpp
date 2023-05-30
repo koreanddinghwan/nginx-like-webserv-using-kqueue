@@ -62,10 +62,12 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 			 * */
 			e_udata->wrote += wroteByte; 
 			if (e_udata->wrote == size)
+			{
 				/**
 				 * if all the data wrote, unregister write event
 				 * */
 				unregisterClientSocketWriteEvent(e_udata);
+			}
 		}
 	}
 }

@@ -74,16 +74,19 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			unregisterClientSocketReadEvent(e_udata);
 			//remove event
 			std::cout<<"client disconnected"<<std::endl;
+			//client socket close
+			close(e_udata->getClientFd());
+			//client socket event delete
+			delete e_udata;
+			std::cout<<"client disconnected"<<std::endl;
 		}
 
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
+		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		
 		std::cout<<"read len = " <<read_len<<std::endl;
-
-		if (read_len != -1)
-			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
-		e_udata->readByte = read_len;
 		std::cout<<"data::"<< e->data<<std::endl;
 		if (read_len == -1)
 		{
@@ -113,6 +116,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 		{
+
+			HttpServer::getInstance().getStringBuffer() = HttpServer::getInstance().getHttpBuffer();
+			e_udata->readByte = read_len;
+
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
 			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
 			std::cout<<"[[[[[[[CLIENT REQUEST END]]]]]]]]"<<std::endl;
@@ -194,11 +201,11 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		//eof flag있어야 writer가 disconnected한거
 		if (e->flags == EV_EOF)
 		{
+			std::cout<<"PIPE::EOF"<<std::endl;
 			//pipe의 writer는 즉 cgi process임.
 			//이제 이 fd는 close해도 됨.
 			unregisterPipeReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
-			e_udata->setEventType(E_CLIENT_SOCKET);
 			return;
 		}
 
@@ -221,7 +228,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//이제 이 fd는 close해도 됨.
 				unregisterPipeReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
-				e_udata->setEventType(E_CLIENT_SOCKET);
 				return;
 			}
 		else
@@ -235,8 +241,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			/**
 			 * response body에 읽은 데이터 추가.
 			 * */
-			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
-			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getStringBuffer());
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 		}
 	}
 }
@@ -247,9 +252,34 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"file callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//eof flag있어야 writer가 작성 끝낸거임.
-		if (e->flags & EV_EOF)
+		//read from file
+		ssize_t read_len = read(e_udata->file_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
+		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+
+		if (read_len == -1)
 		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return ;
+			else
+				throw std::runtime_error("Failed to read from file, unknown err\n");
+		}
+		else if (read_len == 0)
+		{
+			unregisterFileReadEvent(e_udata);
+			registerClientSocketWriteEvent(e_udata);
+			return ;
+		}
+		else
+		{
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
+			e_udata->fileReadByte += read_len;
+
+			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
+			{
+				unregisterFileReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return ;
+			}
 		}
 	}
 }
