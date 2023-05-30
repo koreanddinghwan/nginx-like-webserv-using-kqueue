@@ -3,7 +3,10 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+#include "../http/ws_HttpIndexModule.hpp"
+#include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/HttpReqHandler.hpp"
+#include "Event.hpp"
 
 /**
  * handle error
@@ -86,19 +89,54 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * 4. make resource route in server with root route
 	 * */
-	e->setRoute(e->locationData->getRoot() 
-			+ "/" 
-			+ reqHandler->getRequestInfo().path.substr(
-				e->locationData->getUri().length()
-				)
-			);
-	e->separateResourceAndDir();
 
-	std::cout<<"============resource setted============="<<std::endl;
+	if (requestPath.back() == '/' && \
+			requestPath.length() == 1)
+	{
+		std::cout<<"|||||request path is /"<<std::endl;
+		/**
+		 * ex) / ->  root + /
+		 * */
+		e->setRoute(e->locationData->getRoot() + "/");
+		e->setDir(e->locationData->getRoot());
+		e->setResource("/");
+	}
+	else
+	{
+		/**
+		 *ex) req    : /test/aser/, 
+		 *	  locUri : /t
+		 *	  root : /var/www
+		 *
+		 *	  == /var/www + /aser/
+		 * */
+		//parse string
+		
+		std::string tmp;
+
+		tmp = reqHandler->getRequestInfo().path.substr(
+				e->locationData->getUri().length()
+				);
+		std::cout<<"tmp: "<<tmp<<std::endl;
+		int pos = tmp.find('/');
+
+		if (pos == std::string::npos)
+		{
+			e->setRoute(
+					e->locationData->getRoot() + \
+					+ "/" + tmp
+					);
+		}
+		else
+		{	e->setRoute(
+					e->locationData->getRoot() + \
+					tmp.substr(pos) \
+					);
+		}
+	}
+	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
 	std::cout<<"route: "<<e->getRoute()<<std::endl;
-	std::cout<<"dir: "<<e->getDir()<<std::endl;
-	std::cout<<"resource: "<<e->getResource()<<std::endl;
-	std::cout<<"======================================="<<std::endl;
+	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 
 	/**
 	 * 5. if redirecturl exists, redirect to url
@@ -137,8 +175,67 @@ void EventLoop::setHttpResponse(Event *e)
 	{
 		std::cout<<"method is GET"<<std::endl;
 		/**
-		 * check if the resource exists
+		 * 1. check if the requested resource is directory
 		 * */
+		if (e->getRoute().back() == '/')
+		{
+			// process directory
+			// 1. first, check index
+			if (!(e->locationData->getIndex().empty()))
+			{
+				std::cout<<"|||||||||"<<"index exists"<<"|||||||||"<<std::endl;
+				if (ws_HttpIndexModule::processEvent(e) == false)
+					throw std::exception();
+				else
+				{
+					//pipelining do not used in these days
+					//https://en.wikipedia.org/wiki/HTTP_pipelining
+					unregisterClientSocketReadEvent(e);
+					registerFileReadEvent(e);
+					return ;
+				}
+			}
+			// 2. second, if index not work check autoindex
+			else if (e->locationData->getAutoIndex())
+			{
+				if (ws_HttpAutoIndexModule::processEvent(e) == false)
+					throw std::exception();
+				else
+				{
+					unregisterClientSocketReadEvent(e);
+					registerFileReadEvent(e);
+					return ;
+				}
+			}
+		}
+		else
+		{
+		/**
+		 * 2. resource is file
+		 * */
+			std::cout<<"resource is file"<<std::endl;
+			
+			if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
+					(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
+			{
+				if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
+				{
+					std::cout<<"fcntl error"<<std::endl;
+					e->setStatusCode(500);
+					throw std::exception();
+				}
+				e->setStatusCode(200);
+				unregisterClientSocketReadEvent(e);
+				registerFileReadEvent(e);
+				return ;
+			}
+			else
+			{
+				std::cout<<"file open error"<<std::endl;
+				e->setStatusCode(404);
+				throw std::exception();
+			}
+		}
 	}
 	
 	if (methodIndex == POST)
@@ -153,6 +250,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * check if the resource exists
 		 * */
 	}
+	e->setStatusCode(404);
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
@@ -201,8 +299,7 @@ bool EventLoop::processCgi(Event *e)
 	/**
 	 * first, check if the cgi file exists
 	 * */
-	struct stat buffer;
-	if (stat(e->getRoute().c_str(), &buffer) != 0)
+	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
 		std::cout << "stat error" << std::endl;
 		return false;
