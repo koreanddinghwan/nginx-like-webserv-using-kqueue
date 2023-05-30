@@ -6,6 +6,16 @@
 #include <sys/_types/_uintptr_t.h>
 #include <sys/event.h>
 
+
+void printEvent(struct kevent *e)
+{
+	std::cout<<"filter: "<<e->filter<<std::endl;
+	std::cout<<"flag: "<<e->flags<<std::endl;
+	std::cout<<"fflag: "<<e->fflags<<std::endl;
+	std::cout<<"data: "<<e->data<<std::endl;
+	std::cout<<"udata: "<<e->udata<<std::endl;
+}
+
 EventLoop& EventLoop::getInstance() {
 	static EventLoop instance;
 	return instance;
@@ -35,10 +45,11 @@ void EventLoop::initEventLoop()
 		{
 			int fd = events[i].ident;
 			std::cout<<"Current Event Ident: ["<<events[i].ident<<"]"<<std::endl;
+			printEvent(events + i);
 			try {
-				if (events[i].filter & EVFILT_READ)
+				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);
-				else if (events[i].filter & EVFILT_WRITE)
+				else if (events[i].filter == EVFILT_WRITE)
 					writeCallback(events + i);
 				else
 				{

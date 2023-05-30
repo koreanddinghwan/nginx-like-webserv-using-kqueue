@@ -63,20 +63,35 @@ void *responseHandler::handle(void *event) {
 
 	Event *e = static_cast<Event *>(event);
 
-	//change a value below,
-	//
-	//this->setRes(e->somthing->statusCode);
-	//if (e->something->content for responseBody)
-	//	this->setResBody(e->something->content);
-	//this->_res->setStatusCode(e->getStatusCode());
-	//this->_res->setStatusMsg(e->getStatusCode());
-	//if (e->something->redirectLocation)
-	//	this->setResLocation(e->something->redirectLoaction);
+	std::cout<<"statussss:"<<e->getStatusCode()<<std::endl;
 
+	/**
+	 * 1. apply event's status code
+	 * */
+	this->_res->setStatusCode(e->getStatusCode());
+
+	/**
+	 * 2. generate message
+	 * */
+	this->setResStatusMsg(e->getStatusCode());
+
+	/**
+	 * if need redirection, set location header
+	 * */
+	if (e->getStatusCode() >= 300 && e->getStatusCode() < 400)
+		this->setResLocation(e->locationData->getRedirectUrl());
 
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
+
+	/**
+	 * 3. set resHeader
+	 * */
 	this->setResHeader(HTTPV11);
 	std::cout << "=====================\n" << this->getResHeader() << "=====================\n" << std::endl;
+
+	/**
+	 * 4. set resBuffer to send
+	 * */
 	this->setResBuf();
 	std::cout << "=====================\n" << this->getResBuf() << "\n=====================" << std::endl;
 }
