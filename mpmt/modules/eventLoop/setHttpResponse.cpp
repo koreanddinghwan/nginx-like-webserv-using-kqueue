@@ -241,8 +241,7 @@ bool EventLoop::processCgi(Event *e)
 	/**
 	 * first, check if the cgi file exists
 	 * */
-	struct stat buffer;
-	if (stat(e->getRoute().c_str(), &buffer) != 0)
+	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
 		std::cout << "stat error" << std::endl;
 		return false;
