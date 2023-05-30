@@ -63,16 +63,11 @@ void *responseHandler::handle(void *event) {
 
 	Event *e = static_cast<Event *>(event);
 
-	//change a value below,
-	//
-	//this->setRes(e->somthing->statusCode);
-	//if (e->something->content for responseBody)
-	//	this->setResBody(e->something->content);
-	//this->_res->setStatusCode(e->getStatusCode());
-	//this->_res->setStatusMsg(e->getStatusCode());
-	//if (e->something->redirectLocation)
-	//	this->setResLocation(e->something->redirectLoaction);
-
+	std::cout<<"statussss:"<<e->getStatusCode()<<std::endl;
+	this->_res->setStatusCode(e->getStatusCode());
+	this->setResStatusMsg(e->getStatusCode());
+	if (e->getStatusCode() >= 300 && e->getStatusCode() < 400)
+		this->setResLocation(e->locationData->getRedirectUrl());
 
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
 	this->setResHeader(HTTPV11);
