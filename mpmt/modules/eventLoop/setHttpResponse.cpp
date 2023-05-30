@@ -1,5 +1,6 @@
 #include "../eventLoop/EventLoop.hpp"
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include "../http/HttpReqHandler.hpp"
@@ -46,7 +47,7 @@ void EventLoop::setHttpResponse(Event *e)
 	 * */
 	std::string requestPath = reqHandler->getRequestInfo().path;
 	e->locationData = NULL;
-	int matchScore = 0;
+	int matchScore = -1;
 	for (int i = 0; i < e->getDefaultServerData()->getLocationDatas().size(); i++)
 	{
 		std::string &locationUri = e->getDefaultServerData()->getLocationDatas().at(i)->getUri();
@@ -58,9 +59,12 @@ void EventLoop::setHttpResponse(Event *e)
 	}
 	if (!e->locationData)
 	{
+		std::cout<<"no location data"<<std::endl;
 		e->setStatusCode(404);
 		throw std::exception();
 	}
+	std::cout<<"============location setted============="<<std::endl;
+	e->locationData->printLocationData();
 
 	/**
 	 * 3. check the allowed_methods in location data
@@ -90,6 +94,12 @@ void EventLoop::setHttpResponse(Event *e)
 			);
 	e->separateResourceAndDir();
 
+	std::cout<<"============resource setted============="<<std::endl;
+	std::cout<<"route: "<<e->getRoute()<<std::endl;
+	std::cout<<"dir: "<<e->getDir()<<std::endl;
+	std::cout<<"resource: "<<e->getResource()<<std::endl;
+	std::cout<<"======================================="<<std::endl;
+
 	/**
 	 * 5. if redirecturl exists, redirect to url
 	 * */
@@ -117,20 +127,32 @@ void EventLoop::setHttpResponse(Event *e)
 	}
 
 	/**
+	 * 7. process methods
+	 * */
+
+	/**
 	 * if method == GET
 	 * */
 	if (methodIndex == GET)
 	{
+		std::cout<<"method is GET"<<std::endl;
 		/**
 		 * check if the resource exists
 		 * */
 	}
 	
 	if (methodIndex == POST)
-	{}
+	{
+		std::cout<<"method is POST"<<std::endl;
+	}
 
 	if (methodIndex == DELETE)
-	{}
+	{
+		std::cout<<"method is DELETE"<<std::endl;
+		/**
+		 * check if the resource exists
+		 * */
+	}
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
@@ -149,34 +171,45 @@ int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std
 void setEnv(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	e->getCgiEnv()[0].append("AUTH_TYPE=Basic");
-	e->getCgiEnv()[1].append("CONTENT_LENGTH=").append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Length")->second);
-	e->getCgiEnv()[2].append("CONTENT_TYPE=").append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Type")->second);
-	e->getCgiEnv()[3].append("GATEWAY_INTERFACE=CGI/1.1");
-	e->getCgiEnv()[4].append("PATH_INFO=").append(e->getResource());
-	e->getCgiEnv()[5].append("PATH_TRANSLATED=").append(e->getRoute());
-	e->getCgiEnv()[6].append("QUERY_STRING=");
-	e->getCgiEnv()[7].append("REMOTE_ADDR=").append(inet_ntoa(e->getSocketInfo().socket_addr.sin_addr));
-	e->getCgiEnv()[8].append("REMOTE_HOST=");
-	e->getCgiEnv()[9].append("REMOTE_IDENT=");
-	e->getCgiEnv()[10].append("REMOTE_USER=");
-	e->getCgiEnv()[11].append("REQUEST_METHOD=").append(reqHandler->getRequestInfo().method);
-	e->getCgiEnv()[12].append("SCRIPT_NAME=").append(e->getDir().append(e->locationData->getCgiPass()));
-	e->getCgiEnv()[13].append("SERVER_NAME=").append(e->serverName);
+	e->getCgiEnv()[0]->append("AUTH_TYPE=Basic");
+	e->getCgiEnv()[1]->append("CONTENT_LENGTH=");
+	e->getCgiEnv()[1]->append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Length")->second);
+	e->getCgiEnv()[2]->append("CONTENT_TYPE=").append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Type")->second);
+	e->getCgiEnv()[3]->append("GATEWAY_INTERFACE=CGI/1.1");
+	e->getCgiEnv()[4]->append("PATH_INFO=").append(e->getResource());
+	e->getCgiEnv()[5]->append("PATH_TRANSLATED=").append(e->getRoute());
+	e->getCgiEnv()[6]->append("QUERY_STRING=");
+	e->getCgiEnv()[7]->append("REMOTE_ADDR=").append(inet_ntoa(e->getSocketInfo().socket_addr.sin_addr));
+	e->getCgiEnv()[8]->append("REMOTE_HOST=");
+	e->getCgiEnv()[9]->append("REMOTE_IDENT=");
+	e->getCgiEnv()[10]->append("REMOTE_USER=");
+	e->getCgiEnv()[11]->append("REQUEST_METHOD=").append(reqHandler->getRequestInfo().method);
+	e->getCgiEnv()[12]->append("SCRIPT_NAME=").append(e->getDir().append(e->locationData->getCgiPass()));
+	e->getCgiEnv()[13]->append("SERVER_NAME=").append(e->serverName);
 	char pt[10];
     sprintf(pt, "%d", e->getDefaultServerData()->getListen());
-	e->getCgiEnv()[14].append("SERVER_PORT=").append(pt);
-	e->getCgiEnv()[15].append("SERVER_PROTOCOL=").append(reqHandler->getRequestInfo().httpVersion);
-	e->getCgiEnv()[16].append("SERVER_SOFTWARE=webserv/1.0");
-	e->getCgiEnv()[17].append("scheme=http");
-	e->getCgiEnv()[18].append("protocol-var-name=HTTP/1.1");
-	e->getCgiEnv()[19].append("extension-var-name=");
+	e->getCgiEnv()[14]->append("SERVER_PORT=").append(pt);
+	e->getCgiEnv()[15]->append("SERVER_PROTOCOL=").append(reqHandler->getRequestInfo().httpVersion);
+	e->getCgiEnv()[16]->append("SERVER_SOFTWARE=webserv/1.0");
+	e->getCgiEnv()[17]->append("scheme=http");
+	e->getCgiEnv()[18]->append("protocol-var-name=HTTP/1.1");
+	e->getCgiEnv()[19]->append("extension-var-name=");
 }
 
 bool EventLoop::processCgi(Event *e)
 {
+	/**
+	 * first, check if the cgi file exists
+	 * */
+	struct stat buffer;
+	if (stat(e->getRoute().c_str(), &buffer) != 0)
+	{
+		std::cout << "stat error" << std::endl;
+		return false;
+	}
+
+
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	unregisterClientSocketReadEvent(e);
 	setEnv(e);
 
 	/**
@@ -243,13 +276,13 @@ bool EventLoop::processCgi(Event *e)
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];
 		for (size_t i = 0; i < e->getCgiEnv().size(); i++)
-			env[i] = const_cast<char *>(e->getCgiEnv()[i].c_str());
+			env[i] = const_cast<char *>(e->getCgiEnv()[i]->c_str());
 		env[e->getCgiEnv().size()] = NULL;
 		if (execve(e->getRoute().c_str(), NULL, env) == -1)
 		{
-			std::cout << "execve error" << std::endl;
 			close(pipefd[1]);
-			return false;
+			e->setStatusCode(404);
+			exit(1);
 		}
 	}
 }

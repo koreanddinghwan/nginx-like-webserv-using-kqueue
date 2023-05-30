@@ -2,6 +2,10 @@
 
 Event::Event(t_ServerType t)
 {
+	this->cgiEnv.resize(20);
+	for (int i =0; i < 20; i++)
+		this->cgiEnv[i] = new std::string();
+	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
 	this->pipe_fd[0] = -1;
@@ -42,25 +46,21 @@ void Event::setServerDataByPort(int port)
 {
 	std::vector<HttpServerBlock *> *serverBlock = &(Config::getInstance().getHTTPBlock()->getHttpData().getServerBlock());
 
-	int count = 0;
-
 	for (int i = 0; i < serverBlock->size();i++)
 	{
 		if (serverBlock->at(i)->getServerData().getListen() == port)
 		{
-			if (count == 0)
-				this->defaultServerData = &(serverBlock->at(i)->getServerData());
+			std::cout<<port<<std::endl;
 			this->serverData.push_back(&(serverBlock->at(i)->getServerData()));
-
-			for (int j = 0; j < serverBlock->at(i)->getServerData().getHttpLocationBlock().size(); j++)
+			for (int j = 0; j < this->serverData.back()->getHttpLocationBlock().size(); j++)
 			{
-				this->serverData.back()->getLocationDatas().push_back(
-						&(serverBlock->at(i)->getServerData().getHttpLocationBlock().at(j)->getLocationData())
+				this->serverData.back()->getLocationDatas().push_back( \
+						&(this->serverData.back()->getHttpLocationBlock().at(j)->getLocationData())
 						);
 			}
-			count++;
 		}
 	}
+	this->defaultServerData = this->serverData.at(0);
 }
 
 void Event::setServerData(std::vector<HttpServerData *> *t)
@@ -113,6 +113,8 @@ Event::~Event()
 	//interface의 소멸자 호출하면, 연결된 소멸자 모두 호출.
 	delete this->requestHandler;
 	delete this->responseHandler;
+	for (int i = 0; i < 20; i++)
+		delete this->cgiEnv[i];
 }
 
 Event *Event::createNewClientSocketEvent(Event *e)
@@ -209,16 +211,34 @@ Event *Event::createNewServerSocketEvent(int port)
 
 void Event::closeAllFd()
 {
+	std::cout<<"closeAllFd\n";
+
+
 	if (this->server_socket_fd != -1)
+	{
+		std::cout<<"|||close server_socket_fd\n";
 		close(this->server_socket_fd);
+	}
 	if (this->client_socket_fd != -1)
+	{
+		std::cout<<"|||close client_socket_fd\n";
 		close(this->client_socket_fd);
+	}
 	if (this->pipe_fd[0] != -1)
+	{
+		std::cout<<"|||close pipe_fd[0]\n";
 		close(this->pipe_fd[0]);
+	}
 	if (this->pipe_fd[1] != -1)
+	{
+		std::cout<<"|||close pipe_fd[1]\n";
 		close(this->pipe_fd[1]);
+	}
 	if (this->file_fd != -1)
+	{
+		std::cout<<"|||close file_fd\n";
 		close(this->file_fd);
+	}
 }
 
 int &Event::getStatusCode()
@@ -255,7 +275,7 @@ void Event::separateResourceAndDir()
 	this->setResource(this->route.substr(slashIndex + 1));
 }
 
-std::vector<std::string> &Event::getCgiEnv()
+std::vector<std::string*> &Event::getCgiEnv()
 {
 	return this->cgiEnv;
 }
