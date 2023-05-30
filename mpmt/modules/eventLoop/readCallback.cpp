@@ -247,9 +247,34 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"file callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//eof flag있어야 writer가 작성 끝낸거임.
-		if (e->flags & EV_EOF)
+		//read from file
+		ssize_t read_len = read(e_udata->file_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
+		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+
+		if (read_len == -1)
 		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return ;
+			else
+				throw std::runtime_error("Failed to read from file, unknown err\n");
+		}
+		else if (read_len == 0)
+		{
+			unregisterFileReadEvent(e_udata);
+			registerClientSocketWriteEvent(e_udata);
+			return ;
+		}
+		else
+		{
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
+			e_udata->fileReadByte += read_len;
+
+			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
+			{
+				unregisterFileReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return ;
+			}
 		}
 	}
 }
