@@ -211,16 +211,34 @@ Event *Event::createNewServerSocketEvent(int port)
 
 void Event::closeAllFd()
 {
+	std::cout<<"closeAllFd\n";
+
+
 	if (this->server_socket_fd != -1)
+	{
+		std::cout<<"|||close server_socket_fd\n";
 		close(this->server_socket_fd);
+	}
 	if (this->client_socket_fd != -1)
+	{
+		std::cout<<"|||close client_socket_fd\n";
 		close(this->client_socket_fd);
+	}
 	if (this->pipe_fd[0] != -1)
+	{
+		std::cout<<"|||close pipe_fd[0]\n";
 		close(this->pipe_fd[0]);
+	}
 	if (this->pipe_fd[1] != -1)
+	{
+		std::cout<<"|||close pipe_fd[1]\n";
 		close(this->pipe_fd[1]);
+	}
 	if (this->file_fd != -1)
+	{
+		std::cout<<"|||close file_fd\n";
 		close(this->file_fd);
+	}
 }
 
 int &Event::getStatusCode()
