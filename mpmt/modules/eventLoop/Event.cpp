@@ -2,6 +2,10 @@
 
 Event::Event(t_ServerType t)
 {
+	this->cgiEnv.resize(20);
+	for (int i =0; i < 20; i++)
+		this->cgiEnv[i] = new std::string();
+	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
 	this->pipe_fd[0] = -1;
@@ -113,6 +117,8 @@ Event::~Event()
 	//interface의 소멸자 호출하면, 연결된 소멸자 모두 호출.
 	delete this->requestHandler;
 	delete this->responseHandler;
+	for (int i = 0; i < 20; i++)
+		delete this->cgiEnv[i];
 }
 
 Event *Event::createNewClientSocketEvent(Event *e)
@@ -255,7 +261,7 @@ void Event::separateResourceAndDir()
 	this->setResource(this->route.substr(slashIndex + 1));
 }
 
-std::vector<std::string> &Event::getCgiEnv()
+std::vector<std::string*> &Event::getCgiEnv()
 {
 	return this->cgiEnv;
 }
