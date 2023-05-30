@@ -46,25 +46,21 @@ void Event::setServerDataByPort(int port)
 {
 	std::vector<HttpServerBlock *> *serverBlock = &(Config::getInstance().getHTTPBlock()->getHttpData().getServerBlock());
 
-	int count = 0;
-
 	for (int i = 0; i < serverBlock->size();i++)
 	{
 		if (serverBlock->at(i)->getServerData().getListen() == port)
 		{
-			if (count == 0)
-				this->defaultServerData = &(serverBlock->at(i)->getServerData());
+			std::cout<<port<<std::endl;
 			this->serverData.push_back(&(serverBlock->at(i)->getServerData()));
-
-			for (int j = 0; j < serverBlock->at(i)->getServerData().getHttpLocationBlock().size(); j++)
+			for (int j = 0; j < this->serverData.back()->getHttpLocationBlock().size(); j++)
 			{
-				this->serverData.back()->getLocationDatas().push_back(
-						&(serverBlock->at(i)->getServerData().getHttpLocationBlock().at(j)->getLocationData())
+				this->serverData.back()->getLocationDatas().push_back( \
+						&(this->serverData.back()->getHttpLocationBlock().at(j)->getLocationData())
 						);
 			}
-			count++;
 		}
 	}
+	this->defaultServerData = this->serverData.at(0);
 }
 
 void Event::setServerData(std::vector<HttpServerData *> *t)
