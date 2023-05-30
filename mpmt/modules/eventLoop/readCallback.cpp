@@ -74,6 +74,11 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			unregisterClientSocketReadEvent(e_udata);
 			//remove event
 			std::cout<<"client disconnected"<<std::endl;
+			//client socket close
+			close(e_udata->getClientFd());
+			//client socket event delete
+			delete e_udata;
+			std::cout<<"client disconnected"<<std::endl;
 		}
 
 		//read from client socket
@@ -112,7 +117,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		else
 		{
 
-			HttpServer::getInstance().getStringBuffer().insert(0, HttpServer::getInstance().getHttpBuffer(), read_len);
+			HttpServer::getInstance().getStringBuffer() = HttpServer::getInstance().getHttpBuffer();
 			e_udata->readByte = read_len;
 
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
