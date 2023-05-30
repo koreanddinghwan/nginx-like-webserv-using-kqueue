@@ -4,7 +4,7 @@
 void EventLoop::writeCallback(struct kevent *e)
 {
 	std::cout << "\033[32m"; 
-	std::cout<<"Read callback"<<std::endl;
+	std::cout<<"write callback"<<std::endl;
 
 	//set event
 	Event *e_udata = static_cast<Event *>(e->udata);
@@ -37,8 +37,10 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * size of e->data만큼 작성
 		 * */
+		/* std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl; */
+		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
 
-		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, e->data);
+		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -52,9 +54,17 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 		else
 		{
-			e_udata->wrote -= wroteByte; 
-			if (e_udata->wrote == 0)
-				//작성완료.
+			/**
+			 * when this event registered, 
+			 * 1. response message created
+			 * 2. wrote is 0.
+			 * prevent partial write
+			 * */
+			e_udata->wrote += wroteByte; 
+			if (e_udata->wrote == size)
+				/**
+				 * if all the data wrote, unregister write event
+				 * */
 				unregisterClientSocketWriteEvent(e_udata);
 		}
 	}
