@@ -3,7 +3,10 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+#include "../http/ws_HttpIndexModule.hpp"
+#include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/HttpReqHandler.hpp"
+#include "Event.hpp"
 
 /**
  * handle error
@@ -137,8 +140,44 @@ void EventLoop::setHttpResponse(Event *e)
 	{
 		std::cout<<"method is GET"<<std::endl;
 		/**
-		 * check if the resource exists
+		 * 1. check if the requested resource is directory
 		 * */
+		if (e->getResource().back() == '/')
+		{
+			// process directory
+			// 1. first, check index
+			if (!(e->locationData->getIndex().empty()))
+			{
+				if (ws_HttpIndexModule::processEvent(e) == false)
+					throw std::exception();
+				else
+				{
+					e->setEventType(E_FILE);
+					//pipelining do not used in these days
+					//https://en.wikipedia.org/wiki/HTTP_pipelining
+					unregisterClientSocketReadEvent(e);
+					registerFileReadEvent(e);
+					return ;
+				}
+			}
+			// 2. second, if index not work check autoindex
+			else if (e->locationData->getAutoIndex())
+			{
+				if (ws_HttpAutoIndexModule::processEvent(e) == false)
+					throw std::exception();
+				else
+				{
+					e->setEventType(E_FILE);
+					unregisterClientSocketReadEvent(e);
+					registerFileReadEvent(e);
+					return ;
+				}
+			}
+		}
+		else
+		{
+			// process file i/o
+		}
 	}
 	
 	if (methodIndex == POST)
@@ -153,6 +192,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * check if the resource exists
 		 * */
 	}
+	e->setStatusCode(404);
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
