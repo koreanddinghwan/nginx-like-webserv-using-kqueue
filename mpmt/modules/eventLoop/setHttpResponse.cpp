@@ -89,19 +89,54 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * 4. make resource route in server with root route
 	 * */
-	e->setRoute(e->locationData->getRoot() 
-			+ "/" 
-			+ reqHandler->getRequestInfo().path.substr(
-				e->locationData->getUri().length()
-				)
-			);
-	e->separateResourceAndDir();
 
-	std::cout<<"============resource setted============="<<std::endl;
+	if (requestPath.back() == '/' && \
+			requestPath.length() == 1)
+	{
+		std::cout<<"|||||request path is /"<<std::endl;
+		/**
+		 * ex) / ->  root + /
+		 * */
+		e->setRoute(e->locationData->getRoot() + "/");
+		e->setDir(e->locationData->getRoot());
+		e->setResource("/");
+	}
+	else
+	{
+		/**
+		 *ex) req    : /test/aser/, 
+		 *	  locUri : /t
+		 *	  root : /var/www
+		 *
+		 *	  == /var/www + /aser/
+		 * */
+		//parse string
+		
+		std::string tmp;
+
+		tmp = reqHandler->getRequestInfo().path.substr(
+				e->locationData->getUri().length()
+				);
+		std::cout<<"tmp: "<<tmp<<std::endl;
+		int pos = tmp.find('/');
+
+		if (pos == std::string::npos)
+		{
+			e->setRoute(
+					e->locationData->getRoot() + \
+					+ "/" + tmp
+					);
+		}
+		else
+		{	e->setRoute(
+					e->locationData->getRoot() + \
+					tmp.substr(pos) \
+					);
+		}
+	}
+	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
 	std::cout<<"route: "<<e->getRoute()<<std::endl;
-	std::cout<<"dir: "<<e->getDir()<<std::endl;
-	std::cout<<"resource: "<<e->getResource()<<std::endl;
-	std::cout<<"======================================="<<std::endl;
+	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 
 	/**
 	 * 5. if redirecturl exists, redirect to url
@@ -142,17 +177,17 @@ void EventLoop::setHttpResponse(Event *e)
 		/**
 		 * 1. check if the requested resource is directory
 		 * */
-		if (e->getResource().back() == '/')
+		if (e->getRoute().back() == '/')
 		{
 			// process directory
 			// 1. first, check index
 			if (!(e->locationData->getIndex().empty()))
 			{
+				std::cout<<"|||||||||"<<"index exists"<<"|||||||||"<<std::endl;
 				if (ws_HttpIndexModule::processEvent(e) == false)
 					throw std::exception();
 				else
 				{
-					e->setEventType(E_FILE);
 					//pipelining do not used in these days
 					//https://en.wikipedia.org/wiki/HTTP_pipelining
 					unregisterClientSocketReadEvent(e);
@@ -167,7 +202,6 @@ void EventLoop::setHttpResponse(Event *e)
 					throw std::exception();
 				else
 				{
-					e->setEventType(E_FILE);
 					unregisterClientSocketReadEvent(e);
 					registerFileReadEvent(e);
 					return ;
@@ -176,7 +210,31 @@ void EventLoop::setHttpResponse(Event *e)
 		}
 		else
 		{
-			// process file i/o
+		/**
+		 * 2. resource is file
+		 * */
+			std::cout<<"resource is file"<<std::endl;
+			
+			if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
+					(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
+			{
+				if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
+				{
+					std::cout<<"fcntl error"<<std::endl;
+					e->setStatusCode(500);
+					throw std::exception();
+				}
+				e->setStatusCode(200);
+				unregisterClientSocketReadEvent(e);
+				registerFileReadEvent(e);
+				return ;
+			}
+			else
+			{
+				std::cout<<"file open error"<<std::endl;
+				e->setStatusCode(404);
+				throw std::exception();
+			}
 		}
 	}
 	
