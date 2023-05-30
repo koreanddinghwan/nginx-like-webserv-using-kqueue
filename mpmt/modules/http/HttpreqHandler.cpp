@@ -148,10 +148,13 @@ void HttpreqHandler::checkMethod(void)
 {
 	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
 		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
-		return ;
+		{
+			if (_info.method == "PATCH")
+				_info.method = "POST";
+			return ;
+		}
 	_event->setStatusCode(405);
 	throw std::exception();
-
 }
 
 void HttpreqHandler::checkHttpVersion(void)
@@ -190,7 +193,7 @@ void HttpreqHandler::checkQueryParam(void)
 		// 쿼리파람이 uri의 마지막이라고 생각하면
 		line = _info.queryParam.substr(prevPos);
 		parseQueryParam(line, &prevPos, &pos);
-		_info.path.erase(_info.queryParam.length() + 1);
+		_info.path.erase(questionPos);
 	}
 }
 
@@ -248,6 +251,9 @@ void HttpreqHandler::printReq(void)
 	std::cout<<"Cookie"<<std::endl<<std::endl;
 	for (std::map<std::string, std::string>::iterator it = _info.reqCookieMap.begin(); it != _info.reqCookieMap.end(); it++)
 		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
+
+	std::cout<<"\nQuery String"<<std::endl<<std::endl;
+	std::cout<<"\033[35m"<<_info.queryParam<<std::endl<<std::endl;
 
 	std::cout<<"\033[35m"<<"=============Request Result End============"<<std::endl;
 }
