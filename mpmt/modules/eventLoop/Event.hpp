@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <sys/event.h>
+#include <sys/stat.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include "../config/Config.hpp"
@@ -79,7 +80,6 @@ private:
 	int	server_socket_fd;
 	int client_socket_fd;
 	int pipe_fd[2];
-	int file_fd;
 
 	t_EventType	eventInfo;
 
@@ -107,6 +107,7 @@ private:
 	std::vector<std::string *> cgiEnv;
 
 public:
+	int file_fd;
 	/**
 	 * @breif 현재 이벤트의 locationData
 	 */
@@ -114,6 +115,10 @@ public:
 	std::string serverName;
 	int wrote;
 	int readByte;
+	std::string openFileName;
+	struct stat statBuf;
+	int fileReadByte;
+
 
 public:
 	Event(t_ServerType t);
@@ -129,9 +134,6 @@ private:
 	void setServerFd(int t);
 	void setClientFd(int t);
 	void setPipeFd(int i, int t);
-	void setFileFd(int t);
-	void setResource(std::string t);
-	void setDir(std::string t);
 
 public:
 	void setEventType(t_EventType t);
@@ -140,6 +142,8 @@ public:
 	void setServerDataByPort(int port);
 	void setServerData(std::vector<HttpServerData *> *t);
 	void setDefaultServerData(HttpServerData *t);
+	void setResource(std::string t);
+	void setDir(std::string t);
 	void separateResourceAndDir();
 
 public:
@@ -151,7 +155,6 @@ public:
 	int&							getServerFd();
 	int&							getClientFd();
 	int*							getPipeFd();
-	int&							getFileFd();
 
 	t_EventType&					getEventType();
 	IHandler*						getRequestHandler();
