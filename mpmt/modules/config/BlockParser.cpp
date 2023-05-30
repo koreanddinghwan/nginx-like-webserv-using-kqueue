@@ -123,6 +123,12 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 		}
 	}
 
+	if (buf.find("fastcgi_pass") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpLocationData&>(confData).setFastcgiPass(s.get()[1]);
+	}
+
 	if (buf.find("cgi_pass") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
@@ -133,12 +139,6 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		static_cast<HttpLocationData&>(confData).setProxyPass(s.get()[1]);
-	}
-
-	if (buf.find("fastcgi_pass") != std::string::npos)
-	{
-		s.splitRemoveSemiColon(buf.c_str(), ' ');
-		static_cast<HttpLocationData&>(confData).setFastcgiPass(s.get()[1]);
 	}
 
 	if (buf.find("return") != std::string::npos)
