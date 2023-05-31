@@ -38,7 +38,7 @@ private:
 
 	//is it needed?
 	//anyway, resize in init function to 1024
-	std::string stringBuffer;
+	std::string *stringBuffer;
 
 public:
   /**

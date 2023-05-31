@@ -34,13 +34,14 @@ std::string HttpreqHandler::parseChunkedBody(std::string req, int *pos)
 
 void HttpreqHandler::parseChunked(std::string req)
 {
-	int pos, len = 0;
+	int pos = 0, len = 0;
 	std::string line;
 	
 	len = parseChunkedLength(req, &pos);
 	if (len == 0)
 	{
 		_pended = false;
+		_bodyPended = false;
 		_buf.clear();
 		_buf.append(_chunkedWithoutBodyBuf);
 		_buf.append(_bodyBuf);
@@ -80,6 +81,8 @@ void HttpreqHandler::appendBodyBuf(std::string req)
 
 	if ((pos = _buf.find(CRLF2)) == std::string::npos)
 		return ;
+	if (_headerPended)
+		_headerPended = false;
 	if (!_bodyBuf.length())
 	{
 		line = _buf.substr(pos + 4);
@@ -101,14 +104,20 @@ void HttpreqHandler::parseSeparate(std::string req)
 		if ((pos = _buf.find(CRLF2)) != std::string::npos)
 		{
 			if (!checkSeparate(pos))
+			{
 				_pended = false;
+				_bodyPended = false;
+			}
 		}
 	}
 	else
 	{
 		appendBodyBuf(req);
 		if (_contentLength == _bodyBuf.length())
+		{
 			_pended = false;
+			_bodyPended = false;
+		}
 		else if (_contentLength < _bodyBuf.length())
 		{
 			_event->setStatusCode(413);
@@ -163,7 +172,7 @@ void HttpreqHandler::parseCookie(void)
 /* =================== parse =================== */
 void HttpreqHandler::parseStartLine(std::string line) 
 {
-	int pos, prevPos = 0;
+	int pos = 0, prevPos = 0;
 	std::string subLine;
 
 	while ((pos = line.find(" ", prevPos)) != std::string::npos)
@@ -217,7 +226,7 @@ void HttpreqHandler::parseBody(void)
 
 void HttpreqHandler::parse(void)
 {
-	int pos, prevPos = 0;
+	int pos = 0, prevPos = 0;
 	std::string line;
 
 	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)
