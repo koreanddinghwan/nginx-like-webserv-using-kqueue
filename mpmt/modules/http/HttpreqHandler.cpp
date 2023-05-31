@@ -5,6 +5,7 @@ void *HttpreqHandler::handle(void *data)
 {
 	_event = static_cast<Event *>(data);
 	std::string req = _event->getBuffer()->erase(_event->readByte);
+	std::cout << req << std::endl;
 	/*
 	 처음 들어온 req massage
 	*/
@@ -36,13 +37,24 @@ void HttpreqHandler::initMessageState(void)
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
 	{
-		_messageState = separate;
-		_headerPended = true;
+		pos = _buf.find("Transfer-Encoding: chunked");
+		if (pos != std::string::npos)
+		{	
+			_messageState = chunked;
+			_headerPended = true;
+			_bodyPended = true;
+			_chunkedWithoutBodyBuf.append(_buf);
+		}
+		else
+		{
+			_messageState = separate;
+			_headerPended = true;
+		}
 	}
 	else
 	{
 		pos = _buf.find("Transfer-Encoding: chunked");
-		if (pos != std::string::npos) // chunked는 septerate하게 안들어온다고 가정, 나중에 수정해야될수도
+		if (pos != std::string::npos)
 		{	
 			_messageState = chunked;
 			_bodyPended = true;
@@ -138,7 +150,7 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 		if (line.length() > _contentLength)
 		{
 			_event->setStatusCode(413);
-			throw std::exception();//std Exception code안맞춰서 날려라
+			throw std::exception();
 		}
 		if (line.length() < _contentLength)
 		{

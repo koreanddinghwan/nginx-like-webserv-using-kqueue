@@ -1,0 +1,483 @@
+Set config file as default path...
+events {
+[32mmake new server block:  server { # php/fastcgi
+current:    listen       8080;
+current:    server_name  domain1.com www.domain1.com;
+current:
+current:    location = \.php {
+[31mmake new location block    location = \.php {
+current:    location = \.php {
+current:      fastcgi_pass   127.0.0.1:1025;
+current:    }
+end of location block
+current:  }
+end of server block
+[32mmake new server block:  server { # simple reverse-proxy
+current:    listen       80;
+current:	root         /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+current:    error_page 504 /tt
+current:    server_name  domain2.com localhost;
+current:    index        index.html /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+current:
+current:    # pass requests for dynamic content to rails/turbogears/zope, et al
+current:    location / {
+[31mmake new location block    location / {
+current:    location / {
+current:		index index.html
+current:    }
+end of location block
+current:
+current:	location /upload {
+[31mmake new location block	location /upload {
+current:	location /upload {
+current:		client_max_body_size 102400;
+current:		root        /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt;
+current:		upload_store /upload_tester;
+current:	}
+end of location block
+current:
+current:    location /cgi {
+[31mmake new location block    location /cgi {
+current:    location /cgi {
+current:      cgi_pass       /cgi_tester;
+current:    }
+end of location block
+current:
+current:    location /redirecturl {
+[31mmake new location block    location /redirecturl {
+current:    location /redirecturl {
+current:        limit_except GET POST HEAD {
+current:		return 301 testurl
+current:	}
+end of location block
+current:  }
+end of server block
+[35mConfig Result
+=====General=====
+worker_processes: 5
+=====Events======
+connections: 4096
+======Http=======
+client max body size: 1
+error page: 
+[404]:[/404.html]
+root: asdfasdfsdf
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+[33m================Server=================
+client max body size: 1
+error page: 
+[404]:[/404.html]
+root: asdfasdfsdf
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+listen: 8080
+server name: domain1.com
+server name: www.domain1.com
+upload_store: 
+[32m==================Location==============
+client max body size: 1
+error page: 
+[404]:[/404.html]
+root: asdfasdfsdf
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+listen: 8080
+server name: domain1.com
+server name: www.domain1.com
+upload_store: 
+uri_match_mode: EXACT
+uri: \.php
+proxy_pass: 
+cgi_pass: 
+fastcgi_pass: 127.0.0.1:1025
+return_status: -1
+redirect_url: 
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: ALLOW
+DELETE: ALLOW
+MKCOL: ALLOW
+COPY: ALLOW
+MOVE: ALLOW
+OPTIONS: ALLOW
+PROPFIND: ALLOW
+PROPPATCH: ALLOW
+LOCK: ALLOW
+UNLOCK: ALLOW
+PATCH: ALLOW
+[33m================Server=================
+client max body size: 1
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: 
+[32m==================Location==============
+client max body size: 1
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: 
+uri_match_mode: PREFIX
+uri: /
+proxy_pass: 
+cgi_pass: 
+fastcgi_pass: 
+return_status: -1
+redirect_url: 
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: ALLOW
+DELETE: ALLOW
+MKCOL: ALLOW
+COPY: ALLOW
+MOVE: ALLOW
+OPTIONS: ALLOW
+PROPFIND: ALLOW
+PROPPATCH: ALLOW
+LOCK: ALLOW
+UNLOCK: ALLOW
+PATCH: ALLOW
+[32m==================Location==============
+client max body size: 102400
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: /upload_tester
+uri_match_mode: PREFIX
+uri: /upload
+proxy_pass: 
+cgi_pass: 
+fastcgi_pass: 
+return_status: -1
+redirect_url: 
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: ALLOW
+DELETE: ALLOW
+MKCOL: ALLOW
+COPY: ALLOW
+MOVE: ALLOW
+OPTIONS: ALLOW
+PROPFIND: ALLOW
+PROPPATCH: ALLOW
+LOCK: ALLOW
+UNLOCK: ALLOW
+PATCH: ALLOW
+[32m==================Location==============
+client max body size: 1
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: 
+uri_match_mode: PREFIX
+uri: /cgi
+proxy_pass: 
+cgi_pass: /cgi_tester
+fastcgi_pass: 
+return_status: -1
+redirect_url: 
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: ALLOW
+DELETE: ALLOW
+MKCOL: ALLOW
+COPY: ALLOW
+MOVE: ALLOW
+OPTIONS: ALLOW
+PROPFIND: ALLOW
+PROPPATCH: ALLOW
+LOCK: ALLOW
+UNLOCK: ALLOW
+PATCH: ALLOW
+[32m==================Location==============
+client max body size: 1
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: 
+uri_match_mode: PREFIX
+uri: /redirecturl
+proxy_pass: 
+cgi_pass: 
+fastcgi_pass: 
+return_status: 301
+redirect_url: testurl
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: DENY
+DELETE: DENY
+MKCOL: DENY
+COPY: DENY
+MOVE: DENY
+OPTIONS: DENY
+PROPFIND: DENY
+PROPPATCH: DENY
+LOCK: DENY
+UNLOCK: DENY
+PATCH: DENY
+8080
+80
+register initial event
+3
+-1
+5
+0
+0
+0x614000000040
+register initial event
+4
+-1
+5
+0
+0
+0x614000000240
+Current Event Ident: [4]
+filter: -1
+flag: 5
+fflag: 0
+data: 1
+udata: 0x614000000240
+[32mRead callback
+[33mSERVER SOCKET CALLBACK
+Current Event Ident: [6]
+filter: -1
+flag: 5
+fflag: 0
+data: 73
+udata: 0x614000000440
+[32mRead callback
+[34mclient socket callback
+read len = 73
+data::73
+[[[[[[[CLIENT REQUEST START]]]]]]]]
+GET / HTTP/1.1
+Host: localhost
+User-Agent: curl/7.64.1
+Accept: */*
+
+
+[[[[[[[CLIENT REQUEST END]]]]]]]]
+use handle
+[35m=============Request Result============
+[35mStart Line
+
+[35mGET
+[35m/
+[35mHTTP/1.1
+
+Header
+
+[35mkey:Accept value:*/*
+[35mkey:Host value:localhost
+[35mkey:User-Agent value:curl/7.64.1
+
+Body
+
+[35m
+
+Cookie
+
+
+Query String
+
+[35m
+
+[35m=============Request Result End============
+use handle end
+setting response
+============location setted=============
+client max body size: 1
+error page: 
+[404]:[/404.html]
+[504]:[/tt]
+root: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt
+sendfile: 1
+tcpnodelay: 1
+tcpnopush: 1
+autoindex: 1
+index :[0]index.html
+index :[1]/Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+listen: 80
+server name: domain2.com
+server name: localhost
+upload_store: 
+uri_match_mode: PREFIX
+uri: /
+proxy_pass: 
+cgi_pass: 
+fastcgi_pass: 
+return_status: -1
+redirect_url: 
+allowed_methods: 
+GET: ALLOW
+HEAD: ALLOW
+POST: ALLOW
+PUT: ALLOW
+DELETE: ALLOW
+MKCOL: ALLOW
+COPY: ALLOW
+MOVE: ALLOW
+OPTIONS: ALLOW
+PROPFIND: ALLOW
+PROPPATCH: ALLOW
+LOCK: ALLOW
+UNLOCK: ALLOW
+PATCH: ALLOW
+|||||request path is /
+=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted=============
+route: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/
+=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================
+method is GET
+|||||||||index exists|||||||||
+index file name: index.html
+relative path
+index file name: /Users/soo/soo/nginx-like-webserv-using-kqueue/mpmt/http/index.html
+absolute path
+catch some exception in setting response
+statudcode-1
+unregister client socket read event
+statussss:-1
+=====================
+=====================
+
+=====================
+HTTP/1.1  UNKNOWN
+Content-Type: text/html
+Content-Length: 0
+
+=====================
+
+=====================
+HTTP/1.1  UNKNOWN
+Content-Type: text/html
+Content-Length: 0
+
+
+=====================
+Current Event Ident: [6]
+filter: -2
+flag: 5
+fflag: 0
+data: 146988
+udata: 0x614000000440
+[32mwrite callback
+[33mCLIENT SOCKET WRITE CALLBACK
+unregister client socket write event
+Current Event Ident: [6]
+filter: -1
+flag: 32773
+fflag: 0
+data: 0
+udata: 0x614000000440
+[32mRead callback
+[34mclient socket callback
+read len = 0
+data::0
+unregister client socket read event
+statussss:-1
+=====================
+=====================
+
+=====================
+HTTP/1.1  UNKNOWN
+Content-Type: text/html
+Content-Length: 0
+
+=====================
+
+=====================
+HTTP/1.1  UNKNOWN
+Content-Type: text/html
+Content-Length: 0
+
+
+=====================
+Current Event Ident: [6]
+filter: -2
+flag: 5
+fflag: 0
+data: 146988
+udata: 0x614000000440
+[32mwrite callback
+[33mCLIENT SOCKET WRITE CALLBACK
+unregister client socket write event
+Current Event Ident: [6]
+filter: -1
+flag: 32773
+fflag: 54
+data: 0
+udata: 0x614000000440
+[32mRead callback
+[34mclient socket callback
+read len = -1
+data::0
+errno:54
+unregister client socket read event
+client disconnected
