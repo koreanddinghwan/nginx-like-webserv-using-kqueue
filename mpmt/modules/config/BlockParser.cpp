@@ -94,6 +94,12 @@
 		for (int i = 1; i < s.get().size(); i++)
 			static_cast<HttpServerData&>(confData).setServerName(s.get()[i]);
 	};
+
+	if (buf.find("upload_store") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpServerData&>(confData).setUploadStore(s.get()[1]);
+	}
 }
 
 /**
@@ -123,6 +129,12 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 		}
 	}
 
+	if (buf.find("fastcgi_pass") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpLocationData&>(confData).setFastcgiPass(s.get()[1]);
+	}
+
 	if (buf.find("cgi_pass") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
@@ -133,12 +145,6 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		static_cast<HttpLocationData&>(confData).setProxyPass(s.get()[1]);
-	}
-
-	if (buf.find("fastcgi_pass") != std::string::npos)
-	{
-		s.splitRemoveSemiColon(buf.c_str(), ' ');
-		static_cast<HttpLocationData&>(confData).setFastcgiPass(s.get()[1]);
 	}
 
 	if (buf.find("return") != std::string::npos)
@@ -157,6 +163,12 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 		while (buf.find("}") == std::string::npos)
 			std::getline(File, buf);
 		std::getline(File, buf);
+	}
+	
+	if (buf.find("upload_store") != std::string::npos)
+	{
+		s.splitRemoveSemiColon(buf.c_str(), ' ');
+		static_cast<HttpServerData&>(confData).setUploadStore(s.get()[1]);
 	}
 }
 

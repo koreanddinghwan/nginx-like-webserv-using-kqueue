@@ -30,9 +30,6 @@ void Event::setClientFd(int t)
 void Event::setPipeFd(int i, int t)
 {this->pipe_fd[i] = t;}
 
-void Event::setFileFd(int t)
-{this->file_fd = t;}
-
 void Event::setEventType(t_EventType t)
 {this->eventInfo = t;}
 
@@ -88,9 +85,6 @@ int& Event::getClientFd()
 
 int* Event::getPipeFd()
 {return this->pipe_fd;}
-
-int& Event::getFileFd()
-{return this->file_fd;}
 
 t_EventType& Event::getEventType()
 {return this->eventInfo;}
@@ -271,8 +265,16 @@ void Event::separateResourceAndDir()
 {
 	int slashIndex = this->route.rfind('/');
 
-	this->setDir(this->route.substr(0, slashIndex));
-	this->setResource(this->route.substr(slashIndex + 1));
+	if (slashIndex == this->route.length() - 1)
+	{
+		this->setDir(this->route.substr(0, slashIndex - 1));
+		this->setResource("/");
+	}
+	else
+	{
+		this->setDir(this->route.substr(0, slashIndex - 1));
+		this->setResource(this->route.substr(slashIndex + 1));
+	}
 }
 
 std::vector<std::string*> &Event::getCgiEnv()
