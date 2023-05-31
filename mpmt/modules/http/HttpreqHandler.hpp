@@ -88,8 +88,9 @@ private:
 
 	//chunked
 	void parseChunked(std::string req);
-	int parseChunkedLength(std::string req, int *pos);
-	std::string parseChunkedBody(std::string req, int *pos);
+	void splitChunked(void);
+	int parseChunkedLength(int *startPos);
+	std::string parseChunkedBody(int *startPos);
 
 	//separate
 	void parseSeparate(std::string req);

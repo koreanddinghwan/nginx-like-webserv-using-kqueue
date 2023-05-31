@@ -37,13 +37,12 @@ void HttpreqHandler::initMessageState(void)
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
 	{
-		pos = _buf.find("Transfer-Encoding: chunked");
+		pos = _buf.find("Transfer-Encoding: chunked"); // chunked 파셜, 헤더 덜들어옴
 		if (pos != std::string::npos)
 		{	
 			_messageState = chunked;
 			_headerPended = true;
 			_bodyPended = true;
-			_chunkedWithoutBodyBuf.append(_buf);
 		}
 		else
 		{
@@ -53,7 +52,7 @@ void HttpreqHandler::initMessageState(void)
 	}
 	else
 	{
-		pos = _buf.find("Transfer-Encoding: chunked");
+		pos = _buf.find("Transfer-Encoding: chunked"); // 청크 형식 맞춰 들어옴, 헤더는 다 들어옴
 		if (pos != std::string::npos)
 		{	
 			_messageState = chunked;
@@ -166,7 +165,7 @@ void HttpreqHandler::checkMethod(void)
 	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
 		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
 	{
-		if (_info.method == "PATCH")
+		if (_info.method == "PATCH" || _info.method == "PUT")
 			_info.method = "POST";
 		return ;
 	}
