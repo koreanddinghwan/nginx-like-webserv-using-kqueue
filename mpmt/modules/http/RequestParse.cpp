@@ -32,11 +32,23 @@ std::string HttpreqHandler::parseChunkedBody(std::string req, int *pos)
 	return (line);
 }
 
-void HttpreqHandler::parseChunked(std::string req)
+// 청크드 고쳐야 하는게 청크드도 파셜로 들어옴
+// 헤더만 저장 하고 0crlf crlf들어올 때 까지 계속 리드하고 한 번에 파싱하는게 맞는 거 같습니다.
+
+void HttpreqHandler::parseChunked(std::string req) 
 {
 	int pos = 0, len = 0;
 	std::string line;
 	
+	if (_headerPended)
+	{
+		pos = _buf.find(CRLF2);
+		if (pos == std::string::npos)
+			return ;
+			// throw std::exception();
+		_headerPended = false;
+		_chunkedWithoutBodyBuf.append(_buf.substr(0, pos));
+	}
 	len = parseChunkedLength(req, &pos);
 	if (len == 0)
 	{
