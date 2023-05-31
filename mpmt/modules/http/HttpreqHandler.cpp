@@ -231,11 +231,16 @@ void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
 
+bool HttpreqHandler::isHeaderPending(void) const { return _headerPended; }
+
+bool HttpreqHandler::isBodyPending(void) const { return _bodyPended; }
+
 bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : false); }
 
 std::string HttpreqHandler::getSid(void) const { return _sid;}
 
 const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info; }
+
 /* ============================================= */
 
 void HttpreqHandler::printReq(void)
