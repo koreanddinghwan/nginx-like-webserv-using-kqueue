@@ -9,7 +9,8 @@ HttpServer& HttpServer::getInstance()
 void HttpServer::init() throw(std::runtime_error)
 {
 	this->H = static_cast<HttpBlock *>(Config::getInstance().getHTTPBlock());
-	this->stringBuffer.resize(1024);
+	this->stringBuffer = new std::string();
+	this->stringBuffer->resize(1024);
 
 	for (std::vector<int>::iterator it = this->H->getIdenticalPorts().begin(); it != this->H->getIdenticalPorts().end(); it++)
 	{
@@ -26,7 +27,7 @@ std::vector<struct kevent> & HttpServer::getKevents() { return this->kevents; }
 
 
 char* HttpServer::getHttpBuffer() { return this->HttpBuffer; }
-std::string &HttpServer::getStringBuffer() { return this->stringBuffer; }
+std::string &HttpServer::getStringBuffer() { return *(this->stringBuffer); }
 
 HttpServer::HttpServer() {}
 HttpServer::~HttpServer() {}

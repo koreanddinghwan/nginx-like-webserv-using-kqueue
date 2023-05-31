@@ -35,19 +35,26 @@ void HttpreqHandler::initMessageState(void)
 
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
+	{
 		_messageState = separate;
+		_headerPended = true;
+	}
 	else
 	{
 		pos = _buf.find("Transfer-Encoding: chunked");
 		if (pos != std::string::npos) // chunked는 septerate하게 안들어온다고 가정, 나중에 수정해야될수도
 		{	
 			_messageState = chunked;
+			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf);
 		}
 		else
 		{
 			if (checkSeparate(bodyPos))
+			{
 				_messageState = separate;
+				_bodyPended = true;
+			}
 			else
 				_messageState = basic;
 		}
@@ -62,12 +69,10 @@ void HttpreqHandler::initPendingState(void)
 
 void HttpreqHandler::initVar(void)
 {
-	_contentLength = 0;
 	_buf.clear();
 	_method.clear();
 	_bodyBuf.clear();
 	_chunkedWithoutBodyBuf.clear();
-	_hasContentLength = false;
 }
 
 void HttpreqHandler::initRequest(std::string req)
@@ -148,11 +153,11 @@ void HttpreqHandler::checkMethod(void)
 {
 	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
 		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
-		{
-			if (_info.method == "PATCH")
-				_info.method = "POST";
-			return ;
-		}
+	{
+		if (_info.method == "PATCH")
+			_info.method = "POST";
+		return ;
+	}
 	_event->setStatusCode(405);
 	throw std::exception();
 }
@@ -179,7 +184,7 @@ void HttpreqHandler::parseQueryParam(std::string line, int *prevPos, int *pos)
 
 void HttpreqHandler::checkQueryParam(void)
 {
-	int pos, prevPos, questionPos = 0;
+	int pos = 0, prevPos = 0, questionPos = 0;
 	std::string line;
 
 	if ((questionPos = _info.path.find("?")) != std::string::npos)
@@ -206,7 +211,8 @@ void HttpreqHandler::checkStartLine(void)
 
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler()
-	: _buf(""), _messageState(basic), _pended(false)
+	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
+	_headerPended(false), _bodyPended(false)
 {
 	//info = new HttpreqHandlerInfo();
 }
