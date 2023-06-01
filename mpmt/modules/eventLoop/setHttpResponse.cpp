@@ -416,9 +416,17 @@ void EventLoop::setHttpResponse(Event *e)
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
-    // Find the length of the shortest string
+	if (location.back() == '/')
+	{
+		if (location == requestPath)
+			return INT32_MAX;
+	}
     size_t length = std::min(location.length(), requestPath.length());
 
+	/**
+	 * @TODO 
+	 * if location uri ends with /
+	 * */
     // Find the index where the location and requestPath differ
     size_t index = 0;
     while (index < length && location[index] == requestPath[index]) {
