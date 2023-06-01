@@ -5,7 +5,6 @@ void *HttpreqHandler::handle(void *data)
 {
 	_event = static_cast<Event *>(data);
 	std::string req = _event->getBuffer()->erase(_event->readByte);
-	std::cout << req << std::endl;
 	/*
 	 처음 들어온 req massage
 	*/
@@ -14,6 +13,8 @@ void *HttpreqHandler::handle(void *data)
 	else
 	{
 		appendBuf(req);
+		if (_pended && _messageState == undefined)
+			parseUndefined();
 		if (_pended && _messageState == chunked)
 			parseChunked(req);
 		else if (_pended && _messageState == separate)
@@ -37,18 +38,19 @@ void HttpreqHandler::initMessageState(void)
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
 	{
-		pos = _buf.find("Transfer-Encoding: chunked"); // chunked 파셜, 헤더 덜들어옴
-		if (pos != std::string::npos)
-		{	
-			_messageState = chunked;
-			_headerPended = true;
-			_bodyPended = true;
-		}
-		else
-		{
-			_messageState = separate;
-			_headerPended = true;
-		}
+		_messageState = undefined;
+		_headerPended = true;
+		//pos = _buf.find("Transfer-Encoding: chunked"); // chunked 파셜, 헤더 덜들어옴
+		//if (pos != std::string::npos)
+		//{	
+		//	_messageState = chunked;
+		//	_headerPended = true;
+		//}
+		//else
+		//{
+		//	_messageState = separate;
+		//	_headerPended = true;
+		//}
 	}
 	else
 	{
@@ -76,6 +78,8 @@ void HttpreqHandler::initPendingState(void)
 {
 	if (_messageState != basic)
 		_pended = true;
+	else
+	 	_pended = false;
 }
 
 void HttpreqHandler::initVar(void)
