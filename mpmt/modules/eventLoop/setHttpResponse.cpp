@@ -229,9 +229,9 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * if method == GET
 	 * */
-	if (methodIndex == GET)
+	if (methodIndex == GET || methodIndex == HEAD)
 	{
-		std::cout<<"method is GET"<<std::endl;
+		std::cout<<"method is GET or HEAD"<<std::endl;
 		/**
 		 * 1. check if the requested resource is directory
 		 * */
