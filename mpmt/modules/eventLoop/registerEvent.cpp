@@ -5,6 +5,7 @@
 
 void EventLoop::registerClientSocketReadEvent(Event *e)
 {
+	std::cout<<"EVENTLOOP: registerClientSocketReadEvent"<<std::endl;
 	e->setEventType(E_CLIENT_SOCKET);
 	//client socket을 읽기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
@@ -14,6 +15,7 @@ void EventLoop::registerClientSocketReadEvent(Event *e)
 
 void EventLoop::registerPipeReadEvent(Event *e)
 {
+	std::cout<<"EVENTLOOP: registerPipeReadEvent"<<std::endl;
 	e->setEventType(E_PIPE);
 	EV_SET(&(dummyEvent), e->getPipeFd()[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
@@ -22,6 +24,7 @@ void EventLoop::registerPipeReadEvent(Event *e)
 
 void EventLoop::registerFileReadEvent(Event *e)
 {
+	std::cout<<"EVENTLOOP: registerFileReadEvent"<<std::endl;
 	e->setEventType(E_FILE);
 	e->fileReadByte = 0;
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
