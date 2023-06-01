@@ -1,4 +1,6 @@
 #include "responseHandler.hpp"
+#include "HttpreqHandler.hpp"
+
 
 
 responseHandler::responseHandler() {
@@ -37,6 +39,32 @@ void responseHandler::setResStatusMsg(const int& statusCode) const {
 void responseHandler::setResLocation(std::string location) const { 
 	this->_res->setLocation(location); 
 };
+
+void responseHandler::setResAddtionalOptions(Event *event) const {
+	std::string httpMethod = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().method;
+	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
+	int statusCode = this->getResStatusCode();
+
+	if (httpMethod == "GET") {
+		if (statusCode >= 300 && statusCode < 400)
+			this->setResLocation(event->locationData->getRedirectUrl());
+	} else if (httpMethod == "HEAD") {
+		this->getResBody().clear();
+	} else if (httpMethod == "POST") {
+		if (statusCode == 201)
+			this->setResLocation(requestedResource);
+	} else if (httpMethod == "DELETE") {
+		if(statusCode == 200) {
+			this->getResBody().clear();
+			this->setResBody("<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n\t<meta charset=\"UTF-8\">\r\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n\t<title>Page not Found</title>\r\n</head>\r\n<body>\r\n\t<h1>\r\n\t\tDelete is complete!\r\n\t</h1>\r\n</body>\r\n</html>");
+		} else if (statusCode == 202) {
+			this->getResBody().clear();
+		} else if (statusCode == 204) {
+			this->getResBody().clear();
+		} 
+	}
+}
+
 void responseHandler::setResHeader(std::string HttpV) const { 
 	this->_res->setHeaders(HttpV); 
 };
@@ -57,6 +85,14 @@ std::string& responseHandler::getResBuf() const {
 	return this->_res->getBuf();
 };
 
+int responseHandler::getResStatusCode() const {
+	return this->_res->getStatusCode();
+};
+std::string& responseHandler::getResStatusMsg() const {
+	return this->_res->getStatusMsg();
+};
+
+
 
 
 void *responseHandler::handle(void *event) {
@@ -76,13 +112,12 @@ void *responseHandler::handle(void *event) {
 	this->setResStatusMsg(e->getStatusCode());
 
 	/**
-	 * if need redirection, set location header
+	 * filling a additional header section and body
 	 * */
-	if (e->getStatusCode() >= 300 && e->getStatusCode() < 400)
-		this->setResLocation(e->locationData->getRedirectUrl());
+	this->setResAddtionalOptions(e);
 
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
-
+	
 	/**
 	 * 3. set resHeader
 	 * */
