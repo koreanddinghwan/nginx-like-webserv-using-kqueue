@@ -50,4 +50,9 @@ void HttpServerData::printServerDataConfig() {
 	{
 		std::cout<<"server name: "<<server_names[i]<<std::endl;
 	}
+	std::cout<<"upload_store: "<<upload_store<<std::endl;
 }
+
+std::string HttpServerData::getUploadStore() {return this->upload_store;}
+
+void HttpServerData::setUploadStore(std::string upload_store) {this->upload_store = upload_store;}

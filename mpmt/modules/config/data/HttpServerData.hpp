@@ -11,6 +11,7 @@ class HttpServerData : public HttpData
 {
 	private:
 		int listen;
+		std::string upload_store;
 		std::vector<std::string> server_names;
 		std::vector<HttpLocationBlock *> httpLocationBlock;
 		std::vector<HttpLocationData *> _LocationDatas;
@@ -29,6 +30,9 @@ class HttpServerData : public HttpData
 		void setServerName(std::string name);
 		void setHttpLocationBlock(HttpLocationBlock *n);
 		void printServerDataConfig();
+
+		std::string getUploadStore();
+		void setUploadStore(std::string upload_store);
 };
 
 #endif

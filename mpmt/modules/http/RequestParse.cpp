@@ -1,60 +1,83 @@
 #include "HttpreqHandler.hpp"
+#include <algorithm>
+#include <ostream>
 
 
 /* =============== chunked parse =============== */
 
-int HttpreqHandler::parseChunkedLength(std::string req, int *pos)
+int HttpreqHandler::parseChunkedLength(int *startPos)
 {
-	int endPos;
 	std::string line;
+	int pos;
 
-	//chunked end
-	if ((endPos = req.find(CRLF2)) != std::string::npos)
-	{
-		if (req.length() == 5 && req[endPos - 1] == '0')
-			return (0);
-		_event->setStatusCode(411);
-		throw std::exception();
-		// 설마 CRLF2 뒤에 문자 더 있겠나
-	}
-	*pos = req.find(CRLF);
-	line = req.substr(0, *pos);
+	pos = _bodyBuf.find(CRLF, *startPos);
+	line = _bodyBuf.substr(*startPos, pos - *startPos);
+	*startPos = pos + 2;
 	return (convertHexToDec(line));
 }
 
-std::string HttpreqHandler::parseChunkedBody(std::string req, int *pos)
+std::string HttpreqHandler::parseChunkedBody(int *startPos)
 {
 	std::string line;
-	int	endPos;
+	int	pos;
 
-	endPos = req.find(CRLF, *pos + 2);
-	line = req.substr(*pos + 2, endPos - *pos - 2);
+	pos = _bodyBuf.find(CRLF, *startPos);
+	line = _bodyBuf.substr(*startPos, pos - *startPos);
+	*startPos = pos + 2;
 	return (line);
 }
 
-void HttpreqHandler::parseChunked(std::string req)
+void HttpreqHandler::splitChunked(void)
 {
-	int pos, len = 0;
+	int pos = 0, len = 0;
+	int endPos = _bodyBuf.length() - 5;
+	std::string line, buf;
+	
+	while (pos != endPos)
+	{
+		len = parseChunkedLength(&pos);
+		line = parseChunkedBody(&pos);
+		if (len < line.length())
+		{
+			_event->setStatusCode(413);
+			throw std::exception();
+		}
+		_contentLength += len;
+		buf.append(line);
+	}
+	_bodyBuf.clear();
+	_bodyBuf = buf;
+}
+
+void HttpreqHandler::parseChunked(std::string req) 
+{
+	int pos = 0, endPos = 0;
 	std::string line;
 	
-	len = parseChunkedLength(req, &pos);
-	if (len == 0)
+	if (_headerPended) //청크 헤더 덜들어옴
 	{
+		pos = _buf.find(CRLF2);
+		if (pos == std::string::npos)
+			return ;
+		_headerPended = false;
+		_bodyPended = true;
+		_chunkedWithoutBodyBuf.append(_buf.substr(0, pos + 4));
+	}
+	if (_bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴. 바디 끝 들어올 때 까지 파싱 x
+	{
+		endPos = _buf.find("0\r\n\r\n");
+		if (endPos == std::string::npos)
+			return ;
+		// 바디 다 들어옴, 길이, 바디 분리
+		pos = _buf.find(CRLF2);
+		_bodyBuf = _buf.substr(pos + 4);
+		splitChunked();
 		_pended = false;
+		_bodyPended = false;
 		_buf.clear();
 		_buf.append(_chunkedWithoutBodyBuf);
 		_buf.append(_bodyBuf);
-		return ;
 	}
-	line = parseChunkedBody(req, &pos);
-	if (len < line.length())
-	{
-		_event->setStatusCode(413);
-		throw std::exception();
-	}
-	_bodyBuf.append(line);
-	_contentLength += len;
-	appendBuf(line);
 }
 
 /* ============================================= */
@@ -80,6 +103,8 @@ void HttpreqHandler::appendBodyBuf(std::string req)
 
 	if ((pos = _buf.find(CRLF2)) == std::string::npos)
 		return ;
+	if (_headerPended)
+		_headerPended = false;
 	if (!_bodyBuf.length())
 	{
 		line = _buf.substr(pos + 4);
@@ -101,14 +126,20 @@ void HttpreqHandler::parseSeparate(std::string req)
 		if ((pos = _buf.find(CRLF2)) != std::string::npos)
 		{
 			if (!checkSeparate(pos))
+			{
 				_pended = false;
+				_bodyPended = false;
+			}
 		}
 	}
 	else
 	{
 		appendBodyBuf(req);
 		if (_contentLength == _bodyBuf.length())
+		{
 			_pended = false;
+			_bodyPended = false;
+		}
 		else if (_contentLength < _bodyBuf.length())
 		{
 			_event->setStatusCode(413);
@@ -163,7 +194,7 @@ void HttpreqHandler::parseCookie(void)
 /* =================== parse =================== */
 void HttpreqHandler::parseStartLine(std::string line) 
 {
-	int pos, prevPos = 0;
+	int pos = 0, prevPos = 0;
 	std::string subLine;
 
 	while ((pos = line.find(" ", prevPos)) != std::string::npos)
@@ -217,7 +248,7 @@ void HttpreqHandler::parseBody(void)
 
 void HttpreqHandler::parse(void)
 {
-	int pos, prevPos = 0;
+	int pos = 0, prevPos = 0;
 	std::string line;
 
 	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)
