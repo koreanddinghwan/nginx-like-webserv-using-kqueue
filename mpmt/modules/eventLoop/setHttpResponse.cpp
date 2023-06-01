@@ -262,13 +262,13 @@ void EventLoop::setHttpResponse(Event *e)
 				else
 				{
 					unregisterClientSocketReadEvent(e);
-					registerFileReadEvent(e);
+					registerClientSocketWriteEvent(e);
 					return ;
 				}
 			}
 			else {
-				std::cout<<"check index not setted"<<std::endl;
-				e->setStatusCode(403);
+				std::cout<<"route endwith / but index not setted"<<std::endl;
+				e->setStatusCode(404);
 				throw std::exception();
 			}
 		}
@@ -398,6 +398,8 @@ bool EventLoop::processCgi(Event *e)
 	int *pipefd = e->getPipeFd();
 	if (pipe(pipefd) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
 		e->setStatusCode(500);
 		std::cout << "pipe error" << std::endl;
 		return false;
@@ -408,12 +410,18 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	if (fcntl(pipefd[0], F_SETFL, O_NONBLOCK) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 
 	if (fcntl(pipefd[1], F_SETFL, O_NONBLOCK) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
@@ -424,9 +432,13 @@ bool EventLoop::processCgi(Event *e)
 	pid_t pid = fork();
 	if (pid == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fork error" << std::endl;
 		return false;
 	}
+
 
 	/**
 	 * 4. parent process
