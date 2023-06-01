@@ -1,4 +1,5 @@
 #include "../eventLoop/EventLoop.hpp"
+#include <cstdint>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/fcntl.h>
@@ -286,6 +287,13 @@ void EventLoop::setHttpResponse(Event *e)
 				{
 					std::cout<<"fcntl error"<<std::endl;
 					e->setStatusCode(500);
+					throw std::exception();
+				}
+				
+				if (e->statBuf.st_size == 0)
+				{
+					std::cout<<"file size is 0"<<std::endl;
+					e->setStatusCode(204);
 					throw std::exception();
 				}
 				e->setStatusCode(200);
