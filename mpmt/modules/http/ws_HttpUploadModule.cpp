@@ -16,7 +16,11 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 		return false;
 	}
 
-	std::string filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + "/"+ e->getResource();
+	std::string filePath;
+	if (e->getResource().front() == '/')
+		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + e->getResource();
+	else
+		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + "/"+ e->getResource();
 	std::cout<<"upload file path: "<<filePath<<std::endl;
 	if((e->file_fd = open(filePath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644)) == -1)
 	{

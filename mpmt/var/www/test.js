@@ -23,6 +23,7 @@ const test = async (event) => {
 
   const postedResult = await fetch(filePath, {
     method: "POST",
+    body: fileUpload.files[0],
   });
   console.log(postedResult);
 };
