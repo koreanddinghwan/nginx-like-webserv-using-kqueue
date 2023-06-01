@@ -103,13 +103,13 @@ void EventLoop::setHttpResponse(Event *e)
 	if (requestPath.back() == '/' && \
 			requestPath.length() == 1)
 	{
-		std::cout<<"|||||request path is /"<<std::endl;
+		std::cout<<"|||||request path is exactly /"<<std::endl;
 		/**
 		 * ex) / ->  root + /
 		 * */
-		e->setRoute(e->locationData->getRoot() + "/");
 		e->setDir(e->locationData->getRoot());
 		e->setResource("/");
+		e->setRoute(e->getDir() + "/");
 	}
 	else
 	{
@@ -124,6 +124,12 @@ void EventLoop::setHttpResponse(Event *e)
 		
 		std::string tmp;
 
+		/**
+		 * request path에서 location uri를 뺀다.
+		 * ex) req    : /test/aser/,
+		 *    locUri : /t
+		 *    tmp : est/aser/
+		 * */
 		tmp = reqHandler->getRequestInfo().path.substr(
 				e->locationData->getUri().length()
 				);
@@ -132,20 +138,65 @@ void EventLoop::setHttpResponse(Event *e)
 
 		if (pos == std::string::npos)
 		{
-			e->setRoute(
-					e->locationData->getRoot() + \
-					+ "/" + tmp
-					);
+			/**
+			 * /를 못 찾으면, client의 요청의 path가 
+			 * req : /test
+			 * locUri : /t
+			 * tmp : est
+			 * pos == std::string::npos
+			 * 인 경우다.
+			 *
+			 * client요청의 끝이 /면 resource = "/", 아니면 ""이다.
+			 * */
+			if (tmp.back() == '/')
+				e->setResource("/");
+			else
+				e->setResource(reqHandler->getRequestInfo().path.substr(1));
+			e->setDir(e->locationData->getRoot());
 		}
 		else
-		{	e->setRoute(
-					e->locationData->getRoot() + \
-					tmp.substr(pos) \
-					);
+		{
+			/**
+			 * /를 찾으면, client의 요청의 path가
+			 *
+			 * (1)
+			 * req : /test/aser/
+			 * locUri : /t
+			 * tmp : est/aser/
+			 *
+			 * (2)
+			 * req : /test/aser
+			 * locUri : /t
+			 * tmp : est/aser
+			 *
+			 * pos가 3이므로, 
+			 * tmp에서 다시 /부터 자르는 tmp.substr(pos)를 하면 /aser/ 혹은 /aser가 된다.
+
+			 * 이 경우에서, 
+			 * (1)의 경우에는 resource는 /, 
+			 * dir은 /var/www/aser가 된다.
+			 *
+			 * (2)의 경우에는 resource는 "aser"이다.
+			 * dir은 /var/www,
+			 * resource 는 aser가 된다.
+			 * */
+			if (tmp.back() == '/')
+			{
+				e->setResource("/");
+				e->setDir(e->locationData->getRoot() + tmp.substr(pos));
+			}
+			else
+			{
+				e->setResource(tmp.substr(pos + 1));
+				e->setDir(e->locationData->getRoot());
+			}
 		}
+		e->setRoute(e->getDir() +  "/" + e->getResource());
 	}
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
 	std::cout<<"route: "<<e->getRoute()<<std::endl;
+	std::cout<<"dir: "<<e->getDir()<<std::endl;
+	std::cout<<"resource: "<<e->getResource()<<std::endl;
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 
 	/**
@@ -193,6 +244,7 @@ void EventLoop::setHttpResponse(Event *e)
 			// 1. first, check index
 			if (!(e->locationData->getIndex().empty()))
 			{
+				std::cout<<"check index setted"<<std::endl;
 				std::cout<<"|||||||||"<<"index exists"<<"|||||||||"<<std::endl;
 				if (ws_HttpIndexModule::processEvent(e) == false)
 					throw std::exception();
@@ -205,9 +257,9 @@ void EventLoop::setHttpResponse(Event *e)
 					return ;
 				}
 			}
-			// 2. second, if index not work check autoindex
 			else if (e->locationData->getAutoIndex())
 			{
+				std::cout<<"check autoindex setted"<<std::endl;
 				if (ws_HttpAutoIndexModule::processEvent(e) == false)
 					throw std::exception();
 				else
@@ -254,13 +306,20 @@ void EventLoop::setHttpResponse(Event *e)
 		if (!e->locationData->getUploadStore().empty())
 		{
 			if (ws_HttpUploadModule::processEvent(e) == false)
-			{
-				e->setStatusCode(500);
 				throw std::exception();
-			}
-			e->setStatusCode(201);
 			unregisterClientSocketReadEvent(e);
 			registerFileWriteEvent(e);
+			return ;
+		}
+		/**
+		 * upload pass not setted in location block
+		 * */
+		else
+		{
+			e->setStatusCode(403);
+			unregisterClientSocketReadEvent(e);
+			registerClientSocketWriteEvent(e);
+			return ;
 		}
 	}
 
