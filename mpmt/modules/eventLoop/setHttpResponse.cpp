@@ -101,102 +101,174 @@ void EventLoop::setHttpResponse(Event *e)
 	 * 4. make resource route in server with root route
 	 * */
 
-	if (requestPath.back() == '/' && \
-			requestPath.length() == 1)
+	int pos;
+	std::string tmp;
+
+	if (e->locationData->getUri() == "/")
 	{
-		std::cout<<"|||||request path is exactly /"<<std::endl;
-		/**
-		 * ex) / ->  root + /
-		 * */
-		e->setDir(e->locationData->getRoot());
-		e->setResource("/");
-		e->setRoute(e->getDir() + "/");
+		e->setResource(requestPath);
+		e->setRoute(e->locationData->getRoot() + e->getResource());
 	}
-	else
+
+	// 1. check if the requested resource is directory
+	else if (requestPath.back() == '/')
 	{
-		/**
-		 *ex) req    : /test/aser/, 
-		 *	  locUri : /t
-		 *	  root : /var/www
-		 *
-		 *	  == /var/www + /aser/
-		 * */
-		//parse string
-		
-		std::string tmp;
-
-		/**
-		 * request path에서 location uri를 뺀다.
-		 * ex) req    : /test/aser/,
-		 *    locUri : /t
-		 *    tmp : est/aser/
-		 * */
-		tmp = reqHandler->getRequestInfo().path.substr(
-				e->locationData->getUri().length()
-				);
-		std::cout<<"tmp: "<<tmp<<std::endl;
-		int pos = tmp.find('/');
-
-		if (pos == std::string::npos)
+		if (requestPath.length() == 1)
 		{
-			/**
-			 * /를 못 찾으면, client의 요청의 path가 
-			 * req : /test
-			 * locUri : /t
-			 * tmp : est
-			 * pos == std::string::npos
-			 * 인 경우다.
-			 *
-			 * client요청의 끝이 /면 resource = "/", 아니면 ""이다.
-			 * */
-			if (tmp.back() == '/')
-				e->setResource("/");
-			else
-				e->setResource(reqHandler->getRequestInfo().path.substr(1));
-			e->setDir(e->locationData->getRoot());
+			e->setResource("/");
+			e->setRoute(e->locationData->getRoot() + e->getResource());
 		}
 		else
 		{
-			/**
-			 * /를 찾으면, client의 요청의 path가
-			 *
-			 * (1)
-			 * req : /test/aser/
-			 * locUri : /t
-			 * tmp : est/aser/
-			 *
-			 * (2)
-			 * req : /test/aser
-			 * locUri : /t
-			 * tmp : est/aser
-			 *
-			 * pos가 3이므로, 
-			 * tmp에서 다시 /부터 자르는 tmp.substr(pos)를 하면 /aser/ 혹은 /aser가 된다.
-
-			 * 이 경우에서, 
-			 * (1)의 경우에는 resource는 /, 
-			 * dir은 /var/www/aser가 된다.
-			 *
-			 * (2)의 경우에는 resource는 "aser"이다.
-			 * dir은 /var/www,
-			 * resource 는 aser가 된다.
-			 * */
-			if (tmp.back() == '/')
+			if (e->locationData->getUri() == requestPath)
 			{
+				/**
+				 * path : /test/
+				 * loc  : /test/
+				 * resource : /
+				 * route : root + /
+				 * */
 				e->setResource("/");
-				e->setDir(e->locationData->getRoot() + tmp.substr(pos));
+				e->setRoute(e->locationData->getRoot() + e->getResource());
 			}
-			else
+			else if (e->locationData->getUri().back() == '/')
 			{
-				e->setResource(tmp.substr(pos + 1));
-				e->setDir(e->locationData->getRoot());
+				/**
+				 * request path is directory and location uri is directory
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /
+				 * resource : test/
+				 * route : root + / + test/
+				 * */
+				/**
+				 * path : /test/abc/
+				 * loc  : /test/
+				 * resource : abc/
+				 * route : root + / + abc/
+				 * */
+				tmp = requestPath.substr(1);
+				pos = tmp.find("/");
+				e->setResource(requestPath.substr(pos + 1));
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			}
+
+			else {
+				/**
+				 * request path is directory but location uri is not directory
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /t
+				 * resource : /
+				 * route : root + /
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /test
+				 * resource : /
+				 * route : root + /
+				 * */
+				/**
+				 * path : /test/abc/
+				 * loc  : /testasdfasdfa
+				 * resource : /abc/
+				 * route : root + /abc//
+				 * */
+				tmp = requestPath.substr(1);
+				std::cout<<tmp<<std::endl;
+				pos = tmp.find("/");
+				e->setResource(requestPath.substr(pos));
+				e->setRoute(e->locationData->getRoot() + e->getResource());
 			}
 		}
-		e->setRoute(e->getDir() +  "/" + e->getResource());
+	}
+	// 2. check if the requested resource is file
+	else
+	{
+		/**
+		 * request path is file and location uri is not directory
+		 * */
+		if (e->locationData->getUri().back() != '/')
+		{
+			if (e->locationData->getUri() == requestPath)
+			{
+				/**
+				 * request path and location uri is equal
+				 * */
+				/**
+				 * path : /test
+				 * loc  : /test
+				 * resource : ""
+				 * route : root + ""
+				 * */
+				e->setResource("");
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+			else if (
+					requestPath.substr(1)\
+					.find("/") == std::string::npos)
+			{
+				/**
+				 * resource identifier not exists
+				 * */
+				/**
+				 * path : /test
+				 * loc  : /t
+				 * resource : ""
+				 * route : root + ""
+				 * */
+				e->setResource("");
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+			else {
+				/**
+				 * resource identifier exists
+				 * */
+				/**
+				 * path : /test/abc
+				 * loc  : /tes
+				 * resource : abc
+				 * route : root + / + abc
+				 * */
+				/**
+				 * path : /test/abc
+				 * loc  : /test
+				 * resource : abc
+				 * route : root + / + abc
+				 * */
+				tmp = requestPath.substr(1);
+				pos = tmp.find("/");
+				e->setResource(tmp.substr(pos + 1));
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			}
+		}
+		else 
+		{
+			/**
+			 * request path is file but location uri is directory
+			 * */
+			/**
+			 * path : /test/abc
+			 * loc  : /test/
+			 * resource : abc
+			 * route : root + "/" + abc
+			 * */
+			/**
+			 * path : /test/abc
+			 * loc  : /
+			 * resource : test/abc
+			 * route : root + test/abc
+			 * */
+			tmp = requestPath.substr(1);
+			pos = tmp.find("/");
+			e->setResource(tmp.substr(pos + 1));
+			e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+		}
 	}
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
 	std::cout<<"route: "<<e->getRoute()<<std::endl;
-	std::cout<<"dir: "<<e->getDir()<<std::endl;
 	std::cout<<"resource: "<<e->getResource()<<std::endl;
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 
