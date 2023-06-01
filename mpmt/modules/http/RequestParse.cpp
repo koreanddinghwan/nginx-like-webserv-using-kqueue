@@ -3,6 +3,21 @@
 #include <ostream>
 
 
+/* =================== undefine =================== */
+void HttpreqHandler::parseUndefined(void)
+{
+	int pos;
+
+	pos = _buf.find(CRLF2);
+	if (pos == std::string::npos)
+		return ;
+	_headerPended = false;
+	initMessageState();
+	initPendingState();
+}
+
+/* ============================================== */
+
 /* =============== chunked parse =============== */
 
 int HttpreqHandler::parseChunkedLength(int *startPos)
@@ -71,9 +86,9 @@ void HttpreqHandler::parseChunked(std::string req)
 		// 바디 다 들어옴, 길이, 바디 분리
 		pos = _buf.find(CRLF2);
 		_bodyBuf = _buf.substr(pos + 4);
-		splitChunked();
 		_pended = false;
 		_bodyPended = false;
+		splitChunked();
 		_buf.clear();
 		_buf.append(_chunkedWithoutBodyBuf);
 		_buf.append(_bodyBuf);
