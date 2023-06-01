@@ -14,7 +14,8 @@
 enum messageStateEnum {
 	chunked = 1,
 	separate,
-	basic
+	basic,
+	undefined,
 };
 
 class HttpreqHandler : public IHandler
@@ -73,6 +74,11 @@ private:
 	void parseMethod(std::string line);
 	bool checkSeparate(int CRLF2Pos);
 
+	//cookie
+	void parseCookie(void);
+	void insertCookieMap(std::string cookies, int *prevPos, int *pos);
+	void saveSid(std::string key, std::string value);
+
 	//parse
 	void parse(void);
 	void parseStartLine(std::string line);
@@ -80,11 +86,6 @@ private:
 	void parseBody(void);
 	void saveGenericHeader(std::string key, std::string value);
 	void parseQueryParam(std::string line, int *prevPos, int *pos);
-
-	//cookie
-	void parseCookie(void);
-	void insertCookieMap(std::string cookies, int *prevPos, int *pos);
-	void saveSid(std::string key, std::string value);
 
 	//chunked
 	void parseChunked(std::string req);
@@ -96,6 +97,9 @@ private:
 	void parseSeparate(std::string req);
 	void findMethod(void);
 	void appendBodyBuf(std::string req);
+
+	//undefine
+	void parseUndefined(void);
 	
 
 	void appendBuf(std::string buf);
