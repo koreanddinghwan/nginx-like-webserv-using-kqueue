@@ -124,12 +124,11 @@ bool HttpreqHandler::parseContentLength(void) // findContentLength
 bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 {
 	std::string line;
-	bool hasContentLen;
 
 	parseMethod("");
-	hasContentLen = parseContentLength();
+	_hasContentLength = parseContentLength();
 	line = _buf.substr(CRLF2Pos + 4);
-	if (!hasContentLen)
+	if (!_hasContentLength)
 	{
 		if (!line.empty())
 		{
@@ -137,7 +136,7 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 			throw std::exception();
 		}
 	}
-	else if (hasContentLen)
+	else if (_hasContentLength)
 	{
 		if (line.length() > _contentLength)
 		{
@@ -155,13 +154,22 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 
 void HttpreqHandler::checkMethod(void)
 {
-	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
-		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
+	if (_info.method == "POST")
 	{
-		if (_info.method == "PATCH" || _info.method == "PUT")
-			_info.method = "POST";
+		if (!_hasContentLength && _messageState != chunked)
+		{
+			_event->setStatusCode(411);
+			throw std::exception();
+		}
 		return ;
 	}
+	else if (_info.method == "PATCH" || _info.method == "PUT")
+	{
+		_info.method = "POST";
+		return ;
+	}
+	else if (_info.method == "GET" || _info.method == "DELETE" || _info.method == "HEAD")
+		return ;
 	_event->setStatusCode(405);
 	throw std::exception();
 }
