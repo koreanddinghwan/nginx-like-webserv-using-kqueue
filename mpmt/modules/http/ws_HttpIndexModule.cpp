@@ -43,6 +43,7 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 			{
 				if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
 				{
+					close(e->file_fd);
 					e->setStatusCode(500);
 					return false;
 				}
