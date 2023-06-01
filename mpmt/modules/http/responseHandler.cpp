@@ -42,6 +42,7 @@ void responseHandler::setResLocation(std::string location) const {
 
 void responseHandler::setResAddtionalOptions(Event *event) const {
 	std::string httpMethod = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().method;
+	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
 	int statusCode = this->getResStatusCode();
 
 	if (httpMethod == "GET") {
@@ -51,7 +52,7 @@ void responseHandler::setResAddtionalOptions(Event *event) const {
 		this->getResBody().clear();
 	} else if (httpMethod == "POST") {
 		if (statusCode == 201)
-			this->setResLocation(event->locationData->getRedirectUrl());
+			this->setResLocation(requestedResource);
 	} else if (httpMethod == "DELETE") {
 		if(statusCode == 200) {
 			this->getResBody().clear();
