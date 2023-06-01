@@ -1,4 +1,6 @@
 #include "responseHandler.hpp"
+#include "HttpreqHandler.hpp"
+
 
 
 responseHandler::responseHandler() {
@@ -76,13 +78,21 @@ void *responseHandler::handle(void *event) {
 	this->setResStatusMsg(e->getStatusCode());
 
 	/**
-	 * if need redirection, set location header
+	 * if need redirection, set location header, and re
 	 * */
-	if (e->getStatusCode() >= 300 && e->getStatusCode() < 400)
+	if (e->getStatusCode() == 201 || (e->getStatusCode() >= 300 && e->getStatusCode() < 400))
 		this->setResLocation(e->locationData->getRedirectUrl());
 
 	std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl;
+	/**
+	Cheak Http Method is HEAD, 
+	 * 
+	*/
 
+	if (static_cast<HttpreqHandler *>(e->getRequestHandler())->getRequestInfo().method == "HEAD") {
+		this->getResBody().clear();
+
+	}
 	/**
 	 * 3. set resHeader
 	 * */
