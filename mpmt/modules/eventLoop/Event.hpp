@@ -118,6 +118,7 @@ public:
 	std::string openFileName;
 	struct stat statBuf;
 	int fileReadByte;
+	int fileWroteByte;
 
 
 public:

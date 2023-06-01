@@ -5,6 +5,7 @@ void *HttpreqHandler::handle(void *data)
 {
 	_event = static_cast<Event *>(data);
 	std::string req = _event->getBuffer()->erase(_event->readByte);
+	std::cout << req << std::endl;
 	/*
 	 처음 들어온 req massage
 	*/
@@ -35,19 +36,36 @@ void HttpreqHandler::initMessageState(void)
 
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
-		_messageState = separate;
-	else
 	{
-		pos = _buf.find("Transfer-Encoding: chunked");
-		if (pos != std::string::npos) // chunked는 septerate하게 안들어온다고 가정, 나중에 수정해야될수도
+		pos = _buf.find("Transfer-Encoding: chunked"); // chunked 파셜, 헤더 덜들어옴
+		if (pos != std::string::npos)
 		{	
 			_messageState = chunked;
+			_headerPended = true;
+			_bodyPended = true;
+		}
+		else
+		{
+			_messageState = separate;
+			_headerPended = true;
+		}
+	}
+	else
+	{
+		pos = _buf.find("Transfer-Encoding: chunked"); // 청크 형식 맞춰 들어옴, 헤더는 다 들어옴
+		if (pos != std::string::npos)
+		{	
+			_messageState = chunked;
+			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf);
 		}
 		else
 		{
 			if (checkSeparate(bodyPos))
+			{
 				_messageState = separate;
+				_bodyPended = true;
+			}
 			else
 				_messageState = basic;
 		}
@@ -62,12 +80,10 @@ void HttpreqHandler::initPendingState(void)
 
 void HttpreqHandler::initVar(void)
 {
-	_contentLength = 0;
 	_buf.clear();
 	_method.clear();
 	_bodyBuf.clear();
 	_chunkedWithoutBodyBuf.clear();
-	_hasContentLength = false;
 }
 
 void HttpreqHandler::initRequest(std::string req)
@@ -133,7 +149,7 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 		if (line.length() > _contentLength)
 		{
 			_event->setStatusCode(413);
-			throw std::exception();//std Exception code안맞춰서 날려라
+			throw std::exception();
 		}
 		if (line.length() < _contentLength)
 		{
@@ -148,11 +164,11 @@ void HttpreqHandler::checkMethod(void)
 {
 	if (_info.method == "GET" || _info.method == "POST" || _info.method == "DELETE" ||
 		_info.method == "PUT" || _info.method == "PATCH" || _info.method == "HEAD")
-		{
-			if (_info.method == "PATCH")
-				_info.method = "POST";
-			return ;
-		}
+	{
+		if (_info.method == "PATCH" || _info.method == "PUT")
+			_info.method = "POST";
+		return ;
+	}
 	_event->setStatusCode(405);
 	throw std::exception();
 }
@@ -179,7 +195,7 @@ void HttpreqHandler::parseQueryParam(std::string line, int *prevPos, int *pos)
 
 void HttpreqHandler::checkQueryParam(void)
 {
-	int pos, prevPos, questionPos = 0;
+	int pos = 0, prevPos = 0, questionPos = 0;
 	std::string line;
 
 	if ((questionPos = _info.path.find("?")) != std::string::npos)
@@ -206,7 +222,8 @@ void HttpreqHandler::checkStartLine(void)
 
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler()
-	: _buf(""), _messageState(basic), _pended(false)
+	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
+	_headerPended(false), _bodyPended(false)
 {
 	//info = new HttpreqHandlerInfo();
 }
@@ -225,11 +242,16 @@ void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
 
+bool HttpreqHandler::isHeaderPending(void) const { return _headerPended; }
+
+bool HttpreqHandler::isBodyPending(void) const { return _bodyPended; }
+
 bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : false); }
 
 std::string HttpreqHandler::getSid(void) const { return _sid;}
 
 const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info; }
+
 /* ============================================= */
 
 void HttpreqHandler::printReq(void)

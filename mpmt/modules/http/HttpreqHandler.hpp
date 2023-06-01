@@ -36,8 +36,12 @@ private:
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
+
 	Event *_event;
+
 	bool _pended;
+	bool _headerPended;
+	bool _bodyPended;
 	std::string _sid;
 	/* ========================================== */
 
@@ -50,6 +54,8 @@ public:
 
 	//getter
 	bool getIsPending(void) const;
+	bool isHeaderPending(void) const;
+	bool isBodyPending(void) const;
 	bool getHasSid(void) const;
 	std::string getSid(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
@@ -82,8 +88,9 @@ private:
 
 	//chunked
 	void parseChunked(std::string req);
-	int parseChunkedLength(std::string req, int *pos);
-	std::string parseChunkedBody(std::string req, int *pos);
+	void splitChunked(void);
+	int parseChunkedLength(int *startPos);
+	std::string parseChunkedBody(int *startPos);
 
 	//separate
 	void parseSeparate(std::string req);
