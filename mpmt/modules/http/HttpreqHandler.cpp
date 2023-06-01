@@ -40,17 +40,6 @@ void HttpreqHandler::initMessageState(void)
 	{
 		_messageState = undefined;
 		_headerPended = true;
-		//pos = _buf.find("Transfer-Encoding: chunked"); // chunked 파셜, 헤더 덜들어옴
-		//if (pos != std::string::npos)
-		//{	
-		//	_messageState = chunked;
-		//	_headerPended = true;
-		//}
-		//else
-		//{
-		//	_messageState = separate;
-		//	_headerPended = true;
-		//}
 	}
 	else
 	{
