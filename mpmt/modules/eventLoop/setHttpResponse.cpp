@@ -218,10 +218,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * */
 		//process cgi
 		if (!processCgi(e))
-		{
-			e->setStatusCode(500);
 			throw std::exception();
-		}
 		return ;
 	}
 
@@ -268,6 +265,11 @@ void EventLoop::setHttpResponse(Event *e)
 					registerFileReadEvent(e);
 					return ;
 				}
+			}
+			else {
+				std::cout<<"check index not setted"<<std::endl;
+				e->setStatusCode(403);
+				throw std::exception();
 			}
 		}
 		else
@@ -316,7 +318,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * */
 		else
 		{
-			e->setStatusCode(403);
+			e->setStatusCode(200);
 			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
 			return ;
@@ -382,6 +384,7 @@ bool EventLoop::processCgi(Event *e)
 	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
 		std::cout << "stat error" << std::endl;
+		e->setStatusCode(404);
 		return false;
 	}
 
@@ -395,6 +398,7 @@ bool EventLoop::processCgi(Event *e)
 	int *pipefd = e->getPipeFd();
 	if (pipe(pipefd) == -1)
 	{
+		e->setStatusCode(500);
 		std::cout << "pipe error" << std::endl;
 		return false;
 	}

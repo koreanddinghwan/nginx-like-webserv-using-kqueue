@@ -12,7 +12,7 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 	{
 		// 400? 403?
 		std::cout<<"do not allow dir creation"<<std::endl;
-		e->setStatusCode(403);
+		e->setStatusCode(204);
 		return false;
 	}
 
