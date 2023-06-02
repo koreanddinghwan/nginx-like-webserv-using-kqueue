@@ -37,14 +37,15 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	/**
 	 * internal redirection
 	 * */
-	if (e->getStatusCode() >= 400)
+	if (e->setErrorPage())
 	{
-		try {
+		/**
+		 * do internal redirection
+		 * */
 		setHttpResponse(e);
-		} catch (std::exception &e)
-		{}
-		return;
+		return ;
 	}
+
 
 	e->setEventType(E_CLIENT_SOCKET);
 	/**

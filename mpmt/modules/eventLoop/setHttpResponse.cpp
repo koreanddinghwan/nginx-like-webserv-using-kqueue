@@ -340,16 +340,14 @@ void EventLoop::setHttpResponse(Event *e)
 	setRoute(e);
 
 	/**
-	 * 6. set errorpage
-	 * */
-
-	/**
-	 * 7. if redirecturl exists, redirect to url
+	 * 6. if redirecturl exists, redirect to url
+	 * if redirection url exists, set status code and redirection. 
+	 * end of internal redirection loop
 	 * */
 	setRedirection(e);
 
 	/**
-	 * 8. if need cgi process
+	 * 7. if need cgi process
 	 * */
 	if (!e->locationData->getCgiPass().empty())
 	{
@@ -363,7 +361,7 @@ void EventLoop::setHttpResponse(Event *e)
 	}
 
 	/**
-	 * 9. process methods
+	 * 8. process methods
 	 * */
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(reqHandler->getRequestInfo().method);
 	/**
