@@ -10,54 +10,41 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 		std::cout<<"index file name: "<<e->openFileName<<std::endl;
 		if (e->openFileName[0] == '/')
 		{
+			/**
+			 * 절대경로 index파일
+			 * */
 			std::cout<<"absolute path"<<std::endl;
 			//만약 있으면
-			if ((stat(e->openFileName.c_str(), &e->statBuf) == 0) && 
-					(e->file_fd = open(e->openFileName.c_str(), O_RDONLY)) != -1)
+			if (stat(e->openFileName.c_str(), &e->statBuf) == 0)
 			{
-				//set nonblock
-				if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
+				if (S_ISREG(e->statBuf.st_mode))
 				{
-					e->setStatusCode(500);
-					return false;
-				}
-				e->setStatusCode(200);
-				return true;
-			}
-			else
-			{
-				if (e->locationData->getAutoIndex() == false)
-				{
-					e->setStatusCode(404);
-					return false;
+					//set internal redirection route
+					e->internal_method = "GET";
+					e->internal_uri = e->openFileName;
+					return true;
 				}
 			}
 		}
 		else
 		{
+			/**
+			 * 상대경로 index파일 설정은 root에 붙여서 식별해야함.
+			 * */
 			std::cout<<"relative path"<<std::endl;
 			std::string tmp = e->locationData->getRoot() + "/" + e->openFileName;
 
-			if ((stat(tmp.c_str(), &e->statBuf) == 0) && 
-						(e->file_fd = open(tmp.c_str(), O_RDONLY)) != -1)
+			if (stat(tmp.c_str(), &e->statBuf) == 0)
 			{
-				if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
+				if (S_ISREG(e->statBuf.st_mode))
 				{
-					close(e->file_fd);
-					e->setStatusCode(500);
-					return false;
-				}
-				e->setStatusCode(200);
-				return true;
-			}
-			else
-			{
-				if (e->locationData->getAutoIndex() == false)
-				{
-					e->setStatusCode(404);
-					return false;
+					//set internal redirection route
+					e->internal_method = "GET";
+					e->internal_uri = tmp;
+					return true;
 				}
 			}
 		}
 	}
+	return false;
 }

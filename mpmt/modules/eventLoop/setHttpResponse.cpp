@@ -219,8 +219,8 @@ void setRoute(Event *e)
 				 * resource : ""
 				 * route : root + ""
 				 * */
-				e->setResource("");
-				e->setRoute(e->locationData->getRoot() + e->getResource());
+				e->setResource(requestPath.substr(1));
+				e->setRoute(e->locationData->getRoot() + "/" +e->getResource());
 			}
 			else if (
 					requestPath.substr(1)\
@@ -235,8 +235,8 @@ void setRoute(Event *e)
 				 * resource : ""
 				 * route : root + ""
 				 * */
-				e->setResource("");
-				e->setRoute(e->locationData->getRoot() + e->getResource());
+				e->setResource(requestPath.substr(1));
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
 			}
 			else {
 				/**
@@ -373,6 +373,4 @@ void EventLoop::setHttpResponse(Event *e)
 		ws_method_POST(e);
 	else if (methodIndex == DELETE)
 		ws_method_DELETE(e);
-	e->setStatusCode(404);
-	throw std::exception();
 }

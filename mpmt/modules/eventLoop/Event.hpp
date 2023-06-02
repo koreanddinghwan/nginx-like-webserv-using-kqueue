@@ -107,6 +107,7 @@ private:
 	std::vector<std::string *> cgiEnv;
 
 public:
+	int 		internal_status;
 	std::string internal_method;
 	std::string internal_uri;
 	int file_fd;

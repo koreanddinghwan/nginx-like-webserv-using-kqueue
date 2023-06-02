@@ -13,6 +13,7 @@ Event::Event(t_ServerType t)
 	this->file_fd = -1;
 	this->serverType = t;
 	this->statusCode = -1;
+	this->internal_status = -1;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -287,14 +288,16 @@ void Event::separateResourceAndDir()
  */
 bool Event::setErrorPage()
 {
-	if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
+	if (this->statusCode >= 400)
 	{
-		this->internal_uri = this->locationData->getErrorPage()[this->statusCode];
-		this->internal_method = "GET";
-		return true;
+		if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
+		{
+			this->internal_uri = this->locationData->getErrorPage().find(this->statusCode)->second;
+			this->internal_method = "GET";
+			return true;
+		}
 	}
-	else
-		return false;
+	return false;
 }
 
 std::vector<std::string*> &Event::getCgiEnv()
