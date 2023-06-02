@@ -63,7 +63,7 @@ public:
    * @return char * of http buffer
    */
   char* getHttpBuffer();
-  std::string &getStringBuffer();
+  std::string *getStringBuffer();
 
 private:
   HttpServer(); 

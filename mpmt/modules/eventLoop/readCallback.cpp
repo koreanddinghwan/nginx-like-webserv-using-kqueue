@@ -116,7 +116,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 		{
-			HttpServer::getInstance().getStringBuffer() = HttpServer::getInstance().getHttpBuffer();
+			HttpServer::getInstance().getStringBuffer()->clear();
+			//read from client socket
+			for (int i = 0; i < read_len; i++)
+				HttpServer::getInstance().getStringBuffer()->push_back(HttpServer::getInstance().getHttpBuffer()[i]);
 			e_udata->readByte = read_len;
 
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
@@ -126,7 +129,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
-			e_udata->setBuffer(&HttpServer::getInstance().getStringBuffer());
+			e_udata->setBuffer(HttpServer::getInstance().getStringBuffer());
 			try {
 				std::cout<<"use handle"<<std::endl;
 				reqHandler->handle(e_udata);

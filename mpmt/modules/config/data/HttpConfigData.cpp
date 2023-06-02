@@ -33,7 +33,7 @@ HttpConfigData::HttpConfigData(HttpConfigData &c)
 	(*this) = c;
 }
 
-std::map<int, std::string> HttpConfigData::getErrorPage() const {return this->errorPage;}
+const std::map<int, std::string> &HttpConfigData::getErrorPage() const {return this->errorPage;}
 std::string HttpConfigData::getRoot() const {return this->root;}
 bool	HttpConfigData::getSendFile() const {return this->sendfile;}
 bool	HttpConfigData::getTcpNoDelay() const {return this->tcp_nodelay;}
@@ -76,8 +76,8 @@ void	HttpConfigData::printConfig() {
 	std::cout<<"client max body size: "<<this->getClientMaxBodySize()<<std::endl;
 
 	std::cout<<"error page: "<<std::endl;
-	errorMap em = this->getErrorPage();
-	for (errorMap::iterator it = em.begin(); it != em.end(); it++)
+	const errorMap &em = this->getErrorPage();
+	for (std::map<int, std::string>::const_iterator it = em.begin(); it != em.end(); it++)
 	{
 		std::cout<<"["<<(*it).first<<"]"<<":"<<"["<<(*it).second<<"]"<<std::endl;
 	}
