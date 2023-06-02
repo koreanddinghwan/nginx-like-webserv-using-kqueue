@@ -4,6 +4,7 @@
 #include "../../factory/MethodFactory.hpp"
 #include "../../exceptions/httpException.hpp"
 #include <cstdlib>
+#include <exception>
 #include <sys/_types/_socklen_t.h>
 #include <sys/_types/_ssize_t.h>
 #include <sys/socket.h>
@@ -17,7 +18,9 @@
 #include "Event.hpp"
 #include "../http/responseHandler.hpp"
 #include "../http/HttpreqHandler.hpp"
-
+#include "../http/ws_HttpIndexModule.hpp"
+#include "../http/ws_HttpAutoIndexModule.hpp"
+#include "../http/ws_HttpUploadModule.hpp"
 /**
  * @brief singleton eventloop
  */
@@ -87,9 +90,15 @@ private:
 	void unregisterPipeWriteEvent(Event *e);
 	void unregisterFileWriteEvent(Event *e);
 
-	int getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath);
+	/**
+	 * response setter
+	 * */
 	void setHttpResponse(Event *e);
 	bool processCgi(Event *e);
+	
+	void ws_method_GET(Event *e) throw (std::exception);
+	void ws_method_POST(Event *e) throw (std::exception);
+	void ws_method_DELETE(Event *e) throw (std::exception);
 };
 
 
