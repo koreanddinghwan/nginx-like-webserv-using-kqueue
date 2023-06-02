@@ -148,6 +148,10 @@ public:
 	void setResource(std::string t);
 	void setDir(std::string t);
 	void separateResourceAndDir();
+	/**
+	 * @brief status code보고 error page설정.
+	 */
+	bool setErrorPage();
 
 public:
 	/**

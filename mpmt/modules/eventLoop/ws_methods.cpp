@@ -44,40 +44,37 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 			throw std::exception();
 		}
 	}
-	else
-	{
 	/**
-	 * 2. resource is file
+	 * resource is file
 	 * */
-		std::cout<<"resource is file"<<std::endl;
-		
-		if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
-				(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
+	std::cout<<"resource is file"<<std::endl;
+	
+	if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
+			(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
+	{
+		if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
 		{
-			if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
-			{
-				std::cout<<"fcntl error"<<std::endl;
-				e->setStatusCode(500);
-				throw std::exception();
-			}
-			
-			if (e->statBuf.st_size == 0)
-			{
-				std::cout<<"file size is 0"<<std::endl;
-				e->setStatusCode(204);
-				throw std::exception();
-			}
-			e->setStatusCode(200);
-			unregisterClientSocketReadEvent(e);
-			registerFileReadEvent(e);
-			return ;
-		}
-		else
-		{
-			std::cout<<"file open error"<<std::endl;
-			e->setStatusCode(404);
+			std::cout<<"fcntl error"<<std::endl;
+			e->setStatusCode(500);
 			throw std::exception();
 		}
+		
+		if (e->statBuf.st_size == 0)
+		{
+			std::cout<<"file size is 0"<<std::endl;
+			e->setStatusCode(204);
+			throw std::exception();
+		}
+		e->setStatusCode(200);
+		unregisterClientSocketReadEvent(e);
+		registerFileReadEvent(e);
+		return ;
+	}
+	else
+	{
+		std::cout<<"file open error"<<std::endl;
+		e->setStatusCode(404);
+		throw std::exception();
 	}
 }
 

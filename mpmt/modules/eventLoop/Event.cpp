@@ -277,6 +277,26 @@ void Event::separateResourceAndDir()
 	}
 }
 
+/**
+ * @brief client socket write전에 status code보고 errorpage세팅하는 함수.
+ *
+ * internal_uri에 errorpage를 넣고,
+ * internal_method에 GET을 넣는다.
+ * 이 internal_uri, method는 내부 location blcok 찾는 처리에서만 사용된다.
+ * @return true if setted or false if not setted 
+ */
+bool Event::setErrorPage()
+{
+	if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
+	{
+		this->internal_uri = this->locationData->getErrorPage()[this->statusCode];
+		this->internal_method = "GET";
+		return true;
+	}
+	else
+		return false;
+}
+
 std::vector<std::string*> &Event::getCgiEnv()
 {
 	return this->cgiEnv;
