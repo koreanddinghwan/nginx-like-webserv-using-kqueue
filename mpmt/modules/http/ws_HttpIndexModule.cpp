@@ -33,14 +33,17 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 			 * */
 			std::cout<<"relative path"<<std::endl;
 			std::string tmp = e->locationData->getRoot() + "/" + e->openFileName;
-
+			std::cout<<tmp<<std::endl;
 			if (stat(tmp.c_str(), &e->statBuf) == 0)
 			{
 				if (S_ISREG(e->statBuf.st_mode))
 				{
 					//set internal redirection route
 					e->internal_method = "GET";
-					e->internal_uri = tmp;
+					if (e->locationData->getUri().back() == '/')
+						e->internal_uri = e->locationData->getUri() + e->openFileName;
+					else
+						e->internal_uri = e->locationData->getUri() + "/" + e->openFileName;
 					return true;
 				}
 			}

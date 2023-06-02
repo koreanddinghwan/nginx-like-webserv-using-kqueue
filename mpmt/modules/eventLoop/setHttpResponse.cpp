@@ -90,7 +90,13 @@ void checkAllowedMethods(Event *e) throw (std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
-	if (!(e->locationData->getLimitedMethods().methods[methodIndex]))
+	/* std::cout<<"method index = "<<methodIndex<<std::endl; */
+	/* std::cout<<e->internal_method<<std::endl; */
+	/* std::cout<<e->locationData->getLimitedMethods().methods[0]<<std::endl; */
+	/* std::cout<<e->locationData->getLimitedMethods().methods[1]<<std::endl; */
+	/* std::cout<<e->locationData->getLimitedMethods().methods[2]<<std::endl; */
+	/* std::cout<<e->locationData->getLimitedMethods().methods[3]<<std::endl; */
+	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
 	{
 		/**
 		 * 405: "method not allowed"
@@ -119,6 +125,7 @@ void setRoute(Event *e)
 	std::string requestPath = e->internal_uri;
 	int pos;
 	std::string tmp;
+	std::cout<<"request path ="<<requestPath<<std::endl;
 
 	if (e->locationData->getUri() == "/")
 	{
@@ -129,6 +136,7 @@ void setRoute(Event *e)
 	// 1. check if the requested resource is directory
 	else if (requestPath.back() == '/')
 	{
+		std::cout<<"request path is directory"<<std::endl;
 		if (requestPath.length() == 1)
 		{
 			e->setResource("/");
@@ -289,15 +297,7 @@ void setRoute(Event *e)
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 }
 
-void setRedirection(Event *e) throw(std::exception)
-{
-	if (!e->locationData->getRedirectUrl().empty())
-	{
-		e->setStatusCode(e->locationData->getReturnStatus());
-		throw std::exception();
-	}
-}
-
+void setRedirection(Event *e) throw(std::exception);
 
 /**
  * handle error
@@ -344,7 +344,11 @@ void EventLoop::setHttpResponse(Event *e)
 	 * if redirection url exists, set status code and redirection. 
 	 * end of internal redirection loop
 	 * */
-	setRedirection(e);
+	if (!e->locationData->getRedirectUrl().empty())
+	{
+		e->setStatusCode(e->locationData->getReturnStatus());
+		throw std::exception();
+	}
 
 	/**
 	 * 7. if need cgi process
