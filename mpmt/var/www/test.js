@@ -1,4 +1,4 @@
-const UploadServer = "http://localhost:80/upload/";
+const UploadServer = "http://localhost:80/fileupload/";
 
 const test1 = async () => {
   const postedResult = await fetch(UploadServer, {
@@ -23,6 +23,7 @@ const test = async (event) => {
 
   const postedResult = await fetch(filePath, {
     method: "POST",
+    body: fileUpload.files[0],
   });
   console.log(postedResult);
 };
