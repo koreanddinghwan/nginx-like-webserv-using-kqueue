@@ -37,16 +37,27 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	/**
 	 * internal redirection
 	 * */
-	if (e->setErrorPage())
+	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
+	std::cout<<"checking status code whether internal redirection needed"<<std::endl;
+	if (e->getStatusCode() >= 400)
 	{
+		std::cout<<"internal redirection needed"<<std::endl;
+		std::cout<<"internal status code: "<<e->internal_status<<std::endl;
+		std::cout<<e->getStatusCode()<<std::endl;
+		e->internal_status = e->getStatusCode();
+		//404                       404
 		/**
 		 * do internal redirection
 		 * */
+		e->setErrorPage();
 		setHttpResponse(e);
 		return ;
-	}
-
-
+	} 
+	// 404                            200
+	if (e->internal_status >= 400) 
+		e->setStatusCode(e->internal_status);
+		/* e->setStatusCode(e->getStatusCode() == 200 ? 200 : e->internal_status); */
+	
 	e->setEventType(E_CLIENT_SOCKET);
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
@@ -61,6 +72,7 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * */
 	e->wrote = 0;
 
+	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
 	//client socket을 쓰기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
@@ -76,6 +88,7 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 
 void EventLoop::registerFileWriteEvent(Event *e)
 {
+	std::cout<<"EVENTLOOP: registerFileWriteEvent"<<std::endl;
 	e->fileWroteByte = 0;
 	e->setEventType(E_FILE);
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
@@ -97,6 +110,7 @@ void EventLoop::unregisterClientSocketReadEvent(Event *e)
 
 void EventLoop::unregisterPipeReadEvent(Event *e)
 {
+	std::cout<<"unregister pipe read event"<<std::endl;
 	EV_SET(&(dummyEvent), e->getPipeFd()[0], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister pipe read with kqueue\n");
@@ -105,6 +119,7 @@ void EventLoop::unregisterPipeReadEvent(Event *e)
 
 void EventLoop::unregisterFileReadEvent(Event *e)
 {
+	std::cout<<"unregister file read event"<<std::endl;
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file read with kqueue\n");
@@ -123,11 +138,14 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 
 	e->setRequestHandler(new HttpreqHandler());
 	e->setResponseHandler(new responseHandler(-1));
+	e->setStatusCode(200);
+	e->internal_status = 0;
 	registerClientSocketReadEvent(e);
 }
 
 void EventLoop::unregisterPipeWriteEvent(Event *e)
 {
+	std::cout<<"unregister pipe write event"<<std::endl;
 	EV_SET(&(dummyEvent), e->getPipeFd()[1], EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister pipe write with kqueue\n");
@@ -135,6 +153,7 @@ void EventLoop::unregisterPipeWriteEvent(Event *e)
 
 void EventLoop::unregisterFileWriteEvent(Event *e)
 {
+	std::cout<<"unregister file write event"<<std::endl;
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file write with kqueue\n");

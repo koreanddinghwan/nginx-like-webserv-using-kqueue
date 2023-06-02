@@ -176,11 +176,6 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 					e_udata->internal_uri = reqHandler->getRequestInfo().path;
 					setHttpResponse(e_udata);
 				} catch (std::exception &e) {
-					/**
-					 * http response가 설정 중간에 exception이 발생할 경우
-					 * limited method => 405
-					 * @TODO check error page and register read file event
-					 * */
 					std::cout<<"catch some exception in setting response"<<std::endl;
 					std::cout<<"statudcode"<<e_udata->getStatusCode()<<std::endl;
 					unregisterClientSocketReadEvent(e_udata);
