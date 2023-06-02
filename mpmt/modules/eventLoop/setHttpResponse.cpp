@@ -40,7 +40,7 @@ void setServerName(Event *e)
 	 * 1. check host name in server names
 	 * */
 	// 효율 안좋다 ..
-	std::string host = reqHandler->getRequestInfo().reqHeaderMap.find("Host")->second;
+	std::string host = reqHandler->getRequestInfo().host;
 	for (int i = 0; i < e->getServerData()->size(); i++)
 	{
 		std::vector<std::string>& serverNames = (e->getServerData()->at(i)->getServerNames());
@@ -64,7 +64,7 @@ void setLocationData(Event *e) throw (std::exception)
 	/**
 	 * 2. check the host's uri in location datas by prefix matching
 	 * */
-	std::string requestPath = reqHandler->getRequestInfo().path;
+	std::string requestPath = e->internal_uri;
 	e->locationData = NULL;
 	int matchScore = -1;
 	for (int i = 0; i < e->getDefaultServerData()->getLocationDatas().size(); i++)
@@ -89,7 +89,7 @@ void setLocationData(Event *e) throw (std::exception)
 void checkAllowedMethods(Event *e) throw (std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	int methodIndex = MethodFactory::getInstance().getMethodIndex(reqHandler->getRequestInfo().method);
+	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 	if (!(e->locationData->getLimitedMethods().methods[methodIndex]))
 	{
 		/**
@@ -116,8 +116,7 @@ void checkClientMaxBodySize(Event *e) throw(std::exception)
 
 void setRoute(Event *e)
 {
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	std::string requestPath = reqHandler->getRequestInfo().path;
+	std::string requestPath = e->internal_uri;
 	int pos;
 	std::string tmp;
 
@@ -314,7 +313,6 @@ void setRedirection(Event *e) throw(std::exception)
 void EventLoop::setHttpResponse(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	std::string requestPath = reqHandler->getRequestInfo().path;
 
 	/**
 	 * 1. check host name in server names
@@ -342,12 +340,16 @@ void EventLoop::setHttpResponse(Event *e)
 	setRoute(e);
 
 	/**
-	 * 6. if redirecturl exists, redirect to url
+	 * 6. set errorpage
+	 * */
+
+	/**
+	 * 7. if redirecturl exists, redirect to url
 	 * */
 	setRedirection(e);
 
 	/**
-	 * 6. if need cgi process
+	 * 8. if need cgi process
 	 * */
 	if (!e->locationData->getCgiPass().empty())
 	{
@@ -361,7 +363,7 @@ void EventLoop::setHttpResponse(Event *e)
 	}
 
 	/**
-	 * 7. process methods
+	 * 9. process methods
 	 * */
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(reqHandler->getRequestInfo().method);
 	/**

@@ -85,7 +85,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
 		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
-		
+
 		std::cout<<"read len = " <<read_len<<std::endl;
 		std::cout<<"data::"<< e->data<<std::endl;
 		if (read_len == -1)
@@ -167,6 +167,11 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 					 * set http response
 					 * */
 					std::cout<<"setting response"<<std::endl;
+					/**
+					 * initialize internal method and uri
+					 * */
+					e_udata->internal_method = reqHandler->getRequestInfo().method;
+					e_udata->internal_uri = reqHandler->getRequestInfo().path;
 					setHttpResponse(e_udata);
 				} catch (std::exception &e) {
 					/**

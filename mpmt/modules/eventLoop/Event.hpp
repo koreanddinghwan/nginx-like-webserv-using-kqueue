@@ -107,6 +107,8 @@ private:
 	std::vector<std::string *> cgiEnv;
 
 public:
+	std::string internal_method;
+	std::string internal_uri;
 	int file_fd;
 	/**
 	 * @breif 현재 이벤트의 locationData
