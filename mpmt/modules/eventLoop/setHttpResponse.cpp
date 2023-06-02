@@ -253,6 +253,9 @@ void EventLoop::setHttpResponse(Event *e)
 		std::cout<<"method is POST"<<std::endl;
 		if (!e->locationData->getUploadStore().empty())
 		{
+			/**
+			 * upload store is setted
+			 * */
 			if (ws_HttpUploadModule::processEvent(e) == false)
 			{
 				e->setStatusCode(500);
@@ -261,6 +264,15 @@ void EventLoop::setHttpResponse(Event *e)
 			e->setStatusCode(201);
 			unregisterClientSocketReadEvent(e);
 			registerFileWriteEvent(e);
+			return ;
+		}
+		else
+		{
+			/**
+			 * Upload store is not setted
+			 * */
+			e->setStatusCode(404);
+			throw std::exception();
 		}
 	}
 
@@ -272,6 +284,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * */
 	}
 	e->setStatusCode(404);
+	throw std::exception();
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
