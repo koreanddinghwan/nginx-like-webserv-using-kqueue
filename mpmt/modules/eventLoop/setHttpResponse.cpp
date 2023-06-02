@@ -1,4 +1,5 @@
 #include "../eventLoop/EventLoop.hpp"
+#include <cstdint>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/fcntl.h>
@@ -100,52 +101,175 @@ void EventLoop::setHttpResponse(Event *e)
 	 * 4. make resource route in server with root route
 	 * */
 
-	if (requestPath.back() == '/' && \
-			requestPath.length() == 1)
+	int pos;
+	std::string tmp;
+
+	if (e->locationData->getUri() == "/")
 	{
-		std::cout<<"|||||request path is /"<<std::endl;
-		/**
-		 * ex) / ->  root + /
-		 * */
-		e->setRoute(e->locationData->getRoot() + "/");
-		e->setDir(e->locationData->getRoot());
-		e->setResource("/");
+		e->setResource(requestPath);
+		e->setRoute(e->locationData->getRoot() + e->getResource());
 	}
+
+	// 1. check if the requested resource is directory
+	else if (requestPath.back() == '/')
+	{
+		if (requestPath.length() == 1)
+		{
+			e->setResource("/");
+			e->setRoute(e->locationData->getRoot() + e->getResource());
+		}
+		else
+		{
+			if (e->locationData->getUri() == requestPath)
+			{
+				/**
+				 * path : /test/
+				 * loc  : /test/
+				 * resource : /
+				 * route : root + /
+				 * */
+				e->setResource("/");
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+			else if (e->locationData->getUri().back() == '/')
+			{
+				/**
+				 * request path is directory and location uri is directory
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /
+				 * resource : test/
+				 * route : root + / + test/
+				 * */
+				/**
+				 * path : /test/abc/
+				 * loc  : /test/
+				 * resource : abc/
+				 * route : root + / + abc/
+				 * */
+				tmp = requestPath.substr(1);
+				pos = tmp.find("/");
+				e->setResource(requestPath.substr(pos + 1));
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			}
+
+			else {
+				/**
+				 * request path is directory but location uri is not directory
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /t
+				 * resource : /
+				 * route : root + /
+				 * */
+				/**
+				 * path : /test/
+				 * loc  : /test
+				 * resource : /
+				 * route : root + /
+				 * */
+				/**
+				 * path : /test/abc/
+				 * loc  : /testasdfasdfa
+				 * resource : /abc/
+				 * route : root + /abc//
+				 * */
+				tmp = requestPath.substr(1);
+				std::cout<<tmp<<std::endl;
+				pos = tmp.find("/");
+				e->setResource(requestPath.substr(pos));
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+		}
+	}
+	// 2. check if the requested resource is file
 	else
 	{
 		/**
-		 *ex) req    : /test/aser/, 
-		 *	  locUri : /t
-		 *	  root : /var/www
-		 *
-		 *	  == /var/www + /aser/
+		 * request path is file and location uri is not directory
 		 * */
-		//parse string
-		
-		std::string tmp;
-
-		tmp = reqHandler->getRequestInfo().path.substr(
-				e->locationData->getUri().length()
-				);
-		std::cout<<"tmp: "<<tmp<<std::endl;
-		int pos = tmp.find('/');
-
-		if (pos == std::string::npos)
+		if (e->locationData->getUri().back() != '/')
 		{
-			e->setRoute(
-					e->locationData->getRoot() + \
-					+ "/" + tmp
-					);
+			if (e->locationData->getUri() == requestPath)
+			{
+				/**
+				 * request path and location uri is equal
+				 * */
+				/**
+				 * path : /test
+				 * loc  : /test
+				 * resource : ""
+				 * route : root + ""
+				 * */
+				e->setResource("");
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+			else if (
+					requestPath.substr(1)\
+					.find("/") == std::string::npos)
+			{
+				/**
+				 * resource identifier not exists
+				 * */
+				/**
+				 * path : /test
+				 * loc  : /t
+				 * resource : ""
+				 * route : root + ""
+				 * */
+				e->setResource("");
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			}
+			else {
+				/**
+				 * resource identifier exists
+				 * */
+				/**
+				 * path : /test/abc
+				 * loc  : /tes
+				 * resource : abc
+				 * route : root + / + abc
+				 * */
+				/**
+				 * path : /test/abc
+				 * loc  : /test
+				 * resource : abc
+				 * route : root + / + abc
+				 * */
+				tmp = requestPath.substr(1);
+				pos = tmp.find("/");
+				e->setResource(tmp.substr(pos + 1));
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			}
 		}
-		else
-		{	e->setRoute(
-					e->locationData->getRoot() + \
-					tmp.substr(pos) \
-					);
+		else 
+		{
+			/**
+			 * request path is file but location uri is directory
+			 * */
+			/**
+			 * path : /test/abc
+			 * loc  : /test/
+			 * resource : abc
+			 * route : root + "/" + abc
+			 * */
+			/**
+			 * path : /test/abc
+			 * loc  : /
+			 * resource : test/abc
+			 * route : root + test/abc
+			 * */
+			tmp = requestPath.substr(1);
+			pos = tmp.find("/");
+			e->setResource(tmp.substr(pos + 1));
+			e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
 		}
 	}
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
 	std::cout<<"route: "<<e->getRoute()<<std::endl;
+	std::cout<<"resource: "<<e->getResource()<<std::endl;
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 
 	/**
@@ -167,10 +291,7 @@ void EventLoop::setHttpResponse(Event *e)
 		 * */
 		//process cgi
 		if (!processCgi(e))
-		{
-			e->setStatusCode(500);
 			throw std::exception();
-		}
 		return ;
 	}
 
@@ -181,9 +302,9 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * if method == GET
 	 * */
-	if (methodIndex == GET)
+	if (methodIndex == GET || methodIndex == HEAD)
 	{
-		std::cout<<"method is GET"<<std::endl;
+		std::cout<<"method is GET or HEAD"<<std::endl;
 		/**
 		 * 1. check if the requested resource is directory
 		 * */
@@ -193,6 +314,7 @@ void EventLoop::setHttpResponse(Event *e)
 			// 1. first, check index
 			if (!(e->locationData->getIndex().empty()))
 			{
+				std::cout<<"check index setted"<<std::endl;
 				std::cout<<"|||||||||"<<"index exists"<<"|||||||||"<<std::endl;
 				if (ws_HttpIndexModule::processEvent(e) == false)
 					throw std::exception();
@@ -205,17 +327,22 @@ void EventLoop::setHttpResponse(Event *e)
 					return ;
 				}
 			}
-			// 2. second, if index not work check autoindex
 			else if (e->locationData->getAutoIndex())
 			{
+				std::cout<<"check autoindex setted"<<std::endl;
 				if (ws_HttpAutoIndexModule::processEvent(e) == false)
 					throw std::exception();
 				else
 				{
 					unregisterClientSocketReadEvent(e);
-					registerFileReadEvent(e);
+					registerClientSocketWriteEvent(e);
 					return ;
 				}
+			}
+			else {
+				std::cout<<"route endwith / but index not setted"<<std::endl;
+				e->setStatusCode(404);
+				throw std::exception();
 			}
 		}
 		else
@@ -232,6 +359,13 @@ void EventLoop::setHttpResponse(Event *e)
 				{
 					std::cout<<"fcntl error"<<std::endl;
 					e->setStatusCode(500);
+					throw std::exception();
+				}
+				
+				if (e->statBuf.st_size == 0)
+				{
+					std::cout<<"file size is 0"<<std::endl;
+					e->setStatusCode(204);
 					throw std::exception();
 				}
 				e->setStatusCode(200);
@@ -257,11 +391,7 @@ void EventLoop::setHttpResponse(Event *e)
 			 * upload store is setted
 			 * */
 			if (ws_HttpUploadModule::processEvent(e) == false)
-			{
-				e->setStatusCode(500);
 				throw std::exception();
-			}
-			e->setStatusCode(201);
 			unregisterClientSocketReadEvent(e);
 			registerFileWriteEvent(e);
 			return ;
@@ -288,9 +418,17 @@ void EventLoop::setHttpResponse(Event *e)
 }
 
 int EventLoop::getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
-    // Find the length of the shortest string
+	if (location.back() == '/')
+	{
+		if (location == requestPath)
+			return INT32_MAX;
+	}
     size_t length = std::min(location.length(), requestPath.length());
 
+	/**
+	 * @TODO 
+	 * if location uri ends with /
+	 * */
     // Find the index where the location and requestPath differ
     size_t index = 0;
     while (index < length && location[index] == requestPath[index]) {
@@ -336,6 +474,7 @@ bool EventLoop::processCgi(Event *e)
 	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
 		std::cout << "stat error" << std::endl;
+		e->setStatusCode(404);
 		return false;
 	}
 
@@ -349,6 +488,9 @@ bool EventLoop::processCgi(Event *e)
 	int *pipefd = e->getPipeFd();
 	if (pipe(pipefd) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "pipe error" << std::endl;
 		return false;
 	}
@@ -358,12 +500,18 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	if (fcntl(pipefd[0], F_SETFL, O_NONBLOCK) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 
 	if (fcntl(pipefd[1], F_SETFL, O_NONBLOCK) == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
@@ -374,9 +522,13 @@ bool EventLoop::processCgi(Event *e)
 	pid_t pid = fork();
 	if (pid == -1)
 	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		e->setStatusCode(500);
 		std::cout << "fork error" << std::endl;
 		return false;
 	}
+
 
 	/**
 	 * 4. parent process
