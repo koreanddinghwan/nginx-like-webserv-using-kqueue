@@ -34,6 +34,18 @@ void EventLoop::registerFileReadEvent(Event *e)
 
 void EventLoop::registerClientSocketWriteEvent(Event *e)
 {
+	/**
+	 * internal redirection
+	 * */
+	if (e->getStatusCode() >= 400)
+	{
+		try {
+		setHttpResponse(e);
+		} catch (std::exception &e)
+		{}
+		return;
+	}
+
 	e->setEventType(E_CLIENT_SOCKET);
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.

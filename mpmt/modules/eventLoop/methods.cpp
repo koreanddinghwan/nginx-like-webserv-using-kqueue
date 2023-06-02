@@ -105,7 +105,7 @@ void EventLoop::ws_method_POST(Event *e) throw(std::exception)
 	}
 }
 
-void ws_method_DELETE(Event *e) throw (std::exception)
+void EventLoop::ws_method_DELETE(Event *e) throw (std::exception)
 {
 	std::cout<<"method is DELETE"<<std::endl;
 	/**
