@@ -1,5 +1,4 @@
 #include "EventLoop.hpp"
-#include <exception>
 
 void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 {
@@ -22,6 +21,8 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 				 * file open처리는 다시 internal 리디렉션된 이벤트에서 처리
 				 * */
 				std::cout<<"internal redirection"<<std::endl;
+				e->getResource().clear();
+				e->getRoute().clear();
 				setHttpResponse(e);
 				return;
 			}
@@ -130,4 +131,10 @@ void EventLoop::ws_method_DELETE(Event *e) throw (std::exception)
 	/**
 	 * check if the resource exists
 	 * */
+	std::string filePath;
+	if (e->getResource().front() == '/')
+		filePath = e->locationData->getRoot() + e->getResource();
+
+
+
 }

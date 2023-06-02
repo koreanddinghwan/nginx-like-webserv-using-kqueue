@@ -39,17 +39,16 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * */
 	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
 	std::cout<<"checking status code whether internal redirection needed"<<std::endl;
-	if (e->getStatusCode() >= 400)
+	if (e->getStatusCode() >= 400 && e->setErrorPage())
 	{
 		std::cout<<"internal redirection needed"<<std::endl;
-		std::cout<<"internal status code: "<<e->internal_status<<std::endl;
-		std::cout<<e->getStatusCode()<<std::endl;
 		e->internal_status = e->getStatusCode();
-		//404                       404
+		std::cout<<"internal status code: "<<e->internal_status<<std::endl;
 		/**
 		 * do internal redirection
 		 * */
-		e->setErrorPage();
+		e->getResource().clear();
+		e->getRoute().clear();
 		setHttpResponse(e);
 		return ;
 	} 

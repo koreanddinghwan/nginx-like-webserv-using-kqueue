@@ -141,10 +141,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				 * error status 감지했음.
 				 * internal redirection loop통해서 body, header setting.
 				 * */
-				/* std::cout<<"catch some exception"<<std::endl; */
-				/* std::cout<<"statudcode"<<e_udata->getStatusCode()<<std::endl; */
-				/* unregisterClientSocketReadEvent(e_udata); */
-				/* registerClientSocketWriteEvent(e_udata); */
+				std::cout<<"catch some exception"<<std::endl;
+				std::cout<<"statuscode"<<e_udata->getStatusCode()<<std::endl;
+				unregisterClientSocketReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
 				/**
 				 * in here, the read event for this client_fd disabled
 				 * and the write event to client socket add and enabled
