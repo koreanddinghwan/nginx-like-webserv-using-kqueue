@@ -73,6 +73,8 @@ bool setLocationData(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
+	std::cout<<"============setting location data============="<<std::endl;
+
 	std::string requestPath = e->internal_uri;
 	e->locationData = NULL;
 	int matchScore = -1;
@@ -81,12 +83,12 @@ bool setLocationData(Event *e)
 		std::string &locationUri = e->getDefaultServerData()->getLocationDatas().at(i)->getUri();
 
 		//cgi pass확인
-		if (!e->getDefaultServerData()->getLocationDatas().at(i)->getCgiPass().empty())
+		if (!(e->getDefaultServerData()->getLocationDatas().at(i)->getCgiPass().empty()))
 		{
 			std::string ext = locationUri.substr(1);
 			// request가 ext로 끝나면
-			if (requestPath.find(ext) != std::string::npos && 
-					requestPath.find(ext) + ext.length() == requestPath.length())
+			if (requestPath.find(ext) != std::string::npos &&
+					requestPath.find(ext) == requestPath.length() - ext.length())
 			{
 				e->locationData = e->getDefaultServerData()->getLocationDatas().at(i);
 				return true;
@@ -162,6 +164,13 @@ void setRoute(Event *e)
 	std::cout<<"request path ="<<requestPath<<std::endl;
 	std::cout<<"location uri ="<<e->locationData->getUri()<<std::endl;
 	std::cout<<"location root = "<<e->locationData->getRoot()<<std::endl;
+
+	if (!e->locationData->getCgiPass().empty())
+	{
+		e->setResource(e->locationData->getCgiPass());
+		e->setRoute(e->locationData->getRoot() + e->getResource());
+		return ;
+	}
 
 	if (e->locationData->getUri() == "/")
 	{
@@ -379,8 +388,10 @@ void EventLoop::errorCallback(Event *e)
 	 * reqhandler에서 호출시 없을수도 있음.
 	 * */
 	if (!e->locationData)
+	{
+		std::cout<<"handler called... but location data is null"<<std::endl;
 		ws_internalRedir(e);
-
+	}
 	if (e->setErrorPage())
 	{
 		/**
@@ -431,6 +442,7 @@ void EventLoop::setHttpResponse(Event *e)
 	 * */
 	if (!e->locationData->getCgiPass().empty())
 	{
+		std::cout<<"processing cgi..."<<std::endl;
 		/**
 		 * process cgi
 		 * */

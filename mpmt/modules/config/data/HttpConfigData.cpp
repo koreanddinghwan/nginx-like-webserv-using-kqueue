@@ -1,7 +1,7 @@
 #include "HttpConfigData.hpp"
 
 HttpConfigData::HttpConfigData() : 
-	client_max_body_size(1024), 
+	client_max_body_size(0), 
 	root("html"),
 	sendfile(false),
 	tcp_nodelay(true),
