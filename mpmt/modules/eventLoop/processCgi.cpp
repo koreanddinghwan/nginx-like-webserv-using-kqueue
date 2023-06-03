@@ -5,12 +5,12 @@ void setEnv(Event *e)
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	e->getCgiEnv()[0]->append("AUTH_TYPE=Basic");
 	e->getCgiEnv()[1]->append("CONTENT_LENGTH=");
-	e->getCgiEnv()[1]->append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Length")->second);
-	e->getCgiEnv()[2]->append("CONTENT_TYPE=").append(reqHandler->getRequestInfo().reqHeaderMap.find("Content-Type")->second);
+	e->getCgiEnv()[1]->append(reqHandler->getRequestInfo().contentLength);
+	e->getCgiEnv()[2]->append("CONTENT_TYPE=").append(reqHandler->getRequestInfo().contentType);
 	e->getCgiEnv()[3]->append("GATEWAY_INTERFACE=CGI/1.1");
-	e->getCgiEnv()[4]->append("PATH_INFO=").append(e->getResource());
+	e->getCgiEnv()[4]->append("PATH_INFO=").append("/YoupiBanane/youpi.bla");
 	e->getCgiEnv()[5]->append("PATH_TRANSLATED=").append(e->getRoute());
-	e->getCgiEnv()[6]->append("QUERY_STRING=");
+	e->getCgiEnv()[6]->append("QUERY_STRING=").append(reqHandler->getRequestInfo().queryParam);
 	e->getCgiEnv()[7]->append("REMOTE_ADDR=").append(inet_ntoa(e->getSocketInfo().socket_addr.sin_addr));
 	e->getCgiEnv()[8]->append("REMOTE_HOST=");
 	e->getCgiEnv()[9]->append("REMOTE_IDENT=");
