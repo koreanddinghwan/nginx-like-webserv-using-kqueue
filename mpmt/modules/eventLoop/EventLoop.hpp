@@ -90,15 +90,18 @@ private:
 	void unregisterPipeWriteEvent(Event *e);
 	void unregisterFileWriteEvent(Event *e);
 
+	void errorCallback(Event *e);
 	/**
 	 * response setter
 	 * */
 	void setHttpResponse(Event *e);
+	void ws_internalRedir(Event *e);
+
 	bool processCgi(Event *e);
 	
-	void ws_method_GET(Event *e) throw (std::exception);
-	void ws_method_POST(Event *e) throw (std::exception);
-	void ws_method_DELETE(Event *e) throw (std::exception);
+	void ws_method_GET(Event *e);
+	void ws_method_POST(Event *e);
+	void ws_method_DELETE(Event *e);
 };
 
 

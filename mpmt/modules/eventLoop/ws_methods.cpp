@@ -1,6 +1,6 @@
 #include "EventLoop.hpp"
 
-void EventLoop::ws_method_GET(Event *e) throw (std::exception)
+void EventLoop::ws_method_GET(Event *e)
 {
 	std::cout<<"method is GET or HEAD"<<std::endl;
 	/**
@@ -33,13 +33,7 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 		if (e->locationData->getAutoIndex())
 		{
 			std::cout<<"check autoindex setted"<<std::endl;
-			if (ws_HttpAutoIndexModule::processEvent(e) == false)
-				/**
-				 * auto index에서 발생한 오류
-				 * autoindex module에서 처리 못하면 404
-				 * */
-				throw std::exception();
-			else
+			if (ws_HttpAutoIndexModule::processEvent(e))
 			{
 				/**
 				 * resBody에 autoindex내용 들어가있음.
@@ -54,7 +48,7 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 		 * */
 		std::cout<<"route endwith / but index not setted"<<std::endl;
 		e->setStatusCode(404);
-		throw std::exception();
+		errorCallback(e);
 	}
 	/**
 	 * resource is file
@@ -67,7 +61,8 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 		{
 			std::cout<<"resource is empty"<<std::endl;
 			e->setStatusCode(404);
-			throw std::exception();
+			errorCallback(e);
+			return ;
 		}
 
 		if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
@@ -77,18 +72,20 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 			{
 				std::cout<<"fcntl error"<<std::endl;
 				e->setStatusCode(500);
-				throw std::exception();
+				errorCallback(e);
+				return ;
 			}
 			
 			if (e->statBuf.st_size == 0)
 			{
 				std::cout<<"file size is 0"<<std::endl;
 				e->setStatusCode(204);
-				throw std::exception();
+				unregisterClientSocketReadEvent(e);
+				registerClientSocketWriteEvent(e);
+				return ;
 			}
 			e->setStatusCode(200);
-			if (e->internal_status == -1)
-				unregisterClientSocketReadEvent(e);
+			unregisterClientSocketReadEvent(e);
 			registerFileReadEvent(e);
 			return ;
 		}
@@ -96,12 +93,12 @@ void EventLoop::ws_method_GET(Event *e) throw (std::exception)
 		{
 			std::cout<<"file open error"<<std::endl;
 			e->setStatusCode(404);
-			throw std::exception();
+			errorCallback(e);
 		}
 	}
 }
 
-void EventLoop::ws_method_POST(Event *e) throw(std::exception)
+void EventLoop::ws_method_POST(Event *e)
 {
 	std::cout<<"method is POST"<<std::endl;
 	if (!e->locationData->getUploadStore().empty())
@@ -119,13 +116,14 @@ void EventLoop::ws_method_POST(Event *e) throw(std::exception)
 	{
 		/**
 		 * Upload store is not setted
+		 * std::cout<<"upload store is not setted"<<std::endl;
 		 * */
 		e->setStatusCode(404);
-		throw std::exception();
+		errorCallback(e);
 	}
 }
 
-void EventLoop::ws_method_DELETE(Event *e) throw (std::exception)
+void EventLoop::ws_method_DELETE(Event *e)
 {
 	std::cout<<"method is DELETE"<<std::endl;
 	/**
