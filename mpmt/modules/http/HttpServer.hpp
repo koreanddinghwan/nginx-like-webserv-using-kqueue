@@ -36,10 +36,6 @@ private:
 	//default : 1m(1024kb)== 1048576 for body
 	char HttpBuffer[1024];
 
-	//is it needed?
-	//anyway, resize in init function to 1024
-	std::string *stringBuffer;
-
 public:
   /**
    * @brief singleTon http Server입니다.
@@ -63,7 +59,6 @@ public:
    * @return char * of http buffer
    */
   char* getHttpBuffer();
-  std::string *getStringBuffer();
 
 private:
   HttpServer(); 

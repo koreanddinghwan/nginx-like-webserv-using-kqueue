@@ -22,7 +22,7 @@ HttpConfigData& HttpConfigData::operator=(HttpConfigData &c)
 	this->tcp_nopush = c.getTcpNoPush();
 	for (int i = 0 ; i < c.getIndex().size(); i++)
 	{
-		this->setIndex(c.getIndex()[i]);
+		this->index.push_back(c.getIndex()[i]);
 	}
 	return (*this);
 }

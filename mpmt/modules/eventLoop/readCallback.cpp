@@ -83,8 +83,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
-		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
-		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), 1023);
 
 		std::cout<<"read len = " <<read_len<<std::endl;
 		std::cout<<"data::"<< e->data<<std::endl;
@@ -115,11 +114,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			registerClientSocketWriteEvent(e_udata);
 		}
 		else
-		{
-			HttpServer::getInstance().getStringBuffer()->clear();
-			//read from client socket
-			for (int i = 0; i < read_len; i++)
-				HttpServer::getInstance().getStringBuffer()->push_back(HttpServer::getInstance().getHttpBuffer()[i]);
+			{
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			e_udata->readByte = read_len;
 
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
@@ -129,7 +125,6 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
-			e_udata->setBuffer(HttpServer::getInstance().getStringBuffer());
 			try {
 				std::cout<<"use handle"<<std::endl;
 				reqHandler->handle(e_udata);
@@ -191,8 +186,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		}
 
 		//read from pipe
-		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1024);
-		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1023);
 		std::cout<<"read len = " <<read_len<<std::endl;
 		std::cout<<"pipe readable data size:"<<e->data<<std::endl;
 		if (read_len == -1)
@@ -219,6 +213,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			}
 		else
 		{
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			/**
 			 * @Todo pipe data와 현재 읽은 length의 비교 필요.
 			 * 10m의 데이터가 버퍼로 들어온다고했을때, client socket에 주기적으로 작성해야하는가?
@@ -246,7 +241,7 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 	{
 		//read from file
 		ssize_t read_len = read(e_udata->file_fd, HttpServer::getInstance().getHttpBuffer(), 1024);
-		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		std::cout<<read_len<<std::endl;
 
 		if (read_len == -1)
 		{
@@ -262,7 +257,8 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 			return ;
 		}
 		else
-		{
+			{
+			HttpServer::getInstance().getHttpBuffer()[read_len - 1] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
 

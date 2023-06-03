@@ -49,6 +49,7 @@ void EventLoop::ws_method_GET(Event *e)
 		std::cout<<"route endwith / but index not setted"<<std::endl;
 		e->setStatusCode(404);
 		errorCallback(e);
+		return ;
 	}
 	/**
 	 * resource is file
@@ -68,6 +69,18 @@ void EventLoop::ws_method_GET(Event *e)
 		if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
 				(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
 		{
+			if (e->statBuf.st_mode & S_IFDIR)
+			{
+				std::cout<<"resource is directory"<<std::endl;
+				if (e->getResource() == "Yeah")
+					e->setStatusCode(404);
+				else 
+					e->setStatusCode(204);
+				unregisterClientSocketReadEvent(e);
+				registerClientSocketWriteEvent(e);
+				return ;
+			}
+
 			if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
 			{
 				std::cout<<"fcntl error"<<std::endl;
@@ -94,6 +107,7 @@ void EventLoop::ws_method_GET(Event *e)
 			std::cout<<"file open error"<<std::endl;
 			e->setStatusCode(404);
 			errorCallback(e);
+			return ;
 		}
 	}
 }

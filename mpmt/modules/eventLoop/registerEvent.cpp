@@ -34,6 +34,10 @@ void EventLoop::registerFileReadEvent(Event *e)
 
 void EventLoop::registerClientSocketWriteEvent(Event *e)
 {
+	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
+	std::cout<<"internal_status: "<<e->internal_status<<std::endl;
+	std::cout<<"status_code: "<<e->getStatusCode()<<std::endl;
+
 	if ((e->internal_status != -1) && 
 			(e->internal_status != e->getStatusCode()))
 		e->setStatusCode(e->internal_status);
@@ -45,13 +49,13 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	/**
 	 * make response message here
 	 * */
+	std::cout<<"make response message here"<<std::endl;
 	e->getResponseHandler()->handle(e);
 
 	/**
 	 * wrote byte set;
 	 * */
 	e->wrote = 0;
-	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
 	//client socket을 쓰기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
@@ -82,7 +86,7 @@ void EventLoop::registerFileWriteEvent(Event *e)
 void EventLoop::unregisterClientSocketReadEvent(Event *e)
 {
 	std::cout<<"unregister client socket read event"<<std::endl;
-	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
+	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket read with kqueue\n");
 }

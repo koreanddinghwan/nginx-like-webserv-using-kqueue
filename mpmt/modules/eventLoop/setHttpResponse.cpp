@@ -1,5 +1,6 @@
 #include "../eventLoop/EventLoop.hpp"
 #include <cstdint>
+#include <ctime>
 #include <exception>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -10,17 +11,15 @@
 
 
 int getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
-	if (location.back() == '/')
+
+	if (location != "/" && location.back() == '/')
 	{
-		if (location == requestPath)
+		if (requestPath.find(location) != std::string::npos)
 			return INT32_MAX;
 	}
+
     size_t length = std::min(location.length(), requestPath.length());
 
-	/**
-	 * @TODO 
-	 * if location uri ends with /
-	 * */
     // Find the index where the location and requestPath differ
     size_t index = 0;
     while (index < length && location[index] == requestPath[index]) {
@@ -65,7 +64,7 @@ void setServerName(Event *e)
  * @brief location data를 선택합니다.
  *
  * longest prefix matching을 사용합니다.
- *
+ * @ref https://www.digitalocean.com/community/tutorials/nginx-location-directive
  * @param e
  *
  * @throw std::exception
@@ -80,12 +79,26 @@ bool setLocationData(Event *e)
 	for (int i = 0; i < e->getDefaultServerData()->getLocationDatas().size(); i++)
 	{
 		std::string &locationUri = e->getDefaultServerData()->getLocationDatas().at(i)->getUri();
+
+		//cgi pass확인
+		if (!e->getDefaultServerData()->getLocationDatas().at(i)->getCgiPass().empty())
+		{
+			std::string ext = locationUri.substr(1);
+			// request가 ext로 끝나면
+			if (requestPath.find(ext) != std::string::npos && 
+					requestPath.find(ext) + ext.length() == requestPath.length())
+			{
+				e->locationData = e->getDefaultServerData()->getLocationDatas().at(i);
+				return true;
+			}
+		}
 		if (matchScore < getLongestPrefixMatchScore(locationUri, requestPath))
 		{
 			matchScore = getLongestPrefixMatchScore(locationUri, requestPath);
 			e->locationData = e->getDefaultServerData()->getLocationDatas().at(i);
 		}
 	}
+
 	if (!e->locationData)
 	{
 		std::cout<<"no location data"<<std::endl;
@@ -106,11 +119,17 @@ bool setLocationData(Event *e)
  */
 bool checkAllowedMethods(Event *e) throw (std::exception)
 {
+	std::cout<<"check allowed methods"<<std::endl;
+	std::cout<<"method:: "<<e->internal_method<<std::endl;
+
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 
+	std::cout<<methodIndex<<std::endl;
+	std::cout<<e->locationData->getLimitedMethods().methods[methodIndex]<<std::endl;
 	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
 	{
+		std::cout<<"method not allowed"<<std::endl;
 		/**
 		 * 405: "method not allowed"
 		 **/
@@ -123,7 +142,10 @@ bool checkAllowedMethods(Event *e) throw (std::exception)
 bool checkClientMaxBodySize(Event *e) throw(std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	if (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length())
+	std::cout<<"check client max body size"<<std::endl;
+	std::cout<<"body length = "<<reqHandler->getRequestInfo().body.length()<<std::endl;
+	std::cout<<"client max body size = "<<e->locationData->getClientMaxBodySize()<<std::endl;
+	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length()))
 	{
 		e->setStatusCode(413);
 		return false;
@@ -136,7 +158,10 @@ void setRoute(Event *e)
 	std::string requestPath = e->internal_uri;
 	int pos;
 	std::string tmp;
+	std::cout<<"============setting Route=========="<<std::endl;
 	std::cout<<"request path ="<<requestPath<<std::endl;
+	std::cout<<"location uri ="<<e->locationData->getUri()<<std::endl;
+	std::cout<<"location root = "<<e->locationData->getRoot()<<std::endl;
 
 	if (e->locationData->getUri() == "/")
 	{
@@ -183,6 +208,7 @@ void setRoute(Event *e)
 				 * resource : abc/
 				 * route : root + / + abc/
 				 * */
+				std::cout<<"request path is directory and location uri is directory"<<std::endl;
 				tmp = requestPath.substr(1);
 				pos = tmp.find("/");
 				e->setResource(requestPath.substr(pos + 1));
@@ -209,7 +235,7 @@ void setRoute(Event *e)
 				 * path : /test/abc/
 				 * loc  : /testasdfasdfa
 				 * resource : /abc/
-				 * route : root + /abc//
+				 * route : root + /abc/
 				 * */
 				tmp = requestPath.substr(1);
 				std::cout<<tmp<<std::endl;
@@ -222,11 +248,12 @@ void setRoute(Event *e)
 	// 2. check if the requested resource is file
 	else
 	{
-		/**
-		 * request path is file and location uri is not directory
-		 * */
+		std::cout<<"request path is file"<<std::endl;
 		if (e->locationData->getUri().back() != '/')
 		{
+			/**
+			 * request path is file and location uri is not directory
+			 * */
 			if (e->locationData->getUri() == requestPath)
 			{
 				/**
@@ -238,6 +265,7 @@ void setRoute(Event *e)
 				 * resource : ""
 				 * route : root + ""
 				 * */
+				std::cout<<"1"<<std::endl;
 				e->setResource(requestPath.substr(1));
 				e->setRoute(e->locationData->getRoot() + "/" +e->getResource());
 			}
@@ -254,6 +282,7 @@ void setRoute(Event *e)
 				 * resource : ""
 				 * route : root + ""
 				 * */
+				std::cout<<"2"<<std::endl;
 				e->setResource(requestPath.substr(1));
 				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
 			}
@@ -273,6 +302,7 @@ void setRoute(Event *e)
 				 * resource : abc
 				 * route : root + / + abc
 				 * */
+				std::cout<<"3"<<std::endl;
 				tmp = requestPath.substr(1);
 				pos = tmp.find("/");
 				e->setResource(tmp.substr(pos + 1));
@@ -296,10 +326,17 @@ void setRoute(Event *e)
 			 * resource : test/abc
 			 * route : root + test/abc
 			 * */
+				std::cout<<"request path is file and location uri is not directory"<<std::endl;
 			tmp = requestPath.substr(1);
 			pos = tmp.find("/");
-			e->setResource(tmp.substr(pos + 1));
-			e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			if (pos == std::string::npos)
+				e->setResource("");
+			else
+				e->setResource(tmp.substr(pos + 1));
+			if (e->getResource().front() == '/')
+				e->setRoute(e->locationData->getRoot() + e->getResource());
+			else
+				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
 		}
 	}
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;

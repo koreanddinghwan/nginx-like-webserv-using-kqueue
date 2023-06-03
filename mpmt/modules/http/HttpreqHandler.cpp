@@ -1,10 +1,11 @@
 #include "HttpreqHandler.hpp"
+#include "../http/HttpServer.hpp"
 #include <stdexcept>
 
 void *HttpreqHandler::handle(void *data) 
 {
 	_event = static_cast<Event *>(data);
-	std::string req = _event->getBuffer()->erase(_event->readByte);
+	std::string req = HttpServer::getInstance().getHttpBuffer();
 	/*
 	 처음 들어온 req massage
 	*/
