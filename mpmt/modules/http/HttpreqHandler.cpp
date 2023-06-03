@@ -301,6 +301,13 @@ int convertHexToDec(std::string line)
 			case 'D' : c = "13"; break;
 			case 'E' : c = "14"; break;
 			case 'F' : c = "15"; break;
+		
+			case 'a' : c = "10"; break;
+			case 'b' : c = "11"; break;
+			case 'c' : c = "12"; break;
+			case 'd' : c = "13"; break;
+			case 'e' : c = "14"; break;
+			case 'f' : c = "15"; break;
 			default: break;
 		}
 		hex = std::strtod(c, &endptr);
