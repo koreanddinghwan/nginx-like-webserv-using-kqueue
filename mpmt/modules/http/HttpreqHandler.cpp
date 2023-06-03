@@ -49,7 +49,7 @@ void HttpreqHandler::initMessageState(void)
 		{	
 			_messageState = chunked;
 			_bodyPended = true;
-			_chunkedWithoutBodyBuf.append(_buf);
+			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
 		}
 		else
 		{
