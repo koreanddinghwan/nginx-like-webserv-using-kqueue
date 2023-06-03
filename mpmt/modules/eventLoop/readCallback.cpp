@@ -135,21 +135,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				reqHandler->handle(e_udata);
 				std::cout<<"use handle end"<<std::endl;
 			} catch (std::exception &exception) {
-				/**
-				 * client request exception handling by 
-				 * register write event to client_fd, and finally send error response
-				 * error status 감지했음.
-				 * internal redirection loop통해서 body, header setting.
-				 * */
-				std::cout<<"catch some exception"<<std::endl;
-				std::cout<<"statuscode"<<e_udata->getStatusCode()<<std::endl;
-				unregisterClientSocketReadEvent(e_udata);
-				registerClientSocketWriteEvent(e_udata);
-				/**
-				 * in here, the read event for this client_fd disabled
-				 * and the write event to client socket add and enabled
-				 * */
-				return ;
+				errorCallback(e_udata);
+				return;
 			}
 			//handle response by request
 			/**
@@ -164,24 +151,16 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			}
 			else
 			{
-				try {
-					/**
-					 * set http response
-					 * */
-					std::cout<<"setting response"<<std::endl;
-					/**
-					 * initialize internal method and uri
-					 * */
-					e_udata->internal_method = reqHandler->getRequestInfo().method;
-					e_udata->internal_uri = reqHandler->getRequestInfo().path;
-					setHttpResponse(e_udata);
-				} catch (std::exception &e) {
-					std::cout<<"catch some exception in setting response"<<std::endl;
-					std::cout<<"statudcode"<<e_udata->getStatusCode()<<std::endl;
-					unregisterClientSocketReadEvent(e_udata);
-					registerClientSocketWriteEvent(e_udata);
-					return ;
-				}
+				/**
+				 * set http response
+				 * */
+				std::cout<<"setting response"<<std::endl;
+				/**
+				 * initialize internal method and uri
+				 * */
+				e_udata->internal_method = reqHandler->getRequestInfo().method;
+				e_udata->internal_uri = reqHandler->getRequestInfo().path;
+				setHttpResponse(e_udata);
 			}
 		}
 	}

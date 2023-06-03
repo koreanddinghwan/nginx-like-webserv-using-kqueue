@@ -34,29 +34,10 @@ void EventLoop::registerFileReadEvent(Event *e)
 
 void EventLoop::registerClientSocketWriteEvent(Event *e)
 {
-	/**
-	 * internal redirection
-	 * */
-	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
-	std::cout<<"checking status code whether internal redirection needed"<<std::endl;
-	if (e->getStatusCode() >= 400 && e->setErrorPage())
-	{
-		std::cout<<"internal redirection needed"<<std::endl;
-		e->internal_status = e->getStatusCode();
-		std::cout<<"internal status code: "<<e->internal_status<<std::endl;
-		/**
-		 * do internal redirection
-		 * */
-		e->getResource().clear();
-		e->getRoute().clear();
-		setHttpResponse(e);
-		return ;
-	} 
-	// 404                            200
-	if (e->internal_status >= 400) 
+	if ((e->internal_status != -1) && 
+			(e->internal_status != e->getStatusCode()))
 		e->setStatusCode(e->internal_status);
-		/* e->setStatusCode(e->getStatusCode() == 200 ? 200 : e->internal_status); */
-	
+
 	e->setEventType(E_CLIENT_SOCKET);
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
@@ -70,7 +51,6 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * wrote byte set;
 	 * */
 	e->wrote = 0;
-
 	std::cout<<"EVENTLOOP: registerClientSocketWriteEvent"<<std::endl;
 	//client socket을 쓰기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
@@ -138,7 +118,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->setRequestHandler(new HttpreqHandler());
 	e->setResponseHandler(new responseHandler(-1));
 	e->setStatusCode(200);
-	e->internal_status = 0;
+	e->internal_status = -1;
 	registerClientSocketReadEvent(e);
 }
 

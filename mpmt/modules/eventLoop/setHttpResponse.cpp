@@ -31,6 +31,9 @@ int getLongestPrefixMatchScore(const std::string& location, const std::string& r
 }
 
 
+/**
+ * @brief request의 host를 보고 server block을 선택합니다.
+ */
 void setServerName(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
@@ -58,12 +61,19 @@ void setServerName(Event *e)
 	}
 }
 
-void setLocationData(Event *e) throw (std::exception)
+/**
+ * @brief location data를 선택합니다.
+ *
+ * longest prefix matching을 사용합니다.
+ *
+ * @param e
+ *
+ * @throw std::exception
+ */
+bool setLocationData(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	/**
-	 * 2. check the host's uri in location datas by prefix matching
-	 * */
+
 	std::string requestPath = e->internal_uri;
 	e->locationData = NULL;
 	int matchScore = -1;
@@ -80,44 +90,45 @@ void setLocationData(Event *e) throw (std::exception)
 	{
 		std::cout<<"no location data"<<std::endl;
 		e->setStatusCode(404);
-		throw std::exception();
+		return false;
 	}
 	std::cout<<"============location setted============="<<std::endl;
 	e->locationData->printLocationData();
+	return true;
 }
 
-void checkAllowedMethods(Event *e) throw (std::exception)
+/**
+ * @brief 요청한 메서드가 허용된 메서드인지 확인합니다.
+ *
+ * @param e
+ *
+ * @throw std::exception
+ */
+bool checkAllowedMethods(Event *e) throw (std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
-	/* std::cout<<"method index = "<<methodIndex<<std::endl; */
-	/* std::cout<<e->internal_method<<std::endl; */
-	/* std::cout<<e->locationData->getLimitedMethods().methods[0]<<std::endl; */
-	/* std::cout<<e->locationData->getLimitedMethods().methods[1]<<std::endl; */
-	/* std::cout<<e->locationData->getLimitedMethods().methods[2]<<std::endl; */
-	/* std::cout<<e->locationData->getLimitedMethods().methods[3]<<std::endl; */
+
 	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
 	{
 		/**
 		 * 405: "method not allowed"
 		 **/
 		e->setStatusCode(405);
-		/**
-		 * throw exception.
-		 * if event loop catch this exception, then the httpexception event will be registered.
-		 * */
-		throw std::exception();
+		return false;
 	}
+	return true;
 }
 
-void checkClientMaxBodySize(Event *e) throw(std::exception)
+bool checkClientMaxBodySize(Event *e) throw(std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	if (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length())
 	{
 		e->setStatusCode(413);
-		throw std::exception();
+		return false;
 	}
+	return true;
 }
 
 void setRoute(Event *e)
@@ -297,8 +308,6 @@ void setRoute(Event *e)
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 }
 
-void setRedirection(Event *e) throw(std::exception);
-
 /**
  * handle error
  *
@@ -310,46 +319,76 @@ void setRedirection(Event *e) throw(std::exception);
  * 5. if redirecturl exists, redirect to url
  * 		-> set status code and redirection url.
  * */
+
+
+void EventLoop::ws_internalRedir(Event *e)
+{
+	setLocationData(e);
+	setRoute(e);
+}
+
+/**
+ * error 감지되면 callback하는 함수.
+ * 현재 location block상에 error_page가 있으면 그 페이지를 uri로 설정하고,file read event를 등록함.
+ * 없으면 바로 404를 write함.
+ * status code절대 바뀌면 안됨.
+ * */
+void EventLoop::errorCallback(Event *e)
+{
+	// 내부 internal status code로 사용자에게 보여질 status code복사함.
+	// 
+	e->internal_status = e->getStatusCode();
+	/**
+	 * reqhandler에서 호출시 없을수도 있음.
+	 * */
+	if (!e->locationData)
+		ws_internalRedir(e);
+
+	if (e->setErrorPage())
+	{
+		/**
+		 * error page가 있으면, internal uri, method에 설정된상태임
+		 * */
+		//internal redirection
+		ws_internalRedir(e);
+		//errorpage의  internal redirection은 GET으로 간주하고 진행함.
+		ws_method_GET(e);
+	}
+	else
+	{
+		// 그냥 socket에 404를 쓰고 끝냄.
+		unregisterClientSocketReadEvent(e);
+		registerClientSocketWriteEvent(e);
+	}
+}
+
+/**
+ * @WARN use INTERNAL URI, METHOD
+ * */
 void EventLoop::setHttpResponse(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
-	/**
-	 * 1. check host name in server names
-	 * */
 	setServerName(e);
-
+	ws_internalRedir(e);
 	/**
-	 * 2. check the host's uri in location datas by prefix matching
+	 * internal loop
 	 * */
-	setLocationData(e);
+	if (!checkAllowedMethods(e))
+		errorCallback(e);
+	if (!checkClientMaxBodySize(e))
+		errorCallback(e);
 
 	/**
-	 * 3. check the allowed_methods in location data
-	 * */
-	checkAllowedMethods(e);
-
-	/**
-	 * 4. check clientMaxBodySize
-	 * */
-	checkClientMaxBodySize(e);
-
-	/**
-	 * 5. make resource route in server with root route
-	 * */
-	setRoute(e);
-
-	/**
-	 * 6. if redirecturl exists, redirect to url
-	 * if redirection url exists, set status code and redirection. 
-	 * end of internal redirection loop
+	 * client's request is redirection.
 	 * */
 	if (!e->locationData->getRedirectUrl().empty())
 	{
 		e->setStatusCode(e->locationData->getReturnStatus());
-		throw std::exception();
+		unregisterClientSocketReadEvent(e);
+		registerClientSocketWriteEvent(e);
+		return;
 	}
-
 	/**
 	 * 7. if need cgi process
 	 * */
@@ -360,10 +399,14 @@ void EventLoop::setHttpResponse(Event *e)
 		 * */
 		//process cgi
 		if (!processCgi(e))
-			throw std::exception();
+		{
+			/**
+			 * cgi process error
+			 * */
+			errorCallback(e);
+		}
 		return ;
 	}
-
 	/**
 	 * 8. process methods
 	 * */
