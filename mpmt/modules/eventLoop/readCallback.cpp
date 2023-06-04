@@ -109,10 +109,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
-		{
-			unregisterClientSocketReadEvent(e_udata);
-			registerClientSocketWriteEvent(e_udata);
-		}
+			return;
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
@@ -174,15 +171,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"pipe read callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//eof flag있어야 writer가 disconnected한거
-		/* if (!(e->flags == EV_EOF)) */
-		/* { */
-		/* 	std::cout<<"PIPE::EOF"<<std::endl; */
-		/* 	//pipe의 writer는 즉 cgi process임. */
-		/* 	//이제 이 fd는 close해도 됨. */
-		/* 	return; */
-		/* } */
-
 		//read from pipe
 		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, 65534);
 		/* std::cout<<"read len = " <<read_len<<std::endl; */
@@ -211,20 +199,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		else
 		{
 			EventLoop::getInstance().pipeBuffer[read_len] = '\0';
-			/**
-			 * @Todo pipe data와 현재 읽은 length의 비교 필요.
-			 * 10m의 데이터가 버퍼로 들어온다고했을때, client socket에 주기적으로 작성해야하는가?
-			 * 아니면 한번에 작성해야하는가?
-			 * header에 content-length같은 거 설정해야하는데, client socket에 주기적으로 작성하는게 가능한가?
-			 * */
-			//read from pipe
-			/* std::cout<<"[[[[[[[PIPE READ START]]]]]]]]"<<std::endl; */
-			/* std::cout<<EventLoop::getInstance().pipeBuffer<<std::endl; */
-			/* std::cout<<"[[[[[[[PIPE READ END]]]]]]]]"<<std::endl; */
-
-			/**
-			 * response body에 읽은 데이터 추가.
-			 * */
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(EventLoop::getInstance().pipeBuffer);
 		}
 	}

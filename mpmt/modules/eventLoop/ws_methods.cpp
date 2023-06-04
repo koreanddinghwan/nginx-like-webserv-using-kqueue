@@ -79,11 +79,17 @@ void EventLoop::ws_method_POST(Event *e)
 		/**
 		 * upload store is setted
 		 * */
-		if (ws_HttpUploadModule::processEvent(e) == false)
-			throw std::exception();
-		unregisterClientSocketReadEvent(e);
-		registerFileWriteEvent(e);
-		return ;
+		if (ws_HttpUploadModule::processEvent(e))
+		{
+			unregisterClientSocketReadEvent(e);
+			registerFileWriteEvent(e);
+			return ;
+		}
+		else
+		{
+			unregisterClientSocketReadEvent(e);
+			registerClientSocketWriteEvent(e);
+		}
 	}
 	else
 	{

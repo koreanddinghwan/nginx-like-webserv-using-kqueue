@@ -37,18 +37,23 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * size of e->data만큼 작성
 		 * */
-		/* std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl; */
+		std::cout<<"=================================================="<<std::endl;
+		std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl;
+		std::cout<<"=================================================="<<std::endl;
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
-
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
+		std::cout<<"wroteByte : "<<e_udata->wrote<<std::endl;
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			{
+				std::cout<<"EWOULDBLOCK"<<std::endl;
 				return;
+			}
 			else
 			{
-				//관련 exception 처리 필요
-				throw std::runtime_error("Failed to read from client socket, unknown err\n");
+				std::cout<<"write error"<<std::endl;
+				std::cout<<"errno : "<<errno<<std::endl;
 			}
 		}
 
@@ -63,6 +68,7 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 			e_udata->wrote += wroteByte; 
 			if (e_udata->wrote == size)
 			{
+				std::cout<<"wrote all the data"<<std::endl;
 				/**
 				 * if all the data wrote, unregister write event
 				 * */
@@ -129,7 +135,7 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 			if (e_udata->fileWroteByte == fileSize)
 			{
 				//end
-				e_udata->setStatusCode(201);
+				e_udata->setStatusCode(200);
 				unregisterPipeWriteEvent(e_udata);
 			}
 		}
