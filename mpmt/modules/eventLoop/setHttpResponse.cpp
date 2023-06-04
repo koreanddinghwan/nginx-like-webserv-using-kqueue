@@ -155,202 +155,96 @@ bool checkClientMaxBodySize(Event *e) throw(std::exception)
 	return true;
 }
 
-void setRoute(Event *e)
+void setInternalUri(Event *e)
 {
 	std::string requestPath = e->internal_uri;
 	int pos;
 	std::string tmp;
 	std::cout<<"============setting Route=========="<<std::endl;
-	std::cout<<"request path ="<<requestPath<<std::endl;
+	std::cout<<"internal uri ="<<e->internal_uri<<std::endl;
 	std::cout<<"location uri ="<<e->locationData->getUri()<<std::endl;
 	std::cout<<"location root = "<<e->locationData->getRoot()<<std::endl;
 
 	if (!e->locationData->getCgiPass().empty())
 	{
-		e->setResource(e->locationData->getCgiPass());
-		e->setRoute(e->locationData->getRoot() + e->getResource());
+		e->internal_uri = e->locationData->getCgiPass();
 		return ;
 	}
 
+
+	tmp = requestPath.substr(1);
+	pos = tmp.find("/");
+
 	if (e->locationData->getUri() == "/")
-	{
-		e->setResource(requestPath);
-		e->setRoute(e->locationData->getRoot() + e->getResource());
-	}
+		e->internal_uri = requestPath;
 
 	// 1. check if the requested resource is directory
 	else if (requestPath.back() == '/')
 	{
 		std::cout<<"request path is directory"<<std::endl;
 		if (requestPath.length() == 1)
-		{
-			e->setResource("/");
-			e->setRoute(e->locationData->getRoot() + e->getResource());
-		}
+			e->internal_uri =  "/";
 		else
 		{
-			if (e->locationData->getUri() == requestPath)
-			{
-				/**
-				 * path : /test/
-				 * loc  : /test/
-				 * resource : /
-				 * route : root + /
-				 * */
-				e->setResource("/");
-				e->setRoute(e->locationData->getRoot() + e->getResource());
-			}
-			else if (e->locationData->getUri().back() == '/')
-			{
-				/**
-				 * request path is directory and location uri is directory
-				 * */
-				/**
-				 * path : /test/
-				 * loc  : /
-				 * resource : test/
-				 * route : root + / + test/
-				 * */
-				/**
-				 * path : /test/abc/
-				 * loc  : /test/
-				 * resource : abc/
-				 * route : root + / + abc/
-				 * */
-				std::cout<<"request path is directory and location uri is directory"<<std::endl;
-				tmp = requestPath.substr(1);
-				pos = tmp.find("/");
-				e->setResource(requestPath.substr(pos + 1));
-				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
-			}
-
-			else {
-				/**
-				 * request path is directory but location uri is not directory
-				 * */
-				/**
-				 * path : /test/
-				 * loc  : /t
-				 * resource : /
-				 * route : root + /
-				 * */
-				/**
-				 * path : /test/
-				 * loc  : /test
-				 * resource : /
-				 * route : root + /
-				 * */
-				/**
-				 * path : /test/abc/
-				 * loc  : /testasdfasdfa
-				 * resource : /abc/
-				 * route : root + /abc/
-				 * */
-				tmp = requestPath.substr(1);
-				std::cout<<tmp<<std::endl;
-				pos = tmp.find("/");
-				e->setResource(requestPath.substr(pos));
-				e->setRoute(e->locationData->getRoot() + e->getResource());
-			}
+			/**
+			 * request path is directory but location uri is not directory
+			 * */
+			/**
+			 * path : /test/
+			 * loc  : /t
+			 * resource : /
+			 * route : root + /
+			 * */
+			/**
+			 * path : /test/
+			 * loc  : /test
+			 * resource : /
+			 * route : root + /
+			 * */
+			/**
+			 * path : /test/abc/
+			 * loc  : /testasdfasdfa
+			 * resource : /abc/
+			 * route : root + /abc/
+			 * */
+			e->internal_uri = requestPath.substr(pos);
 		}
 	}
 	// 2. check if the requested resource is file
 	else
 	{
 		std::cout<<"request path is file"<<std::endl;
-		if (e->locationData->getUri().back() != '/')
+		if (pos == std::string::npos)
 		{
 			/**
-			 * request path is file and location uri is not directory
+			 * request path and location uri is equal
 			 * */
-			if (e->locationData->getUri() == requestPath)
-			{
-				/**
-				 * request path and location uri is equal
-				 * */
-				/**
-				 * path : /test
-				 * loc  : /test
-				 * resource : ""
-				 * route : root + ""
-				 * */
-				std::cout<<"1"<<std::endl;
-				e->setResource(requestPath.substr(1));
-				e->setRoute(e->locationData->getRoot() + "/" +e->getResource());
-			}
-			else if (
-					requestPath.substr(1)\
-					.find("/") == std::string::npos)
-			{
-				/**
-				 * resource identifier not exists
-				 * */
-				/**
-				 * path : /test
-				 * loc  : /t
-				 * resource : ""
-				 * route : root + ""
-				 * */
-				std::cout<<"2"<<std::endl;
-				e->setResource(requestPath.substr(1));
-				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
-			}
-			else {
-				/**
-				 * resource identifier exists
-				 * */
-				/**
-				 * path : /test/abc
-				 * loc  : /tes
-				 * resource : abc
-				 * route : root + / + abc
-				 * */
-				/**
-				 * path : /test/abc
-				 * loc  : /test
-				 * resource : abc
-				 * route : root + / + abc
-				 * */
-				std::cout<<"3"<<std::endl;
-				tmp = requestPath.substr(1);
-				pos = tmp.find("/");
-				e->setResource(tmp.substr(pos + 1));
-				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
-			}
+			/**
+			 * path : /test
+			 * loc  : /test
+			 * resource : ""
+			 * route : root + ""
+			 * */
+			std::cout<<"1"<<std::endl;
+			e->internal_uri = "";
 		}
-		else 
+		else
 		{
 			/**
-			 * request path is file but location uri is directory
+			 * resource identifier exists
 			 * */
 			/**
 			 * path : /test/abc
-			 * loc  : /test/
-			 * resource : abc
-			 * route : root + "/" + abc
+			 * loc  : /tes
+			 * resource : /abc
+			 * route : root + /abc
 			 * */
-			/**
-			 * path : /test/abc
-			 * loc  : /
-			 * resource : test/abc
-			 * route : root + test/abc
-			 * */
-				std::cout<<"request path is file and location uri is not directory"<<std::endl;
-			tmp = requestPath.substr(1);
-			pos = tmp.find("/");
-			if (pos == std::string::npos)
-				e->setResource("");
-			else
-				e->setResource(tmp.substr(pos + 1));
-			if (e->getResource().front() == '/')
-				e->setRoute(e->locationData->getRoot() + e->getResource());
-			else
-				e->setRoute(e->locationData->getRoot() + "/" + e->getResource());
+			std::cout<<"3"<<std::endl;
+			e->internal_uri = tmp.substr(pos);
 		}
 	}
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
-	std::cout<<"route: "<<e->getRoute()<<std::endl;
-	std::cout<<"resource: "<<e->getResource()<<std::endl;
+	std::cout<<"internal uri = "<<e->internal_uri<<std::endl;
 	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 }
 
@@ -370,7 +264,7 @@ void setRoute(Event *e)
 void EventLoop::ws_internalRedir(Event *e)
 {
 	setLocationData(e);
-	setRoute(e);
+	setInternalUri(e);
 }
 
 /**
@@ -459,7 +353,7 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * 8. process methods
 	 * */
-	int methodIndex = MethodFactory::getInstance().getMethodIndex(reqHandler->getRequestInfo().method);
+	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 	/**
 	 * if method == GET
 	 * */

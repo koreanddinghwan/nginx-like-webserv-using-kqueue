@@ -16,7 +16,7 @@ void setEnv(Event *e)
 	e->getCgiEnv()[9]->append("REMOTE_IDENT=");
 	e->getCgiEnv()[10]->append("REMOTE_USER=");
 	e->getCgiEnv()[11]->append("REQUEST_METHOD=").append(reqHandler->getRequestInfo().method);
-	e->getCgiEnv()[12]->append("SCRIPT_NAME=").append(e->getDir().append(e->locationData->getCgiPass()));
+	/* e->getCgiEnv()[12]->append("SCRIPT_NAME=").append(e->getDir().append(e->locationData->getCgiPass())); */
 	e->getCgiEnv()[13]->append("SERVER_NAME=").append(e->serverName);
 	char pt[10];
     sprintf(pt, "%d", e->getDefaultServerData()->getListen());
@@ -33,6 +33,7 @@ bool EventLoop::processCgi(Event *e)
 	/**
 	 * first, check if the cgi file exists
 	 * */
+	e->setRoute(e->locationData->getRoot() + e->locationData->getCgiPass());
 	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
 		std::cout << "stat error" << std::endl;
@@ -98,8 +99,10 @@ bool EventLoop::processCgi(Event *e)
 	if (pid)
 	{
 		//close write end
+		/* close(pipefd[1]); */
+
+		write(pipefd[1], "ttt\n", 4);
 		close(pipefd[1]);
-		pipefd[1] = -1;
 
 		e->setEventType(E_PIPE);
 		//unregisterClientSocketReadEvent(e);

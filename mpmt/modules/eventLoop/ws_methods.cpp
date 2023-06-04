@@ -2,14 +2,41 @@
 
 void EventLoop::ws_method_GET(Event *e)
 {
+	std::cout<<"=============================="<<std::endl;
 	std::cout<<"method is GET or HEAD"<<std::endl;
-	/**
-	 * 1. check if the requested resource is directory
-	 * */
-	if (e->getRoute().back() == '/')
+	std::cout<<"root + internal uri: "<<std::endl;
+	std::cout<<e->locationData->getRoot() + e->internal_uri<<std::endl;
+	if ((stat((e->locationData->getRoot() + e->internal_uri).c_str(), &e->statBuf) == 0) &&
+			(e->statBuf.st_mode & S_IFREG) &&
+			(e->file_fd = open((e->locationData->getRoot() + e->internal_uri).c_str(), O_RDONLY)) != -1)
 	{
-		// process directory
-		// 1. first, check index
+		if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
+		{
+			std::cout<<"fcntl error"<<std::endl;
+			e->setStatusCode(500);
+			errorCallback(e);
+			return ;
+		}
+		
+		if (e->statBuf.st_size == 0)
+		{
+			std::cout<<"file size is 0"<<std::endl;
+			e->setStatusCode(204);
+			unregisterClientSocketReadEvent(e);
+			registerClientSocketWriteEvent(e);
+			return ;
+		}
+		e->setStatusCode(200);
+		unregisterClientSocketReadEvent(e);
+		registerFileReadEvent(e);
+		return ;
+	}
+	else
+	{
+		/* std::cout<<"file open error"<<std::endl; */
+		/* e->setStatusCode(404); */
+		/* errorCallback(e); */
+		/* return ; */
 		if (!(e->locationData->getIndex().empty()))
 		{
 			std::cout<<"check index setted"<<std::endl;
@@ -21,16 +48,14 @@ void EventLoop::ws_method_GET(Event *e)
 				 * file open처리는 다시 internal 리디렉션된 이벤트에서 처리
 				 * */
 				std::cout<<"internal redirection"<<std::endl;
-				e->getResource().clear();
-				e->getRoute().clear();
 				setHttpResponse(e);
-				return;
+				return ;
 			}
 		}
 		/**
 		 * index module에서 처리 못하면 autoindex에서 처리
 		 * */
-		if (e->locationData->getAutoIndex())
+		if (e->internal_uri.back() == '/' && e->locationData->getAutoIndex())
 		{
 			std::cout<<"check autoindex setted"<<std::endl;
 			if (ws_HttpAutoIndexModule::processEvent(e))
@@ -43,72 +68,10 @@ void EventLoop::ws_method_GET(Event *e)
 				return ;
 			}
 		}
-		/**
-		 * /로 끝나지만, index도 없고 autoindex도 없으면 404
-		 * */
-		std::cout<<"route endwith / but index not setted"<<std::endl;
+		std::cout<<"file open error"<<std::endl;
 		e->setStatusCode(404);
 		errorCallback(e);
 		return ;
-	}
-	/**
-	 * resource is file
-	 * */
-	else 
-	{
-		std::cout<<"resource is file"<<std::endl;
-		
-		if (e->getResource() == "")
-		{
-			std::cout<<"resource is empty"<<std::endl;
-			e->setStatusCode(404);
-			errorCallback(e);
-			return ;
-		}
-
-		if ((stat(e->getRoute().c_str(), &e->statBuf) == 0) &&
-				(e->file_fd = open(e->getRoute().c_str(), O_RDONLY)) != -1)
-		{
-			if (e->statBuf.st_mode & S_IFDIR)
-			{
-				std::cout<<"resource is directory"<<std::endl;
-				if (e->getResource() == "Yeah")
-					e->setStatusCode(404);
-				else 
-					e->setStatusCode(204);
-				unregisterClientSocketReadEvent(e);
-				registerClientSocketWriteEvent(e);
-				return ;
-			}
-
-			if (fcntl(e->file_fd, F_SETFL, O_NONBLOCK) == -1)
-			{
-				std::cout<<"fcntl error"<<std::endl;
-				e->setStatusCode(500);
-				errorCallback(e);
-				return ;
-			}
-			
-			if (e->statBuf.st_size == 0)
-			{
-				std::cout<<"file size is 0"<<std::endl;
-				e->setStatusCode(204);
-				unregisterClientSocketReadEvent(e);
-				registerClientSocketWriteEvent(e);
-				return ;
-			}
-			e->setStatusCode(200);
-			unregisterClientSocketReadEvent(e);
-			registerFileReadEvent(e);
-			return ;
-		}
-		else
-		{
-			std::cout<<"file open error"<<std::endl;
-			e->setStatusCode(404);
-			errorCallback(e);
-			return ;
-		}
 	}
 }
 
@@ -144,9 +107,5 @@ void EventLoop::ws_method_DELETE(Event *e)
 	 * check if the resource exists
 	 * */
 	std::string filePath;
-	if (e->getResource().front() == '/')
-		filePath = e->locationData->getRoot() + e->getResource();
-
-
-
+	filePath = e->locationData->getRoot() + e->internal_uri;
 }
