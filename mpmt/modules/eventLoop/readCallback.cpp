@@ -180,13 +180,14 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			std::cout<<"PIPE::EOF"<<std::endl;
 			//pipe의 writer는 즉 cgi process임.
 			//이제 이 fd는 close해도 됨.
+			unregisterPipeWriteEvent(e_udata);
 			unregisterPipeReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
 			return;
 		}
 
 		//read from pipe
-		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1023);
+		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, 65534);
 		std::cout<<"read len = " <<read_len<<std::endl;
 		std::cout<<"pipe readable data size:"<<e->data<<std::endl;
 		if (read_len == -1)
@@ -197,7 +198,9 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//관련 exception 처리 필요
 				//event 삭제?
 			{
+				std::cout<<"pipe read error. read len is -1, errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
+				unregisterPipeWriteEvent(e_udata);
 				unregisterPipeReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
 				return;
@@ -208,12 +211,13 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//pipe의 writer는 즉 cgi process임.
 				//이제 이 fd는 close해도 됨.
 				unregisterPipeReadEvent(e_udata);
+				unregisterPipeWriteEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
 				return;
 			}
 		else
 		{
-			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+			EventLoop::getInstance().pipeBuffer[read_len] = '\0';
 			/**
 			 * @Todo pipe data와 현재 읽은 length의 비교 필요.
 			 * 10m의 데이터가 버퍼로 들어온다고했을때, client socket에 주기적으로 작성해야하는가?
@@ -222,13 +226,13 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			 * */
 			//read from pipe
 			std::cout<<"[[[[[[[PIPE READ START]]]]]]]]"<<std::endl;
-			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
+			std::cout<<EventLoop::getInstance().pipeBuffer<<std::endl;
 			std::cout<<"[[[[[[[PIPE READ END]]]]]]]]"<<std::endl;
 
 			/**
 			 * response body에 읽은 데이터 추가.
 			 * */
-			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(EventLoop::getInstance().pipeBuffer);
 		}
 	}
 }
