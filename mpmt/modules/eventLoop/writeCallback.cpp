@@ -74,12 +74,54 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 {
+	std::cout << "\033[35m"; 
+	std::cout<<"pipe Write callback"<<std::endl;
+	if (e_udata->getServerType() == HTTP_SERVER)
+	{
+		/**
+		 * todo : file size
+		 * */
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length();
 
+		/**
+		 * todo : file buffer
+		 * */
+		int wroteByte = write(e_udata->PtoCPipe[1], static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str() + e_udata->fileWroteByte, fileSize - e_udata->fileWroteByte);
 
+		if (wroteByte == -1)
+		{
+			if (errno == EAGAIN)
+			{
+				std::cout<<"there are no data to be read"<<std::endl;
+				return;
+			}
+			else
+			{
+				std::cout<<"UNKNOWN ERROR"<<std::endl;
+				std::cout<<"Errno: "<<errno<<std::endl;
+				e_udata->setStatusCode(500);
+				unregisterPipeWriteEvent(e_udata);
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+			}
+		}
+		else
+		{
+			//update wrote byte
+			e_udata->fileWroteByte += wroteByte;
 
+			//if all the data wrote, unregister write event
+			// change if (u_udata->getRequestHandler->getRequestInfo.fileEOF &&)
+			if (e_udata->fileWroteByte == fileSize)
+			{
+				//end
+				e_udata->setStatusCode(201);
+				unregisterPipeWriteEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+			}
+		}
 
-
-
+	}
 }
 
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
