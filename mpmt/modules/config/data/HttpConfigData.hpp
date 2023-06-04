@@ -53,7 +53,7 @@ public:
 	HttpConfigData(HttpConfigData &c);
 
 	int		getClientMaxBodySize() const;
-	std::map<int, std::string> getErrorPage() const;
+	const std::map<int, std::string> &getErrorPage() const;
 	std::string getRoot() const;
 	bool	getSendFile() const;
 	bool	getTcpNoDelay() const;
