@@ -1,10 +1,11 @@
 #include "HttpreqHandler.hpp"
+#include "../http/HttpServer.hpp"
 #include <stdexcept>
 
 void *HttpreqHandler::handle(void *data) 
 {
 	_event = static_cast<Event *>(data);
-	std::string req = _event->getBuffer()->erase(_event->readByte);
+	std::string req = HttpServer::getInstance().getHttpBuffer();
 	/*
 	 처음 들어온 req massage
 	*/
@@ -48,7 +49,7 @@ void HttpreqHandler::initMessageState(void)
 		{	
 			_messageState = chunked;
 			_bodyPended = true;
-			_chunkedWithoutBodyBuf.append(_buf);
+			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
 		}
 		else
 		{
@@ -300,6 +301,13 @@ int convertHexToDec(std::string line)
 			case 'D' : c = "13"; break;
 			case 'E' : c = "14"; break;
 			case 'F' : c = "15"; break;
+		
+			case 'a' : c = "10"; break;
+			case 'b' : c = "11"; break;
+			case 'c' : c = "12"; break;
+			case 'd' : c = "13"; break;
+			case 'e' : c = "14"; break;
+			case 'f' : c = "15"; break;
 			default: break;
 		}
 		hex = std::strtod(c, &endptr);
