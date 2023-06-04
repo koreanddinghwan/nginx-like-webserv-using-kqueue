@@ -74,10 +74,7 @@ void HttpLocationData::setLimitedMethods(std::vector<std::string> r)
 	{
 		//allowing get also allow head. check nginx documentation that representate `limit_except`
 		if (r[i] == "GET")
-		{
-			this->lim_methods.methods[HEAD] = ALLOW;
 			this->lim_methods.methods[GET] = ALLOW;
-		}
 		else if (r[i] == "HEAD")
 			this->lim_methods.methods[HEAD] = ALLOW;
 		else if (r[i] == "POST")

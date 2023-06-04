@@ -28,10 +28,12 @@ int main(void)
 		Res->setResBody("======================================\n");
 		i++;
 	} */
-	Res->setResBody("");
-	Res->setResStatusCode(301);
-	Res->setResStatusMsg(301);
-
+	Res->setResBody("qweqweqweqweqweqwe");
+	std::cout << Res->getResBody() << "===================="<<std::endl;
+	
+	Res->setResStatusCode(200);
+	Res->setResStatusMsg(200);
+	Res->getResBody().clear();
 	//Event *event = new Event(HTTP_SERVER);
 
 	Res->handle(NULL);

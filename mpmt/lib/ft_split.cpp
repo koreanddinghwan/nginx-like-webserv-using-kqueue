@@ -47,7 +47,7 @@ void ft_split::makeWordRemoveSemiColon(int p_index, char const *s, char c)
 	int i = 0;
 	std::string str;
 
-	while (s[i] && s[i] != c && s[i] != ';')
+	while (s[i] && (s[i] != c && s[i] != '\t') && s[i] != ';')
 		str.push_back(s[i++]);
 	p.push_back(str);
 }
@@ -62,12 +62,12 @@ int	ft_split::ft_wd_cnt(char *str, char c)
 		return (1);
 	while (*str)
 	{
-		while (*str && (*str == c))
+		while (*str && ((*str == c) || *str  == '\t'))
 			str++;
 		if (*str != 0)
 		{
 			count++;
-			while (*str && (*str != c))
+			while (*str && !((*str == c) || *str  == '\t'))
 				str++;
 		}
 	}
@@ -85,11 +85,11 @@ std::vector<std::string> ft_split::splitRemoveSemiColon(char const *s, char c)
 	p_index = 0;
 	while (*s)
 	{
-		while (*s && (*s == c))
+		while (*s && ((*s == c) || *s  == '\t'))
 			s++;
 		if (*s != 0)
 			makeWordRemoveSemiColon(p_index++, s, c);
-		while (*s && !(*s == c))
+		while (*s && !((*s == c) || *s  == '\t'))
 			s++;
 	}
 	return (p);

@@ -18,7 +18,7 @@
 		confData.setClientMaxBodySize(std::atoi(s.get()[1].c_str()));
 	}
 
-	if (buf.find("error_page") != std::string::npos)
+	else if (buf.find("error_page") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		for (int i = 1; i < s.get().size() - 1; i++)
@@ -27,27 +27,27 @@
 		}
 	}
 
-	if (buf.find("root") != std::string::npos)
+	else if (buf.find("root") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		confData.setRoot(s.get()[1]);
 	}
 
-	if (buf.find("sendfile") != std::string::npos) 
+	else if (buf.find("sendfile") != std::string::npos) 
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		if (s.get()[1] == "on")
 			confData.setSendFile(true);
 	}
 
-	if (buf.find("tcp_nodelay") != std::string::npos) 
+	else if (buf.find("tcp_nodelay") != std::string::npos) 
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		if (s.get()[1] == "off")
 			confData.setTcpNoDelay(false);
 	}
 
-	if (buf.find("tcp_nopush") != std::string::npos)
+	else if (buf.find("tcp_nopush") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		if (s.get()[1] == "on")
@@ -57,7 +57,7 @@
 	/*
 	 * getcwd -> opendir -> readdir
 	 * */
-	if (buf.find("autoindex") != std::string::npos)
+	else if (buf.find("autoindex") != std::string::npos)
 	{
 		s.split(buf.c_str(), ' ');
 		if (s.get()[1] == "on;")
@@ -66,11 +66,14 @@
 			confData.setAutoIndex(false);
 	}
 
-	if (buf.find(" index ") != std::string::npos)
+	else if (buf.find("index ") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		for (int i = 1; i < s.get().size(); i++)
+		{
+			std::cout<<s.get()[i]<<std::endl;
 			confData.setIndex(s.get()[i]);
+		}
 	}
 }
 
