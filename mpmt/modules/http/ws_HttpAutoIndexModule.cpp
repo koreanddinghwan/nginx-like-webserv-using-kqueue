@@ -31,7 +31,8 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 				list.push_back(tmp + "/");
 			}
 			else {
-				path = e->getResource() + ent->d_name;
+				path = e->internal_uri;
+				path.back() == '/' ? path = path + "/" + ent->d_name  :  path += ent->d_name;
 				if (path.front() == '/')
 					path = path.substr(1);
 				stat((e->getRoute() + ent->d_name).c_str(), &(e->statBuf));

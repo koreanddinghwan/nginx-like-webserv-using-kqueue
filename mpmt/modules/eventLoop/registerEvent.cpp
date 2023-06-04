@@ -62,12 +62,12 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 		throw std::runtime_error("Failed to register client socket write with kqueue\n");
 }
 
-/* void EventLoop::registerPipeWriteEvent(Event *e) */
-/* { */
-/* 	EV_SET(&(dummyEvent), e->getPipeFd()[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e); */
-/* 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) */ 
-/* 		throw std::runtime_error("Failed to register pipe write with kqueue\n"); */
-/* } */
+void EventLoop::registerPipeWriteEvent(Event *e)
+{
+	EV_SET(&(dummyEvent), e->getPipeFd()[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+		throw std::runtime_error("Failed to register pipe write with kqueue\n");
+}
 
 void EventLoop::registerFileWriteEvent(Event *e)
 {

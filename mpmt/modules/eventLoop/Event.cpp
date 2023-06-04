@@ -252,32 +252,6 @@ std::string &Event::getRoute()
 void Event::setRoute(std::string t)
 {this->route = t;}
 
-std::string&	Event::getDir()
-{return this->dir;}
-void			Event::setDir(std::string t)
-{this->dir = t;}
-
-std::string&	Event::getResource()
-{return this->resource;}
-void			Event::setResource(std::string t)
-{this->resource = t;}
-
-void Event::separateResourceAndDir()
-{
-	int slashIndex = this->route.rfind('/');
-
-	if (slashIndex == this->route.length() - 1)
-	{
-		this->setDir(this->route.substr(0, slashIndex - 1));
-		this->setResource("/");
-	}
-	else
-	{
-		this->setDir(this->route.substr(0, slashIndex - 1));
-		this->setResource(this->route.substr(slashIndex + 1));
-	}
-}
-
 /**
  * @brief client socket write전에 status code보고 errorpage세팅하는 함수.
  *
