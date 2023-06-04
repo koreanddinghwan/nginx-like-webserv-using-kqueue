@@ -37,11 +37,26 @@ void Response::setStatusCode(int statusCode) {
 //객체를 받아서 스트림 그자체로 쓸 수도 있음.
 
 void Response::setHeaders(std::string httpV) {
-	this->_headers = httpV + " " + toString(this->_statusCode) + " " + this->_statusMsg + "\r\n" + "Content-Type: " + "text/html; charset=utf-16" + "\r\n";
+	this->_headers = httpV + " " + toString(this->_statusCode) + " " + this->_statusMsg + "\r\n" + "Content-Type: " + "text/html; charset=utf-8" + "\r\n";
 	if ((this->_statusCode == 301 && this->_location != "") || (this->_statusCode == 302 && this->_location != ""))
 		this->_headers += "Location: " + this->_location + "\r\n";
 	this->_headers += "Content-Length: ";
-	this->_body != "" ? this->_headers += toString(this->_body.size()) + "\r\n\r\n" : this->_headers += "0\r\n\r\n";
+	/* this->_body != "" ? this->_headers += toString(this->_body.size()) + "\r\n\r\n" : this->_headers += "0\r\n\r\n"; */
+	if (this->_body == "") {
+		this->_headers += "0\r\n\r\n";
+	}
+	else if (this->_body != "" && this->_body.find("Status: 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n") != std::string::npos) {
+	 	std::string tmp = this->getBody().substr(58);
+		this->_body = tmp;
+		if (this->getBody().size() > 58) {
+			this->_headers += toString(this->_body.size()) + "\r\n\r\n";
+		}
+		else {
+			this->_headers += "0\r\n\r\n";
+		}
+	} else {
+		this->_headers += toString(this->_body.size()) + "\r\n\r\n";
+	}
 }	
 void Response::setLocation(std::string location) {
 	this->_location = location;
