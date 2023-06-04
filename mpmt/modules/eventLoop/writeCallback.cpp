@@ -72,7 +72,16 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 	}
 }
 
-void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata){}
+void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
+{
+
+
+
+
+
+
+}
+
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[33m"; 

@@ -47,6 +47,7 @@ void HttpreqHandler::splitChunked(void)
 	int pos = 0, len = 0;
 	int endPos = _bodyBuf.length() - 5;
 	std::string line, buf;
+    std::stringstream ss;
 	
 	while (pos != endPos)
 	{
@@ -60,6 +61,8 @@ void HttpreqHandler::splitChunked(void)
 		_contentLength += len;
 		buf.append(line);
 	}
+    ss << _contentLength;
+    _info.contentLength = ss.str();
 	_bodyBuf.clear();
 	_bodyBuf = buf;
 }
@@ -91,7 +94,7 @@ void HttpreqHandler::parseChunked(std::string req)
 		splitChunked();
 		_buf.clear();
 		_buf.append(_chunkedWithoutBodyBuf);
-		_buf.append(_bodyBuf);
+		_buf.append(_bodyBuf);		
 	}
 }
 

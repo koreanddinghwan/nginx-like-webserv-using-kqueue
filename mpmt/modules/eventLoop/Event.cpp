@@ -13,6 +13,7 @@ Event::Event(t_ServerType t)
 	this->file_fd = -1;
 	this->serverType = t;
 	this->statusCode = -1;
+	this->internal_status = -1;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -251,30 +252,26 @@ std::string &Event::getRoute()
 void Event::setRoute(std::string t)
 {this->route = t;}
 
-std::string&	Event::getDir()
-{return this->dir;}
-void			Event::setDir(std::string t)
-{this->dir = t;}
-
-std::string&	Event::getResource()
-{return this->resource;}
-void			Event::setResource(std::string t)
-{this->resource = t;}
-
-void Event::separateResourceAndDir()
+/**
+ * @brief client socket write전에 status code보고 errorpage세팅하는 함수.
+ *
+ * internal_uri에 errorpage를 넣고,
+ * internal_method에 GET을 넣는다.
+ * 이 internal_uri, method는 내부 location blcok 찾는 처리에서만 사용된다.
+ * @return true if setted or false if not setted 
+ */
+bool Event::setErrorPage()
 {
-	int slashIndex = this->route.rfind('/');
-
-	if (slashIndex == this->route.length() - 1)
+	if (this->statusCode >= 400)
 	{
-		this->setDir(this->route.substr(0, slashIndex - 1));
-		this->setResource("/");
+		if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
+		{
+			this->internal_uri = this->locationData->getErrorPage().find(this->statusCode)->second;
+			this->internal_method = "GET";
+			return true;
+		}
 	}
-	else
-	{
-		this->setDir(this->route.substr(0, slashIndex - 1));
-		this->setResource(this->route.substr(slashIndex + 1));
-	}
+	return false;
 }
 
 std::vector<std::string*> &Event::getCgiEnv()

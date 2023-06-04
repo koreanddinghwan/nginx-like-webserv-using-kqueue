@@ -37,7 +37,7 @@ void Response::setStatusCode(int statusCode) {
 //객체를 받아서 스트림 그자체로 쓸 수도 있음.
 
 void Response::setHeaders(std::string httpV) {
-	this->_headers = httpV + " " + toString(this->_statusCode) + " " + this->_statusMsg + "\r\n" + "Content-Type: " + "text/html" + "\r\n";
+	this->_headers = httpV + " " + toString(this->_statusCode) + " " + this->_statusMsg + "\r\n" + "Content-Type: " + "text/html; charset=utf-8" + "\r\n";
 	if ((this->_statusCode == 301 && this->_location != "") || (this->_statusCode == 302 && this->_location != ""))
 		this->_headers += "Location: " + this->_location + "\r\n";
 	this->_headers += "Content-Length: ";

@@ -8,7 +8,7 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 	/**
 	 * POST method do not allow create directory
 	 * */
-	if (e->getResource().back() == '/')
+	if (e->internal_uri == "/")
 	{
 		// 400? 403?
 		std::cout<<"do not allow dir creation"<<std::endl;
@@ -17,10 +17,10 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 	}
 
 	std::string filePath;
-	if (e->getResource().front() == '/')
-		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + e->getResource();
+	if (e->internal_uri[0] == '/')
+		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + e->internal_uri;
 	else
-		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + "/"+ e->getResource();
+		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + "/" + e->internal_uri;
 	std::cout<<"upload file path: "<<filePath<<std::endl;
 	if((e->file_fd = open(filePath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644)) == -1)
 	{
