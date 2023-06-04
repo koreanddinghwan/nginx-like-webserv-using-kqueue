@@ -100,13 +100,14 @@ private:
 	HttpServerData *defaultServerData;
 
 	std::string route;
-	std::string dir;
-	std::string resource;
 	std::string *buffer;
 	int statusCode;
 	std::vector<std::string *> cgiEnv;
 
 public:
+	int 		internal_status;
+	std::string internal_method;
+	std::string internal_uri;
 	int file_fd;
 	/**
 	 * @breif 현재 이벤트의 locationData
@@ -143,9 +144,10 @@ public:
 	void setServerDataByPort(int port);
 	void setServerData(std::vector<HttpServerData *> *t);
 	void setDefaultServerData(HttpServerData *t);
-	void setResource(std::string t);
-	void setDir(std::string t);
-	void separateResourceAndDir();
+	/**
+	 * @brief status code보고 error page설정.
+	 */
+	bool setErrorPage();
 
 public:
 	/**
