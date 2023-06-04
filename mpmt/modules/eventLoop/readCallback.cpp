@@ -116,7 +116,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 		{
-			HttpServer::getInstance().getStringBuffer() = HttpServer::getInstance().getHttpBuffer();
+			HttpServer::getInstance().getStringBuffer()->clear();
+			//read from client socket
+			for (int i = 0; i < read_len; i++)
+				HttpServer::getInstance().getStringBuffer()->push_back(HttpServer::getInstance().getHttpBuffer()[i]);
 			e_udata->readByte = read_len;
 
 			std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl;
@@ -126,7 +129,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
-			e_udata->setBuffer(&HttpServer::getInstance().getStringBuffer());
+			e_udata->setBuffer(HttpServer::getInstance().getStringBuffer());
 			try {
 				std::cout<<"use handle"<<std::endl;
 				reqHandler->handle(e_udata);
@@ -212,6 +215,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		ssize_t read_len = read(e_udata->getPipeFd()[0], HttpServer::getInstance().getHttpBuffer(), 1024);
 		HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 		std::cout<<"read len = " <<read_len<<std::endl;
+		std::cout<<"pipe readable data size:"<<e->data<<std::endl;
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -219,7 +223,12 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			else
 				//관련 exception 처리 필요
 				//event 삭제?
-				throw std::runtime_error("Failed to read from pipe, unknown err\n");
+			{
+				e_udata->setStatusCode(500);
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return;
+			}
 		}
 		else if (read_len == 0)
 			{
@@ -231,11 +240,16 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			}
 		else
 		{
+			/**
+			 * @Todo pipe data와 현재 읽은 length의 비교 필요.
+			 * 10m의 데이터가 버퍼로 들어온다고했을때, client socket에 주기적으로 작성해야하는가?
+			 * 아니면 한번에 작성해야하는가?
+			 * header에 content-length같은 거 설정해야하는데, client socket에 주기적으로 작성하는게 가능한가?
+			 * */
 			//read from pipe
 			std::cout<<"[[[[[[[PIPE READ START]]]]]]]]"<<std::endl;
 			std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
 			std::cout<<"[[[[[[[PIPE READ END]]]]]]]]"<<std::endl;
-
 
 			/**
 			 * response body에 읽은 데이터 추가.

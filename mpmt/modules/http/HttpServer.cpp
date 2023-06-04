@@ -27,7 +27,7 @@ std::vector<struct kevent> & HttpServer::getKevents() { return this->kevents; }
 
 
 char* HttpServer::getHttpBuffer() { return this->HttpBuffer; }
-std::string &HttpServer::getStringBuffer() { return *(this->stringBuffer); }
+std::string *HttpServer::getStringBuffer() { return (this->stringBuffer); }
 
 HttpServer::HttpServer() {}
 HttpServer::~HttpServer() {}
