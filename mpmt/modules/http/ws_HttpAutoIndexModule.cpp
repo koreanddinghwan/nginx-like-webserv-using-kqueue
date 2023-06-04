@@ -16,6 +16,8 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 
 	std::vector<std::string> list;
 
+	e->setRoute(e->locationData->getRoot() + e->internal_uri);
+	std::cout<<e->getRoute()<<std::endl;
 	DIR *dir = opendir(e->getRoute().c_str());
 	if (dir)
 	{
