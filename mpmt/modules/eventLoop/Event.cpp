@@ -4,7 +4,7 @@ Event::Event(t_ServerType t)
 {
 	this->cgiEnv.resize(20);
 	for (int i =0; i < 20; i++)
-		this->cgiEnv[i] = new std::string();
+		this->cgiEnv[i] = new char[100];
 	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
@@ -256,7 +256,7 @@ bool Event::setErrorPage()
 	return false;
 }
 
-std::vector<std::string*> &Event::getCgiEnv()
+std::vector<char *> &Event::getCgiEnv()
 {
 	return this->cgiEnv;
 }

@@ -101,7 +101,7 @@ private:
 	std::string route;
 	std::string *buffer;
 	int statusCode;
-	std::vector<std::string *> cgiEnv;
+	std::vector<char *> cgiEnv;
 
 public:
 	/**
@@ -195,7 +195,7 @@ public:
 
 	std::string&	getDir();
 	std::string&	getResource();
-	std::vector<std::string *>& getCgiEnv();
+	std::vector<char *>& getCgiEnv();
 
 private:
 	Event(Event &e);

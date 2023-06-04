@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <sys/event.h>
+# define HTTPBUFFER_SIZE 8192
 
 class HttpServer : public IServer {
 private:
@@ -34,7 +35,7 @@ private:
 	//https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
 	//default : 1024 for header
 	//default : 1m(1024kb)== 1048576 for body
-	char HttpBuffer[1024];
+	char HttpBuffer[HTTPBUFFER_SIZE];
 
 public:
   /**
