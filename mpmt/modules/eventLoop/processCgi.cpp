@@ -91,7 +91,15 @@ void setEnv(Event *e)
 	e->getCgiEnv()[14] = strdup(("SERVER_PORT=" + tmp).c_str());
 	e->getCgiEnv()[15] = strdup("SERVER_PROTOCOL=HTTP/1.1");
 	e->getCgiEnv()[16] = strdup("SERVER_SOFTWARE=webserv/1.0");
-	e->getCgiEnv()[17] = NULL;
+	if (reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test") != reqHandler->getRequestInfo().reqHeaderMap.end())
+	{
+		e->getCgiEnv()[17] = strdup(("HTTP_X_SECRET_HEADER_FOR_TEST=" + reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test")->second).c_str());
+		e->getCgiEnv()[18] = NULL;
+	}
+	else 
+	{
+		e->getCgiEnv()[17] = NULL;
+	}
 }
 
 bool EventLoop::processCgi(Event *e)

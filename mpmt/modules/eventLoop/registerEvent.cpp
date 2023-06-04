@@ -89,7 +89,7 @@ void EventLoop::registerFileWriteEvent(Event *e)
 void EventLoop::unregisterClientSocketReadEvent(Event *e)
 {
 	std::cout<<"unregister client socket read event"<<std::endl;
-	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
+	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket read with kqueue\n");
 }

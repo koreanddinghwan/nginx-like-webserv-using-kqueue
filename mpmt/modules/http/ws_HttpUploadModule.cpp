@@ -22,6 +22,18 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 	else
 		filePath = e->locationData->getRoot() + "/" + e->locationData->getUploadStore() + "/" + e->internal_uri;
 	std::cout<<"upload file path: "<<filePath<<std::endl;
+	if (filePath.back() == '/')
+	{
+		std::cout<<"do not allow dir creation"<<std::endl;
+		e->setStatusCode(204);
+		return false;
+	}
+	if (stat(filePath.c_str(), &e->statBuf) == 0 &&
+			e->statBuf.st_mode & S_IFDIR)
+	{
+		e->setStatusCode(204);
+		return false;
+	}
 	if((e->file_fd = open(filePath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644)) == -1)
 	{
 		std::cout<<"cannot open file"<<std::endl;
