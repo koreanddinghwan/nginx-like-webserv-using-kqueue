@@ -33,10 +33,6 @@ void EventLoop::ws_method_GET(Event *e)
 	}
 	else
 	{
-		/* std::cout<<"file open error"<<std::endl; */
-		/* e->setStatusCode(404); */
-		/* errorCallback(e); */
-		/* return ; */
 		if (!(e->locationData->getIndex().empty()))
 		{
 			std::cout<<"check index setted"<<std::endl;
