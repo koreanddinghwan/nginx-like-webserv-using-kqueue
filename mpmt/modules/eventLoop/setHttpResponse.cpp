@@ -207,7 +207,7 @@ void setInternalUri(Event *e)
 			 * resource : /abc/
 			 * route : root + /abc/
 			 * */
-			e->internal_uri = requestPath.substr(pos);
+			e->internal_uri = tmp.substr(pos);
 		}
 	}
 	// 2. check if the requested resource is file
