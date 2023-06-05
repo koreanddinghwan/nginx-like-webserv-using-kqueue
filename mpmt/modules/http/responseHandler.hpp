@@ -21,6 +21,8 @@ public:
 	void setResAddtionalOptions(Event *event) const;
 	void setResStatusCode(const int& statusCode) const;
 	void setResStatusMsg(const int& statusCode) const;
+	void setResCookie(std::string cookieString) const;
+
 	void setResBuf() const;
 	std::string& getResBody() const;
 	std::string& getResHeader() const;

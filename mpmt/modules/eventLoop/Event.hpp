@@ -135,7 +135,7 @@ public:
 	struct stat statBuf;
 	int fileReadByte;
 	int fileWroteByte;
-
+	unsigned int sid;
 
 public:
 	void (*callback)(struct kevent *e, Event* ev);

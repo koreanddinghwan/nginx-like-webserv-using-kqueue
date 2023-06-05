@@ -14,7 +14,7 @@ Response& Response::operator=(const Response &rhs) {
     return (*this);
 }
 
-std::string toString(int n) {
+std::string toString(size_t n) {
 	std::string tmp;
 
 	while (n > 0) {
@@ -24,6 +24,7 @@ std::string toString(int n) {
 	reverse(tmp.begin(), tmp.end());
 	return (tmp); 
 }
+
 void Response::setCgiBody(std::string const &substr) {
 	this->_body.erase();
 	this->_body += substr; 
@@ -36,6 +37,10 @@ void Response::setStatusMsg(int statusCode) {
 
 void Response::setStatusCode(int statusCode) {
 	this->_statusCode = statusCode;
+}
+
+void Response::setCookie(std::string const &cookie) {
+	this->_cookie += cookie;
 }
 //객체를 받아서 스트림 그자체로 쓸 수도 있음.
 
@@ -56,6 +61,8 @@ void Response::setHeaders(std::string const &httpV) {
 
 	if ((this->_statusCode == 301 && this->_location != "") || (this->_statusCode == 302 && this->_location != ""))
 		this->_headers += "Location: " + this->_location + "\r\n";
+	if (this->getCookie().find("Set-Cookie") != std::string::npos)
+		this->_headers += this->getCookie();
 	this->_headers += "Content-Length: ";
 
 	/* this->_body != "" ? this->_headers += toString(this->_body.size()) + "\r\n\r\n" : this->_headers += "0\r\n\r\n"; */
@@ -82,4 +89,5 @@ std::string& Response::getBody(){ return this->_body;};
 std::string& Response::getHeader() { return this->_headers;};
 std::string& Response::getBuf() {return this->_buf; };
 std::string& Response::getStatusMsg() { return this->_statusMsg; };
+std::string& Response::getCookie() { return this->_cookie; };
 int Response::getStatusCode() const { return this->_statusCode; };
