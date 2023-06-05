@@ -80,8 +80,7 @@ private:
 	void saveSid(std::string key, std::string value);
 
 	//parse
-	//void parse(void);
-	void parseWithoutBody(void);
+	void parse(void);
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);
@@ -102,6 +101,7 @@ private:
 	//undefine
 	void parseUndefined(void);
 	
+
 	void appendBuf(std::string buf);
 	std::string getBuf(void) const;
 

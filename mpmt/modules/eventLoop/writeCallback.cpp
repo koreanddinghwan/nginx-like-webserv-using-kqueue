@@ -39,8 +39,6 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		 * */
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
-		std::cout<<"PPPPPPPPPP"<<std::endl;
-		write(1, static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
