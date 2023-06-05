@@ -29,6 +29,10 @@ private:
 	 */
 	std::vector<struct kevent> kevents;
 
+	/**
+	 * session
+	 * */
+	std::map<int, int> _session;
 
 	//1024로 설정. 나중에 수정 필요
 	//nginx의 client_body_buffer_size, client_header_buffer_size 확인할 것.
@@ -60,6 +64,10 @@ public:
    * @return char * of http buffer
    */
   char* getHttpBuffer();
+
+  /**
+   * */
+  unsigned int issueSessionId();
 
 private:
   HttpServer(); 
