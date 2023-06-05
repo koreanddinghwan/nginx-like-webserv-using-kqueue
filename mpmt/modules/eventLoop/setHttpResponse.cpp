@@ -73,8 +73,6 @@ bool setLocationData(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
-	std::cout<<"============setting location data============="<<std::endl;
-
 	std::string requestPath = e->internal_uri;
 	e->locationData = NULL;
 	int matchScore = -1;
@@ -103,12 +101,9 @@ bool setLocationData(Event *e)
 
 	if (!e->locationData)
 	{
-		std::cout<<"no location data"<<std::endl;
 		e->setStatusCode(404);
 		return false;
 	}
-	std::cout<<"============location setted============="<<std::endl;
-	e->locationData->printLocationData();
 	return true;
 }
 
@@ -121,17 +116,11 @@ bool setLocationData(Event *e)
  */
 bool checkAllowedMethods(Event *e) throw (std::exception)
 {
-	std::cout<<"check allowed methods"<<std::endl;
-	std::cout<<"method:: "<<e->internal_method<<std::endl;
-
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 
-	std::cout<<methodIndex<<std::endl;
-	std::cout<<e->locationData->getLimitedMethods().methods[methodIndex]<<std::endl;
 	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
 	{
-		std::cout<<"method not allowed"<<std::endl;
 		/**
 		 * 405: "method not allowed"
 		 **/
@@ -144,9 +133,6 @@ bool checkAllowedMethods(Event *e) throw (std::exception)
 bool checkClientMaxBodySize(Event *e) throw(std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	std::cout<<"check client max body size"<<std::endl;
-	std::cout<<"body length = "<<reqHandler->getRequestInfo().body.length()<<std::endl;
-	std::cout<<"client max body size = "<<e->locationData->getClientMaxBodySize()<<std::endl;
 	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length()))
 	{
 		e->setStatusCode(413);
@@ -160,10 +146,6 @@ void setInternalUri(Event *e)
 	std::string requestPath = e->internal_uri;
 	int pos;
 	std::string tmp;
-	std::cout<<"============setting Route=========="<<std::endl;
-	std::cout<<"internal uri ="<<e->internal_uri<<std::endl;
-	std::cout<<"location uri ="<<e->locationData->getUri()<<std::endl;
-	std::cout<<"location root = "<<e->locationData->getRoot()<<std::endl;
 
 	if (!e->locationData->getCgiPass().empty())
 	{
@@ -181,7 +163,6 @@ void setInternalUri(Event *e)
 	// 1. check if the requested resource is directory
 	else if (requestPath.back() == '/')
 	{
-		std::cout<<"request path is directory"<<std::endl;
 		if (requestPath.length() == 1)
 			e->internal_uri =  "/";
 		else
@@ -213,7 +194,6 @@ void setInternalUri(Event *e)
 	// 2. check if the requested resource is file
 	else
 	{
-		std::cout<<"request path is file"<<std::endl;
 		if (pos == std::string::npos)
 		{
 			/**
@@ -225,7 +205,6 @@ void setInternalUri(Event *e)
 			 * resource : ""
 			 * route : root + ""
 			 * */
-			std::cout<<"1"<<std::endl;
 			e->internal_uri = "";
 		}
 		else
@@ -239,13 +218,9 @@ void setInternalUri(Event *e)
 			 * resource : /abc
 			 * route : root + /abc
 			 * */
-			std::cout<<"3"<<std::endl;
 			e->internal_uri = tmp.substr(pos);
 		}
 	}
-	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!11!!!!=====resource setted============="<<std::endl;
-	std::cout<<"internal uri = "<<e->internal_uri<<std::endl;
-	std::cout<<"=======!!!!!!!!!!!!!!!!!!!!!!!!!!!1================================"<<std::endl;
 }
 
 /**
@@ -282,10 +257,7 @@ void EventLoop::errorCallback(Event *e)
 	 * reqhandler에서 호출시 없을수도 있음.
 	 * */
 	if (!e->locationData)
-	{
-		std::cout<<"handler called... but location data is null"<<std::endl;
 		ws_internalRedir(e);
-	}
 	if (e->setErrorPage())
 	{
 		/**
@@ -305,7 +277,7 @@ void EventLoop::errorCallback(Event *e)
 }
 
 /**
- * @WARN use INTERNAL URI, METHOD
+ * @@@ Header Pending End
  * */
 void EventLoop::setHttpResponse(Event *e)
 {

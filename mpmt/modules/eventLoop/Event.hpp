@@ -13,7 +13,7 @@
 #include "../../interface/IServer.hpp"
 #include "../config/data/HttpLocationData.hpp"
 #include <unistd.h>
-
+#include "../../lib/FileGuard.hpp"
 /* Event Type: */
 
 /* 1. Read (FILT)*/ 
@@ -136,6 +136,11 @@ public:
 	int fileReadByte;
 	int fileWroteByte;
 
+
+public:
+	void (*callback)(struct kevent *e, Event* ev);
+	std::fstream logger;
+	void log(const char *tt);
 
 public:
 	Event(t_ServerType t);

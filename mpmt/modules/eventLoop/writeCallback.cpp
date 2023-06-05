@@ -37,12 +37,8 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * size of e->data만큼 작성
 		 * */
-		std::cout<<"=================================================="<<std::endl;
-		std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl;
-		std::cout<<"=================================================="<<std::endl;
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
-		std::cout<<"wroteByte : "<<e_udata->wrote<<std::endl;
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -124,9 +120,6 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 			return ;
 		else
 		{
-			/* std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBody()<<std::endl; */
-
-
 			//update wrote byte
 			e_udata->fileWroteByte += wroteByte;
 

@@ -1,6 +1,7 @@
 #include "Event.hpp"
+#include "EventLoop.hpp"
 
-Event::Event(t_ServerType t)
+Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::ios::out)
 {
 	this->cgiEnv.resize(20);
 	for (int i =0; i < 20; i++)
@@ -12,6 +13,7 @@ Event::Event(t_ServerType t)
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
+	logger<< "Event::Event(t_ServerType t)" << std::endl;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -149,7 +151,6 @@ Event *Event::createNewServerSocketEvent(int port)
 {
 	Event *e = new Event(HTTP_SERVER);
 	e->setServerDataByPort(port);
-
 	int fd;
 	t_EventType event_type = E_SERVER_SOCKET;
 	t_SocketInfo socketInfo;
