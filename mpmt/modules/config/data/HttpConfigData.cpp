@@ -33,7 +33,7 @@ HttpConfigData::HttpConfigData(HttpConfigData &c)
 	(*this) = c;
 }
 
-const std::map<int, std::string> &HttpConfigData::getErrorPage() const {return this->errorPage;}
+std::map<int, std::string> &HttpConfigData::getErrorPage() {return this->errorPage;}
 std::string HttpConfigData::getRoot() const {return this->root;}
 bool	HttpConfigData::getSendFile() const {return this->sendfile;}
 bool	HttpConfigData::getTcpNoDelay() const {return this->tcp_nodelay;}
