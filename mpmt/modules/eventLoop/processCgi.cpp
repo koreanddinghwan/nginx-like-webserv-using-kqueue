@@ -169,6 +169,9 @@ bool EventLoop::processCgi(Event *e)
 
 		e->setEventType(E_PIPE);
 
+		//unregisterClientSocketReadEvent(e);
+		unregisterClientSocketReadEvent(e);
+
 		//read from CtoPPipe[0]
 		registerPipeReadEvent(e);
 
