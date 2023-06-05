@@ -245,6 +245,8 @@ void Event::setRoute(std::string t)
  */
 bool Event::setErrorPage()
 {
+	if (!this->locationData || this->locationData->getErrorPage().size() == 0)
+		return false;
 	if (this->statusCode >= 400)
 	{
 		if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
