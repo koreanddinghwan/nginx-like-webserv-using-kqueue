@@ -37,18 +37,19 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * size of e->data만큼 작성
 		 * */
-		/* std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl; */
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
-
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			{
+				std::cout<<"EWOULDBLOCK"<<std::endl;
 				return;
+			}
 			else
 			{
-				//관련 exception 처리 필요
-				throw std::runtime_error("Failed to read from client socket, unknown err\n");
+				std::cout<<"write error"<<std::endl;
+				std::cout<<"errno : "<<errno<<std::endl;
 			}
 		}
 
@@ -63,6 +64,7 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 			e_udata->wrote += wroteByte; 
 			if (e_udata->wrote == size)
 			{
+				std::cout<<"wrote all the data"<<std::endl;
 				/**
 				 * if all the data wrote, unregister write event
 				 * */
@@ -74,12 +76,63 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 {
+	std::cout << "\033[35m"; 
+	std::cout<<"pipe Write callback"<<std::endl;
+	if (e_udata->getServerType() == HTTP_SERVER)
+	{
+		if (static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length() == 0)
+		{
+			/**
+			 * if there are no data to be read, unregister read event
+			 * */
+			unregisterPipeWriteEvent(e_udata);
+			return;
+		}
 
 
+		/**
+		 * todo : file size
+		 * */
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length();
 
+		/**
+		 * todo : file buffer
+		 * */
+		int wroteByte = write(e_udata->PtoCPipe[1], static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str() + e_udata->fileWroteByte, fileSize - e_udata->fileWroteByte);
 
+		std::cout<<wroteByte<<std::endl;
+		if (wroteByte == -1)
+		{
+			if (errno == EAGAIN)
+			{
+				std::cout<<"there are no data to be read"<<std::endl;
+				return;
+			}
+			else
+			{
+				std::cout<<"UNKNOWN ERROR"<<std::endl;
+				std::cout<<"Errno: "<<errno<<std::endl;
+				e_udata->setStatusCode(500);
+				unregisterPipeWriteEvent(e_udata);
+			}
+		}
+		else if (wroteByte == 0)
+			return ;
+		else
+		{
+			//update wrote byte
+			e_udata->fileWroteByte += wroteByte;
 
-
+			//if all the data wrote, unregister write event
+			// change if (u_udata->getRequestHandler->getRequestInfo.fileEOF &&)
+			if (e_udata->fileWroteByte == fileSize)
+			{
+				//end
+				e_udata->setStatusCode(200);
+				unregisterPipeWriteEvent(e_udata);
+			}
+		}
+	}
 }
 
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)

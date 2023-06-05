@@ -249,6 +249,7 @@ bool HttpreqHandler::parseHeader(std::string line){
 		return false;// 종료, header 끝나고 body로 넘어가야됨
 	key = line.substr(0, pos);
 	value = line.substr(pos + 2);
+	std::cout<<"key : "<<key<<" value : "<<value<<std::endl;
 	_info.reqHeaderMap.insert(std::make_pair(key,value));
 	saveGenericHeader(key, value);
 	return true;

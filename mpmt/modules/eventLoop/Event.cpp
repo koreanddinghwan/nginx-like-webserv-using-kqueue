@@ -1,19 +1,19 @@
 #include "Event.hpp"
+#include "EventLoop.hpp"
 
-Event::Event(t_ServerType t)
+Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::ios::out)
 {
 	this->cgiEnv.resize(20);
 	for (int i =0; i < 20; i++)
-		this->cgiEnv[i] = new std::string();
+		this->cgiEnv[i] = new char[100];
 	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
-	this->pipe_fd[0] = -1;
-	this->pipe_fd[1] = -1;
 	this->file_fd = -1;
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
+	logger<< "Event::Event(t_ServerType t)" << std::endl;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -27,9 +27,6 @@ void Event::setServerFd(int t)
 
 void Event::setClientFd(int t)
 {this->client_socket_fd = t;}
-
-void Event::setPipeFd(int i, int t)
-{this->pipe_fd[i] = t;}
 
 void Event::setEventType(t_EventType t)
 {this->eventInfo = t;}
@@ -83,9 +80,6 @@ int& Event::getServerFd()
 
 int& Event::getClientFd()
 {return this->client_socket_fd;}
-
-int* Event::getPipeFd()
-{return this->pipe_fd;}
 
 t_EventType& Event::getEventType()
 {return this->eventInfo;}
@@ -157,7 +151,6 @@ Event *Event::createNewServerSocketEvent(int port)
 {
 	Event *e = new Event(HTTP_SERVER);
 	e->setServerDataByPort(port);
-
 	int fd;
 	t_EventType event_type = E_SERVER_SOCKET;
 	t_SocketInfo socketInfo;
@@ -219,16 +212,6 @@ void Event::closeAllFd()
 		std::cout<<"|||close client_socket_fd\n";
 		close(this->client_socket_fd);
 	}
-	if (this->pipe_fd[0] != -1)
-	{
-		std::cout<<"|||close pipe_fd[0]\n";
-		close(this->pipe_fd[0]);
-	}
-	if (this->pipe_fd[1] != -1)
-	{
-		std::cout<<"|||close pipe_fd[1]\n";
-		close(this->pipe_fd[1]);
-	}
 	if (this->file_fd != -1)
 	{
 		std::cout<<"|||close file_fd\n";
@@ -274,7 +257,7 @@ bool Event::setErrorPage()
 	return false;
 }
 
-std::vector<std::string*> &Event::getCgiEnv()
+std::vector<char *> &Event::getCgiEnv()
 {
 	return this->cgiEnv;
 }
