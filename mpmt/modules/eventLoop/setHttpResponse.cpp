@@ -251,7 +251,7 @@ void EventLoop::ws_internalRedir(Event *e)
 void EventLoop::errorCallback(Event *e)
 {
 	// 내부 internal status code로 사용자에게 보여질 status code복사함.
-	// 
+	std::cout<<"errorCallback"<<std::endl;
 	e->internal_status = e->getStatusCode();
 	/**
 	 * reqhandler에서 호출시 없을수도 있음.
@@ -283,19 +283,26 @@ void EventLoop::setHttpResponse(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
+	std::cout<<"setHttpResponse"<<std::endl;
+	std::cout<<"setserverName"<<std::endl;
 	setServerName(e);
+	std::cout<<"setLocationData"<<std::endl;
 	ws_internalRedir(e);
 	/**
 	 * internal loop
 	 * */
 	if (!checkAllowedMethods(e))
 		errorCallback(e);
+	std::cout<<"checkAllowedMethods"<<std::endl;
 	if (!checkClientMaxBodySize(e))
 		errorCallback(e);
+	std::cout<<"checkClientMaxBodySize"<<std::endl;
 
 	/**
 	 * client's request is redirection.
 	 * */
+
+	std::cout<<"check redirection"<<std::endl;
 	if (!e->locationData->getRedirectUrl().empty())
 	{
 		e->setStatusCode(e->locationData->getReturnStatus());
@@ -306,6 +313,7 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * 7. if need cgi process
 	 * */
+	std::cout<<"check cgi"<<std::endl;
 	if (!e->locationData->getCgiPass().empty())
 	{
 		std::cout<<"processing cgi..."<<std::endl;
@@ -329,6 +337,7 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * if method == GET
 	 * */
+	std::cout<<"process method"<<std::endl;
 	if (methodIndex == GET || methodIndex == HEAD)
 		ws_method_GET(e);
 	else if (methodIndex == POST)

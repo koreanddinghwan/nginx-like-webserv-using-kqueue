@@ -13,6 +13,7 @@ Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
+	this->locationData = NULL;
 	logger<< "Event::Event(t_ServerType t)" << std::endl;
 }
 

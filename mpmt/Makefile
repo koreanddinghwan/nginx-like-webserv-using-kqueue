@@ -1,6 +1,6 @@
 NAME = webserv
 CXX = c++
-CXXFLAGS = -std=c++98 -g3 -fsanitize=address
+CXXFLAGS = -std=c++98 -g3 
 INC = .
 
 FACTORYSRCS = MethodFactory.cpp

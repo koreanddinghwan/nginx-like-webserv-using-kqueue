@@ -125,6 +125,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->setResponseHandler(new responseHandler(-1));
 	e->setStatusCode(200);
 	e->internal_status = -1;
+	e->locationData = NULL;
 	registerClientSocketReadEvent(e);
 }
 

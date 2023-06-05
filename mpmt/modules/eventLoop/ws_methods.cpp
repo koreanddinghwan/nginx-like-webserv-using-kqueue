@@ -17,12 +17,10 @@ void EventLoop::ws_method_GET(Event *e)
 		if (e->statBuf.st_size == 0)
 		{
 			e->setStatusCode(204);
-			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
 			return ;
 		}
 		e->setStatusCode(200);
-		unregisterClientSocketReadEvent(e);
 		registerFileReadEvent(e);
 		return ;
 	}
@@ -50,7 +48,6 @@ void EventLoop::ws_method_GET(Event *e)
 				/**
 				 * resBody에 autoindex내용 들어가있음.
 				 * */
-				unregisterClientSocketReadEvent(e);
 				registerClientSocketWriteEvent(e);
 				return ;
 			}
@@ -70,15 +67,11 @@ void EventLoop::ws_method_POST(Event *e)
 		 * */
 		if (ws_HttpUploadModule::processEvent(e))
 		{
-			unregisterClientSocketReadEvent(e);
 			registerFileWriteEvent(e);
 			return ;
 		}
 		else
-		{
-			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
-		}
 	}
 	else
 	{

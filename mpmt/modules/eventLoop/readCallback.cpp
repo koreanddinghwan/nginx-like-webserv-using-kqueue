@@ -115,9 +115,9 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 
 			//handle request
 			try {
-				/* std::cout<<"use handle"<<std::endl; */
+				std::cout<<"use handle"<<std::endl;
 				reqHandler->handle(e_udata);
-				/* std::cout<<"use handle end"<<std::endl; */
+				std::cout<<"use handle end"<<std::endl;
 			} catch (std::exception &exception) {
 				errorCallback(e_udata);
 				return;
@@ -128,16 +128,22 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			 *
 			 * read_len : read return 0 when eof
 			 * */
-			if (reqHandler->isHeaderPending() && read_len != 0)
+			reqHandler->printReq();
+			if (reqHandler->isHeaderPending())
+			{
+				std::cout<<"header pending"<<std::endl;
 				return ;
+			}
 			else
 			{
-				/**
-				 * initialize internal method and uri
-				 * */
-				e_udata->internal_method = reqHandler->getRequestInfo().method;
-				e_udata->internal_uri = reqHandler->getRequestInfo().path;
-				setHttpResponse(e_udata);
+				std::cout<<e_udata->locationData<<std::endl;
+				if (e_udata->locationData == NULL)
+				{
+					std::cout<<"setHttpResponse"<<std::endl;
+					e_udata->internal_method = reqHandler->getRequestInfo().method;
+					e_udata->internal_uri = reqHandler->getRequestInfo().path;
+					setHttpResponse(e_udata);
+				}
 			}
 		}
 	}
