@@ -143,6 +143,8 @@ void HttpreqHandler::parseSeparate(std::string req)
 	{
 		if ((pos = _buf.find(CRLF2)) != std::string::npos)
 		{
+			if (_headerPended)
+				_headerPended = false;
 			if (!checkSeparate(pos))
 			{
 				_pended = false;
