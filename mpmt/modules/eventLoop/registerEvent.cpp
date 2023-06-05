@@ -43,6 +43,12 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 		e->setStatusCode(e->internal_status);
 
 	e->setEventType(E_CLIENT_SOCKET);
+
+	if (!static_cast<HttpreqHandler *>(e->getRequestHandler())->getHasSid())
+	{
+		HttpServer::getInstance().issueSessionId();
+	}
+
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
 	 * */
