@@ -40,6 +40,8 @@ public:
 	 */
 	void initEventLoop();
 
+	char pipeBuffer[65535];
+
 private:
 	int kq_fd;
 

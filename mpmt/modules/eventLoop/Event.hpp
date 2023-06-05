@@ -13,7 +13,7 @@
 #include "../../interface/IServer.hpp"
 #include "../config/data/HttpLocationData.hpp"
 #include <unistd.h>
-
+#include "../../lib/FileGuard.hpp"
 /* Event Type: */
 
 /* 1. Read (FILT)*/ 
@@ -79,7 +79,6 @@ private:
 	 */
 	int	server_socket_fd;
 	int client_socket_fd;
-	int pipe_fd[2];
 
 	t_EventType	eventInfo;
 
@@ -102,9 +101,25 @@ private:
 	std::string route;
 	std::string *buffer;
 	int statusCode;
-	std::vector<std::string *> cgiEnv;
+	std::vector<char *> cgiEnv;
 
 public:
+	/**
+	 * Parent                                          Child
+	 * close(PtoCPipe[0])                              close(PtoCPipe[1])
+	 * Req.body                        ==============> dup2(PtoCPipe[0], STDIN_FILENO)
+	 * write(PtoCPipe[1], req.body)
+	 * pipe Write Event                                       
+	 * */
+	int			PtoCPipe[2];
+
+	/**
+	 * Child                                           Parent
+	 * close(CtoPPipe[0])                              close(CtoPPipe[1])
+	 * dup2(CtoPPipe[1], STDOUT_FILENO)==============> read(CtoPPipe[0], res.body)
+	 * */
+	int			CtoPPipe[2];
+
 	int 		internal_status;
 	std::string internal_method;
 	std::string internal_uri;
@@ -121,6 +136,11 @@ public:
 	int fileReadByte;
 	int fileWroteByte;
 
+
+public:
+	void (*callback)(struct kevent *e, Event* ev);
+	std::fstream logger;
+	void log(const char *tt);
 
 public:
 	Event(t_ServerType t);
@@ -157,7 +177,6 @@ public:
 	t_SocketInfo&					getSocketInfo();
 	int&							getServerFd();
 	int&							getClientFd();
-	int*							getPipeFd();
 
 	t_EventType&					getEventType();
 	IHandler*						getRequestHandler();
@@ -181,7 +200,7 @@ public:
 
 	std::string&	getDir();
 	std::string&	getResource();
-	std::vector<std::string *>& getCgiEnv();
+	std::vector<char *>& getCgiEnv();
 
 private:
 	Event(Event &e);
