@@ -27,7 +27,7 @@ void *HttpreqHandler::handle(void *data)
 	if (!_pended)
 	{
 		parse();
-		printReq();
+		/* printReq(); */
 	}	
 	return _event;
 }
