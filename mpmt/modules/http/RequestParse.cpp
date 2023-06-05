@@ -173,8 +173,13 @@ void HttpreqHandler::parseSeparate(std::string req)
 /* =================== cookie =================== */
 void HttpreqHandler::saveSid(std::string key, std::string value)
 {
+	char *endptr;
+
 	if (key == "sid")
-		_sid = value;
+	{
+		_sidString = value;
+		_sid = std::strtod(value.c_str(), &endptr);
+	}
 }
 
 void HttpreqHandler::insertCookieMap(std::string line, int *prevPos, int *pos)

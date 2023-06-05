@@ -248,9 +248,11 @@ bool HttpreqHandler::isHeaderPending(void) const { return _headerPended; }
 
 bool HttpreqHandler::isBodyPending(void) const { return _bodyPended; }
 
-bool HttpreqHandler::getHasSid(void) const { return (!_sid.empty() ? true : false); }
+bool HttpreqHandler::getHasSid(void) const { return (!_sidString.empty() ? true : false); }
 
-std::string HttpreqHandler::getSid(void) const { return _sid;}
+std::string HttpreqHandler::getSidString(void) const { return _sidString;}
+
+int HttpreqHandler::getSid(void) const { return _sid;}
 
 const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info; }
 

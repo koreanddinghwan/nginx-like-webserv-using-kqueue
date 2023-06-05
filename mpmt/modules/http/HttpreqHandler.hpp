@@ -43,7 +43,8 @@ private:
 	bool _pended;
 	bool _headerPended;
 	bool _bodyPended;
-	std::string _sid;
+	int 		_sid;
+	std::string _sidString;
 	/* ========================================== */
 
 public:
@@ -58,7 +59,8 @@ public:
 	bool isHeaderPending(void) const;
 	bool isBodyPending(void) const;
 	bool getHasSid(void) const;
-	std::string getSid(void) const;
+	int getSid(void) const;
+	std::string getSidString(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
 
 	void printReq(void);
