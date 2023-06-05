@@ -22,11 +22,16 @@ void *HttpreqHandler::handle(void *data)
 			parseSeparate(req);
 	}
 	/*
+	fulfilled header
+	*/
+	if (!_headerPended && _info.method.empty())
+		parseWithoutBody();
+	/*
 	fulfilled state message
 	*/
 	if (!_pended)
 	{
-		parse();
+		parseBody();
 		/* printReq(); */
 	}	
 	return _event;
