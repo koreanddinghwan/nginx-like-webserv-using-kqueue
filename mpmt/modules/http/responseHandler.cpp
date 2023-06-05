@@ -1,6 +1,6 @@
 #include "responseHandler.hpp"
 #include "HttpreqHandler.hpp"
-
+#include "HttpServer.hpp"
 
 
 responseHandler::responseHandler() {
@@ -40,10 +40,24 @@ void responseHandler::setResLocation(std::string location) const {
 	this->_res->setLocation(location); 
 };
 
+void responseHandler::setResCookie(std::string cookieString) const {
+	this->_res->setCookie(cookieString);
+};
+
 void responseHandler::setResAddtionalOptions(Event *event) const {
 	std::string httpMethod = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().method;
 	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
 	int statusCode = this->getResStatusCode();
+	
+	std::cout << "================================" << static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid() << "========================" << std::endl;
+	if (static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid())
+	{
+		std::string cookieString = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().reqHeaderMap.find("Cookie")->second;
+		this->setResCookie("Cookie: " + cookieString + "\r\n");
+	} else {
+		unsigned int tmpId = HttpServer::getInstance().issueSessionId();
+		this->setResCookie("Set-Cookie: sid=" + toString(tmpId) +"; max-age:86400;\r\n");
+	}
 
 	if (httpMethod == "GET") {
 		if (statusCode >= 300 && statusCode < 400)

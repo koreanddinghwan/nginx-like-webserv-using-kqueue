@@ -28,25 +28,29 @@ class Response {
 		void setBody(std::string const &body);
 		void setLocation(std::string const &location);
 		void setCgiBody(std::string const &substr);
+		void setCookie(std::string const &cookie);
 		void setBuf();
 
 		std::string& getBody();
 		std::string& getHeader();
 		std::string& getBuf();
-
+		std::string& getCookie();
 		std::string& getStatusMsg();
 		int getStatusCode() const;
 		
 	//destoryer
 	protected:
 		int _statusCode;
-		int _sid;
 		
 		std::string _statusMsg;
 		std::string _location;
 		std::string _headers;
 		std::string _body;
 		std::string _buf;
+		std::string _cookie;
+
 };
+
+std::string toString(size_t n);
 
 #endif
