@@ -40,6 +40,8 @@ class Response {
 	//destoryer
 	protected:
 		int _statusCode;
+		int _sid;
+		
 		std::string _statusMsg;
 		std::string _location;
 		std::string _headers;
