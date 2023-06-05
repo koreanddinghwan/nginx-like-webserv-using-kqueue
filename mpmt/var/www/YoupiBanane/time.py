@@ -20,6 +20,8 @@ if "REQUEST_METHOD" in os.environ and os.environ["REQUEST_METHOD"] == "GET":
         print("<h3>ADDR: " + os.environ["REMOTE_ADDR"] + "</h3>")
     if "PATH_TRANSLATED" in os.environ:
         print("<h2>패스!!: " + os.environ["PATH_TRANSLATED"] + "</h2>")
+    if "SERVER_PROTOCOL" in os.environ:
+        print("<h2>패스!!: " + os.environ["SERVER_PROTOCOL"] + "</h2>")
 elif "REQUEST_METHOD" in os.environ and os.environ["REQUEST_METHOD"] == "POST":
     # POST 요청 처리
     print("<h1>POST 요청</h1>")
