@@ -208,7 +208,6 @@ void HttpreqHandler::parseCookie(void)
 }
 /* ============================================= */
 
-
 /* =================== parse =================== */
 void HttpreqHandler::parseStartLine(std::string line) 
 {
@@ -265,7 +264,7 @@ void HttpreqHandler::parseBody(void)
 	_info.body = line;
 }
 
-void HttpreqHandler::parse(void)
+void HttpreqHandler::parseWithoutBody(void)
 {
 	int pos = 0, prevPos = 0;
 	std::string line;
@@ -284,8 +283,29 @@ void HttpreqHandler::parse(void)
 				break ;
 		}
 	}
-	//body
-	parseCookie();
-	parseBody();
 }
+
+// void HttpreqHandler::parse(void)
+// {
+// 	int pos = 0, prevPos = 0;
+// 	std::string line;
+
+// 	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)
+// 	{
+// 		line = _buf.substr(prevPos, pos - prevPos);
+// 		prevPos += line.length() + 2;
+// 		//startLine
+// 		if (_info.method.empty())
+// 			parseStartLine(urlDecode(line));
+// 		//header
+// 		else
+// 		{
+// 			if (!parseHeader(line))
+// 				break ;
+// 		}
+// 	}
+// 	//body
+// 	parseCookie();
+// 	parseBody();
+// }
 /* ============================================= */
