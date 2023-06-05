@@ -133,7 +133,7 @@ bool checkAllowedMethods(Event *e) throw (std::exception)
 bool checkClientMaxBodySize(Event *e) throw(std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length()))
+	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < atoi(reqHandler->getRequestInfo().contentLength.c_str())))
 	{
 		e->setStatusCode(413);
 		return false;
