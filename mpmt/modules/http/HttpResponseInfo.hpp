@@ -24,9 +24,10 @@ class Response {
 		void setStatusCode(int statusCode);
 		//객체를 받아서 스트림 그자체로 쓸 수도 있음.
 
-		void setHeaders(std::string httpV);	
-		void setBody(std::string body);
-		void setLocation(std::string location);
+		void setHeaders(std::string const &httpV);	
+		void setBody(std::string const &body);
+		void setLocation(std::string const &location);
+		void setCgiBody(std::string const &substr);
 		void setBuf();
 
 		std::string& getBody();
