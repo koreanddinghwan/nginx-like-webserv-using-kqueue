@@ -43,8 +43,6 @@ void EventLoop::readCallback(struct kevent *e)
  */
 void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"SERVER SOCKET CALLBACK"<<std::endl;
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -64,7 +62,6 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[34m"; 
-	std::cout<<"client socket callback"<<std::endl;
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -73,20 +70,16 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		{
 			unregisterClientSocketReadEvent(e_udata);
 			//remove event
-			std::cout<<"client disconnected"<<std::endl;
 			//client socket close
 			close(e_udata->getClientFd());
 			//client socket event delete
 			delete e_udata;
-			std::cout<<"client disconnected"<<std::endl;
 		}
 
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
   
-		std::cout<<"read len = " <<read_len<<std::endl; 
-		std::cout<<"data::"<< e->data<<std::endl;
 		if (read_len == -1)
 		{
 			std::cout<<"errno:"<<errno<<std::endl;
@@ -100,7 +93,6 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				close(client_fd);
 				//client socket event delete
 				delete e_udata;
-				std::cout<<"client disconnected"<<std::endl;
 				return;
 			}
 			else
@@ -109,7 +101,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
-			return;
+			unregisterClientSocketReadEvent(e_udata);
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
@@ -136,17 +128,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			 *
 			 * read_len : read return 0 when eof
 			 * */
-			if (reqHandler->getIsPending() && read_len != 0)
-			{
-				std::cout<<"pending"<<std::endl;
+			if (reqHandler->isHeaderPending() && read_len != 0)
 				return ;
-			}
 			else
 			{
-				/**
-				 * set http response
-				 * */
-				std::cout<<"setting response"<<std::endl;
 				/**
 				 * initialize internal method and uri
 				 * */
@@ -167,8 +152,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 **/
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[35m"; 
-	std::cout<<"pipe read callback"<<std::endl;
+	std::cout<<"pipeWrite"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from pipe
@@ -206,8 +190,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[36m"; 
-	std::cout<<"file callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from file
