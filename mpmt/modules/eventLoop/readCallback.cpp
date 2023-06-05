@@ -66,15 +66,15 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//socket의 readfilter-> EOF flag는 client의 disconnect.
-		if (e->flags == EV_EOF)
-		{
-			unregisterClientSocketReadEvent(e_udata);
-			//remove event
-			//client socket close
-			close(e_udata->getClientFd());
-			//client socket event delete
-			delete e_udata;
-		}
+		// if (e->flags == EV_EOF)
+		// {
+		// 	unregisterClientSocketReadEvent(e_udata);
+		// 	//remove event
+		// 	//client socket close
+		// 	close(e_udata->getClientFd());
+		// 	//client socket event delete
+		// 	delete e_udata;
+		// }
 
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
@@ -101,7 +101,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
-			unregisterClientSocketReadEvent(e_udata);
+			// unregisterClientSocketReadEvent(e_udata);
+			return;
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
@@ -210,8 +211,7 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from file, unknown err\n");
 		}
 		else if (read_len == 0)
-		{
-			unregisterFileReadEvent(e_udata);
+		{unregisterFileReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
 			return ;
 		}
