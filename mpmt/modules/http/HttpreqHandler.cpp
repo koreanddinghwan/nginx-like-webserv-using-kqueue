@@ -24,11 +24,16 @@ void *HttpreqHandler::handle(void *data)
 	/*
 	fulfilled state message
 	*/
-	if (!_pended)
+	if (!_pended && _messageState != chunked)
 	{
 		parse();
 		/* printReq(); */
-	}	
+	}
+	std::cout << "reqreqreqreq" << std::endl;
+	std::cout << req << std::endl;
+	std::cout << "bodybodybody" << std::endl;
+	std::cout << _info.body << std::endl;
+	std::cout << "end" << std::endl;
 	return _event;
 }
 
@@ -50,6 +55,7 @@ void HttpreqHandler::initMessageState(void)
 			_messageState = chunked;
 			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
+			_bodyBuf = _buf.substr(bodyPos + 4);
 		}
 		else
 		{
@@ -224,8 +230,9 @@ void HttpreqHandler::checkStartLine(void)
 
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler(Event *e)
-	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
-	_headerPended(false), _bodyPended(false), _event(e)
+	: _buf(""), _messageState(basic), _pended(false), _contentLength(0),
+	_chunkedLength(0), _infoBodyIdx(0),
+	_hasContentLength(false), _headerPended(false), _bodyPended(false), _event(e)
 {
 	/**
 	 * @ref https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
@@ -233,6 +240,14 @@ HttpreqHandler::HttpreqHandler(Event *e)
 	 * 이 길이 넘어가면 원래 tmp파일에 저장한다고합니다.
 	 * */
 	this->_info.body.reserve(16384);
+	//info = new HttpreqHandlerInfo();
+	//_buf.clear();
+	//_messageState = basic;
+	//_pended = false;
+	//_contentLength = 0;
+	//_hasContentLength =false;
+	//_headerPended =false;
+	//_bodyPended =false;
 }
 
 HttpreqHandler::~HttpreqHandler()
