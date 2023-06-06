@@ -82,7 +82,7 @@ private:
 	void saveSid(std::string key, std::string value);
 
 	//parse
-	void parseWithoutBody(void);
+	void parse(void);
 	void parseStartLine(std::string line);
 	bool parseHeader(std::string line);
 	void parseBody(void);

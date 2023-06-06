@@ -272,7 +272,7 @@ void HttpreqHandler::parseBody(void)
 	_info.body = line;
 }
 
-void HttpreqHandler::parseWithoutBody(void)
+void HttpreqHandler::parse(void)
 {
 	int pos = 0, prevPos = 0;
 	std::string line;
@@ -291,5 +291,8 @@ void HttpreqHandler::parseWithoutBody(void)
 				break ;
 		}
 	}
+	//body
+	parseCookie();
+	parseBody();
 }
 /* ============================================= */
