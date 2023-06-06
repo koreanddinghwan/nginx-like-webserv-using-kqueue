@@ -30,29 +30,13 @@ int HttpreqHandler::parseChunkedLength(int pos)
 	return (convertHexToDec(line));
 }
 
-std::string HttpreqHandler::parseChunkedBody(int lenPos, int bodyPos)
+std::string HttpreqHandler::parseChunkedBody(int pos)
 {
 	std::string line;
 
 	// except 던지면서 임시변수 생성한 거 바로 던지게 하는 거 생각해보기....
-	line = _bodyBuf.substr(lenPos + 2, bodyPos - lenPos - 2);
+	line = _bodyBuf.substr(0, pos);
 	return line;
-}
-
-void HttpreqHandler::splitChunked(int lenPos, int bodyPos)
-{
-	int len = 0;
-	std::string line;
-  
-	len = parseChunkedLength(lenPos);
-	line = parseChunkedBody(lenPos, bodyPos);
-	if (len < line.length())
-	{
-		_event->setStatusCode(413);
-		throw std::exception();
-	}
-	_contentLength += len;
-	_info.body.append(line);
 }
 
 void HttpreqHandler::parseChunked(std::string req) 
@@ -61,41 +45,37 @@ void HttpreqHandler::parseChunked(std::string req)
 	std::string line;
 	std::stringstream ss;
 
-	if (_bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴.
+	if (!_headerPended && _bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴.
 	{
-		if (_bodyBuf.empty())
+		if (!_flag)
 			_bodyBuf.append(req);
+		else 
+			_flag = false;
 		while (!_bodyBuf.empty() && _bodyBuf != "0\r\n\r\n")
 		{
-			std::cout << "in" <<std::endl;
+			std::cout << _bodyBuf <<std::endl;
+			std::cout<<_hasContentLength <<std::endl;
 			pos = _bodyBuf.find(CRLF);
-			if (!pos && !_hasContentLength) // 길이 안들어옴
-			{
-
-			std::cout << "1" <<std::endl;
+			if (pos == std::string::npos && !_hasContentLength) // 길이 안들어옴
 				return ;
-			}
-			else if (!pos && _hasContentLength) // body 일부만 들어옴
+			else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
 			{
-			std::cout << "2" <<std::endl;
 				_info.body.append(_bodyBuf);
 				_bodyBuf.clear();
 				return ;
 			}
-			else if (pos && !_hasContentLength) // 길이 들어옴
+			else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴
 			{
-			std::cout << "3" <<std::endl;
 				_hasContentLength = true;
 				_chunkedLength = parseChunkedLength(pos);
 				_contentLength += _chunkedLength;
 				_infoBodyIdx = _info.body.length();
 				_bodyBuf.erase(0, pos + 2);
 			}
-			else if (pos && _hasContentLength) // body 다 들어옴
+			else if (pos != std::string::npos && _hasContentLength) // body 다 들어옴
 			{
-			std::cout << "4" <<std::endl;
 				_hasContentLength = false;
-				line = parseChunkedBody(0, pos);
+				line = parseChunkedBody(pos);
 				_info.body.append(line);
 				if (_info.body.length() - _infoBodyIdx > _chunkedLength)
 				{
@@ -107,7 +87,6 @@ void HttpreqHandler::parseChunked(std::string req)
 		}
 		if (_bodyBuf == "0\r\n\r\n")
 		{
-			std::cout << "find 0 end" << std::endl;
 			_bodyPended = false;
 			_pended = false;
 			ss << _contentLength;

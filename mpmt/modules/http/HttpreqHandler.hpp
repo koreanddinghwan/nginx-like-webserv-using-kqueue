@@ -30,10 +30,12 @@ private:
 	std::string _bodyBuf;
 	std::string _chunkedWithoutBodyBuf;
 
-	int _contentLength;
 	int _chunkedLength;
 	int _infoBodyIdx;
 	bool _hasContentLength;
+
+	//구차..
+	bool _flag;
 	/* ========================================== */
 
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
@@ -54,6 +56,7 @@ public:
 	~HttpreqHandler();
 
 public:
+	int _contentLength;
 	void *handle(void *data);
 
 	//getter
@@ -95,7 +98,7 @@ private:
 	void parseChunked(std::string req);
 	void splitChunked(int pos, int endPos);
 	int parseChunkedLength(int pos);
-	std::string parseChunkedBody(int lenPos, int bodyPos);
+	std::string parseChunkedBody(int pos);
 
 	//separate
 	void parseSeparate(std::string req);

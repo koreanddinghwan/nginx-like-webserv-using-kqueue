@@ -29,11 +29,6 @@ void *HttpreqHandler::handle(void *data)
 		parse();
 		/* printReq(); */
 	}
-	std::cout << "reqreqreqreq" << std::endl;
-	std::cout << req << std::endl;
-	std::cout << "bodybodybody" << std::endl;
-	std::cout << _info.body << std::endl;
-	std::cout << "end" << std::endl;
 	return _event;
 }
 
@@ -56,6 +51,7 @@ void HttpreqHandler::initMessageState(void)
 			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
 			_bodyBuf = _buf.substr(bodyPos + 4);
+			_flag = true;
 		}
 		else
 		{
@@ -231,7 +227,7 @@ void HttpreqHandler::checkStartLine(void)
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler(Event *e)
 	: _buf(""), _messageState(basic), _pended(false), _contentLength(0),
-	_chunkedLength(0), _infoBodyIdx(0),
+	_chunkedLength(0), _infoBodyIdx(0), _flag(false),
 	_hasContentLength(false), _headerPended(false), _bodyPended(false), _event(e)
 {
 	/**
