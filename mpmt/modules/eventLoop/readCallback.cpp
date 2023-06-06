@@ -91,9 +91,9 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 		
-			std::cout<<"Httpbuffer read"<<std::endl;
-			write(1, HttpServer::getInstance().getHttpBuffer(), read_len);
-			std::cout<<std::endl;
+			/* std::cout<<"Httpbuffer read"<<std::endl; */
+			/* write(1, HttpServer::getInstance().getHttpBuffer(), read_len); */
+			/* std::cout<<std::endl; */
 			e_udata->readByte = read_len;
 
 			//handle request
@@ -112,17 +112,17 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			 *
 			 * read_len : read return 0 when eof
 			 * */
-			std::cout<<"header pendig::"<<reqHandler->isHeaderPending()<<std::endl;
-			std::cout<<"body pendig::"<<reqHandler->isBodyPending()<<std::endl;
-			std::cout<<"pending::"<<reqHandler->getIsPending()<<std::endl;
-			std::cout<<reqHandler->getRequestInfo().body<<std::endl;
+			/* std::cout<<"header pendig::"<<reqHandler->isHeaderPending()<<std::endl; */
+			/* std::cout<<"body pendig::"<<reqHandler->isBodyPending()<<std::endl; */
+			/* std::cout<<"pending::"<<reqHandler->getIsPending()<<std::endl; */
+			/* std::cout<<reqHandler->getRequestInfo().body<<std::endl; */
 			if (reqHandler->isHeaderPending())
 				return ;
 			else
 			{
 				if (e_udata->locationData)
 					return ;
-				reqHandler->printReq();
+				/* reqHandler->printReq(); */
 				/**
 				 * initialize internal method and uri
 				 * */
