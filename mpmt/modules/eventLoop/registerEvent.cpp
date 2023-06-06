@@ -96,7 +96,7 @@ void EventLoop::unregisterClientSocketReadEvent(Event *e)
 {
 	std::cout<<"unregister client socket read event"<<std::endl;
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
 		throw std::runtime_error("Failed to unregister client socket read with kqueue\n");
 }
 
@@ -104,7 +104,8 @@ void EventLoop::unregisterPipeReadEvent(Event *e)
 {
 	std::cout<<"unregister pipe read event"<<std::endl;
 	EV_SET(&(dummyEvent), e->CtoPPipe[0], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
-	kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL); 
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+		throw std::runtime_error("Failed to unregister pipe read with kqueue\n");
 	close(e->CtoPPipe[0]);
 }
 
@@ -124,6 +125,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket write with kqueue\n");
 
+	
 	delete e->getResponseHandler();
 	delete e->getRequestHandler();
 
@@ -131,14 +133,26 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->setResponseHandler(new responseHandler(-1));
 	e->setStatusCode(200);
 	e->internal_status = -1;
-	registerClientSocketReadEvent(e);
+	e->locationData = NULL;
+	e->wrote = 0;
+	e->readByte = 0;
+	e->fileWroteByte = 0;
+	e->fileReadByte = 0;
+	close(e->file_fd);
+	close(e->PtoCPipe[0]);
+	close(e->PtoCPipe[1]);
+	close(e->CtoPPipe[0]);
+	close(e->CtoPPipe[1]);
+	close(e->getClientFd());
+	/* registerClientSocketReadEvent(e); */
 }
 
 void EventLoop::unregisterPipeWriteEvent(Event *e)
 {
 	std::cout<<"unregister pipe write event"<<std::endl;
 	EV_SET(&(dummyEvent), e->PtoCPipe[1], EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
-	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+		throw std::runtime_error("Failed to unregister file write with kqueue\n");
 	close(e->PtoCPipe[1]);
 }
 

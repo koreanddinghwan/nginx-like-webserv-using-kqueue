@@ -53,7 +53,7 @@ public:
 	HttpConfigData(HttpConfigData &c);
 
 	int		getClientMaxBodySize() const;
-	std::map<int, std::string> &getErrorPage();
+	std::map<int, std::string> *getErrorPage();
 	std::string getRoot() const;
 	bool	getSendFile() const;
 	bool	getTcpNoDelay() const;
@@ -70,7 +70,7 @@ public:
 	void	setAutoIndex(bool a);
 	void	setIndex(std::string);
 
-	void	copyErrorPage(errorMap m);
+	void	copyErrorPage(errorMap *m);
 	void	printConfig();
 };
 

@@ -33,7 +33,7 @@ HttpConfigData::HttpConfigData(HttpConfigData &c)
 	(*this) = c;
 }
 
-std::map<int, std::string> &HttpConfigData::getErrorPage() {return this->errorPage;}
+std::map<int, std::string> *HttpConfigData::getErrorPage() {return &this->errorPage;}
 std::string HttpConfigData::getRoot() const {return this->root;}
 bool	HttpConfigData::getSendFile() const {return this->sendfile;}
 bool	HttpConfigData::getTcpNoDelay() const {return this->tcp_nodelay;}
@@ -63,9 +63,9 @@ void	HttpConfigData::setAutoIndex(bool a) { this->autoindex = a;}
 void	HttpConfigData::setIndex(std::string i) { this->index.push_back(i);}
 
 
-void	HttpConfigData::copyErrorPage(errorMap m)
+void	HttpConfigData::copyErrorPage(errorMap *m)
 {
-	for (errorMap::iterator it = m.begin(); it != m.end(); it++)
+	for (errorMap::iterator it = m->begin(); it != m->end(); it++)
 	{
 		setErrorPage((*it).first, (*it).second);
 	}
@@ -76,8 +76,8 @@ void	HttpConfigData::printConfig() {
 	std::cout<<"client max body size: "<<this->getClientMaxBodySize()<<std::endl;
 
 	std::cout<<"error page: "<<std::endl;
-	const errorMap &em = this->getErrorPage();
-	for (std::map<int, std::string>::const_iterator it = em.begin(); it != em.end(); it++)
+	const errorMap *em = this->getErrorPage();
+	for (std::map<int, std::string>::const_iterator it = em->begin(); it != em->end(); it++)
 	{
 		std::cout<<"["<<(*it).first<<"]"<<":"<<"["<<(*it).second<<"]"<<std::endl;
 	}

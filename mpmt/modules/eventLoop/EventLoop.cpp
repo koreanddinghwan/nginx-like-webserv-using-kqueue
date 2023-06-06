@@ -9,6 +9,7 @@
 
 void printEvent(struct kevent *e)
 {
+	std::cout<<"ident: "<<e->ident<<std::endl; //socket fd
 	std::cout<<"filter: "<<e->filter<<std::endl;
 	std::cout<<"flag: "<<e->flags<<std::endl;
 	std::cout<<"fflag: "<<e->fflags<<std::endl;
@@ -43,6 +44,8 @@ void EventLoop::initEventLoop()
 
 		for (int i = 0; i < nevents; i++)
 		{
+			std::cout<<"=======================Event========================="<<std::endl;
+			printEvent(events + i);
 			int fd = events[i].ident;
 			try {
 				if (events[i].filter == EVFILT_READ)
@@ -61,6 +64,7 @@ void EventLoop::initEventLoop()
 				std::cerr << e.what() << std::endl;
 				continue;
 			}
+			std::cout<<"======================Event End======================"<<std::endl<<std::endl;
 		}
 	}
 }

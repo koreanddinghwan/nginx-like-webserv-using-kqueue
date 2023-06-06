@@ -32,6 +32,7 @@ void EventLoop::ws_method_GET(Event *e)
 		{
 			if (ws_HttpIndexModule::processEvent(e))
 			{
+				std::cout<<"index module process event success"<<std::endl;
 				/**
 				 * index module에서 처리 완료하면, 다시 internal 리디렉션해야함.
 				 * file open처리는 다시 internal 리디렉션된 이벤트에서 처리
@@ -87,6 +88,7 @@ void EventLoop::ws_method_POST(Event *e)
 		 * std::cout<<"upload store is not setted"<<std::endl;
 		 * */
 		e->setStatusCode(404);
+		unregisterClientSocketReadEvent(e);
 		errorCallback(e);
 	}
 }

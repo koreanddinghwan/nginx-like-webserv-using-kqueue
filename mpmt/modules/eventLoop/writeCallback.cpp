@@ -39,6 +39,9 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 		 * */
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
+
+		
+		write(1, static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
 		if (wroteByte == -1)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -80,7 +83,7 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"pipe Write callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		if (static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length() == 0)
+		if (atoi(static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().contentLength.c_str()) == 0)
 		{
 			/**
 			 * if there are no data to be read, unregister read event
@@ -146,6 +149,7 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 		 * */
 		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length();
 
+		std::cout<<"file size : "<<fileSize<<std::endl;
 		/**
 		 * todo : file buffer
 		 * */
@@ -174,7 +178,9 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 
 			//if all the data wrote, unregister write event
 			// change if (u_udata->getRequestHandler->getRequestInfo.fileEOF &&)
-			if (e_udata->fileWroteByte == fileSize)
+			
+			if (e_udata->fileWroteByte == fileSize &&
+					!static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getIsPending())
 			{
 				e_udata->setStatusCode(201);
 				unregisterFileWriteEvent(e_udata);

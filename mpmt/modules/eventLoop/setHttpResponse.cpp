@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
+#include <iostream>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/fcntl.h>
@@ -120,24 +121,15 @@ bool checkAllowedMethods(Event *e) throw (std::exception)
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 
 	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
-	{
-		/**
-		 * 405: "method not allowed"
-		 **/
-		e->setStatusCode(405);
 		return false;
-	}
 	return true;
 }
 
 bool checkClientMaxBodySize(Event *e) throw(std::exception)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < reqHandler->getRequestInfo().body.length()))
-	{
-		e->setStatusCode(413);
+	if (e->locationData->getClientMaxBodySize() && (e->locationData->getClientMaxBodySize() < atoi(reqHandler->getRequestInfo().contentLength.c_str())))
 		return false;
-	}
 	return true;
 }
 
@@ -238,6 +230,7 @@ void setInternalUri(Event *e)
 
 void EventLoop::ws_internalRedir(Event *e)
 {
+	std::cerr<<"internal redirection"<<std::endl;
 	setLocationData(e);
 	setInternalUri(e);
 }
@@ -270,6 +263,7 @@ void EventLoop::errorCallback(Event *e)
 	}
 	else
 	{
+		std::cout<<"error page not found"<<std::endl;
 		// 그냥 socket에 404를 쓰고 끝냄.
 		unregisterClientSocketReadEvent(e);
 		registerClientSocketWriteEvent(e);
@@ -288,10 +282,20 @@ void EventLoop::setHttpResponse(Event *e)
 	/**
 	 * internal loop
 	 * */
+	std::cerr<<"internal loop"<<std::endl;
+	std::cerr<<e->locationData->getUri()<<std::endl;
 	if (!checkAllowedMethods(e))
+	{
+		e->setStatusCode(405);
 		errorCallback(e);
+		return ;
+	}
 	if (!checkClientMaxBodySize(e))
+	{
+		e->setStatusCode(413);
 		errorCallback(e);
+		return ;
+	}
 
 	/**
 	 * client's request is redirection.

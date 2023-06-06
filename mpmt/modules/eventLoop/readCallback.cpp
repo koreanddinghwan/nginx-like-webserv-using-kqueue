@@ -1,7 +1,9 @@
 #include "Event.hpp"
 #include "EventLoop.hpp"
 #include <exception>
+#include <sys/errno.h>
 #include <sys/event.h>
+#include <unistd.h>
 
 void EventLoop::readCallback(struct kevent *e)
 {
@@ -62,56 +64,46 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[34m"; 
+	std::cout<<"Client socket read callback"<<std::endl;
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//socket의 readfilter-> EOF flag는 client의 disconnect.
-		if (e->flags == EV_EOF)
+		/**
+		 * EOF => client가 보내는 데이터가 끝났음을 의미한다.
+		 * unregister이후, client에 socket write가 끝나면 다시 register한다.
+		 * */
+		if (e->flags & EV_EOF)
 		{
+			std::cout<<"EV_EOF"<<std::endl;
 			unregisterClientSocketReadEvent(e_udata);
-			//remove event
-			//client socket close
-			close(e_udata->getClientFd());
-			//client socket event delete
-			delete e_udata;
+			return ;
 		}
 
+		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
-  
+ 
+		std::cout<<"readd_len : "<<read_len<<std::endl;
 		if (read_len == -1)
 		{
 			std::cout<<"errno:"<<errno<<std::endl;
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
-			else if (errno == ECONNRESET)
-			{
-				//remove event
-				unregisterClientSocketReadEvent(e_udata);
-				//client socket close
-				close(client_fd);
-				//client socket event delete
-				delete e_udata;
-				return;
-			}
-			else
-				//관련 exception 처리 필요
-				//event 삭제?
-				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
-			unregisterClientSocketReadEvent(e_udata);
+		{
+			std::cout<<"read len is 0"<<std::endl;
+			return;
+		}
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+		
+			std::cout<<"Httpbuffer read"<<std::endl;
+			write(1, HttpServer::getInstance().getHttpBuffer(), read_len);
+			std::cout<<std::endl;
 			e_udata->readByte = read_len;
-
-			/* std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl; */
-			/* std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl; */
-			/* std::cout<<"[[[[[[[CLIENT REQUEST END]]]]]]]]"<<std::endl; */
-
-			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request
 			try {
@@ -119,6 +111,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				reqHandler->handle(e_udata);
 				/* std::cout<<"use handle end"<<std::endl; */
 			} catch (std::exception &exception) {
+				std::cout<<"Error in handle"<<std::endl;
 				errorCallback(e_udata);
 				return;
 			}
@@ -128,13 +121,20 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			 *
 			 * read_len : read return 0 when eof
 			 * */
-			if (reqHandler->isHeaderPending() && read_len != 0)
+			std::cout<<"header pendig::"<<reqHandler->isHeaderPending()<<std::endl;
+			std::cout<<"body pendig::"<<reqHandler->isBodyPending()<<std::endl;
+			std::cout<<"pending::"<<reqHandler->getIsPending()<<std::endl;
+			if (reqHandler->isHeaderPending())
 				return ;
 			else
 			{
+				reqHandler->printReq();
 				/**
 				 * initialize internal method and uri
 				 * */
+				std::cerr<<"=======================initialize internal method and uri================="<<std::endl;
+				std::cerr<<"method: "<<reqHandler->getRequestInfo().method<<std::endl;
+				std::cerr<<"uri: "<<reqHandler->getRequestInfo().path<<std::endl;
 				e_udata->internal_method = reqHandler->getRequestInfo().method;
 				e_udata->internal_uri = reqHandler->getRequestInfo().path;
 				setHttpResponse(e_udata);
@@ -211,7 +211,7 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 			{
-			HttpServer::getInstance().getHttpBuffer()[read_len - 1] = '\0';
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
 

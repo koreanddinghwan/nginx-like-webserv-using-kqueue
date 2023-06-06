@@ -9,10 +9,15 @@ Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::
 	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
+	this->PtoCPipe[0] = -1;
+	this->PtoCPipe[1] = -1;
+	this->CtoPPipe[0] = -1;
+	this->CtoPPipe[1] = -1;
 	this->file_fd = -1;
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
+	this->locationData = NULL;
 	logger<< "Event::Event(t_ServerType t)" << std::endl;
 }
 
@@ -245,13 +250,18 @@ void Event::setRoute(std::string t)
  */
 bool Event::setErrorPage()
 {
-	if (!this->locationData || this->locationData->getErrorPage().size() == 0)
+	if (!locationData)
+		return false;
+
+	std::map<int, std::string> *errorPage = this->locationData->getErrorPage();
+
+	if (errorPage->size() == 0)
 		return false;
 	if (this->statusCode >= 400)
 	{
-		if (this->locationData->getErrorPage().find(this->statusCode) != this->locationData->getErrorPage().end())
+		if (errorPage->find(this->statusCode) != errorPage->end())
 		{
-			this->internal_uri = this->locationData->getErrorPage().find(this->statusCode)->second;
+			this->internal_uri = errorPage->find(this->statusCode)->second;
 			this->internal_method = "GET";
 			return true;
 		}
