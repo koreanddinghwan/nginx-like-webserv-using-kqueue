@@ -1,6 +1,8 @@
 #include "HttpreqHandler.hpp"
 #include <algorithm>
 #include <ostream>
+#include <sstream>
+#include <string>
 
 
 /* =================== undefine =================== */
@@ -20,81 +22,93 @@ void HttpreqHandler::parseUndefined(void)
 
 /* =============== chunked parse =============== */
 
-int HttpreqHandler::parseChunkedLength(int *startPos)
+int HttpreqHandler::parseChunkedLength(int pos)
 {
 	std::string line;
-	int pos;
 
-	pos = _bodyBuf.find(CRLF, *startPos);
-	line = _bodyBuf.substr(*startPos, pos - *startPos);
-	*startPos = pos + 2;
+	line = _bodyBuf.substr(0, pos);
 	return (convertHexToDec(line));
 }
 
-std::string HttpreqHandler::parseChunkedBody(int *startPos)
+std::string HttpreqHandler::parseChunkedBody(int lenPos, int bodyPos)
 {
 	std::string line;
-	int	pos;
 
-	pos = _bodyBuf.find(CRLF, *startPos);
-	line = _bodyBuf.substr(*startPos, pos - *startPos);
-	*startPos = pos + 2;
-	return (line);
+	// except 던지면서 임시변수 생성한 거 바로 던지게 하는 거 생각해보기....
+	line = _bodyBuf.substr(lenPos + 2, bodyPos - lenPos - 2);
+	return line;
 }
 
-void HttpreqHandler::splitChunked(void)
+void HttpreqHandler::splitChunked(int lenPos, int bodyPos)
 {
-	int pos = 0, len = 0;
-	int endPos = _bodyBuf.length() - 5;
-	std::string line, buf;
-    std::stringstream ss;
-	
-	while (pos != endPos)
+	int len = 0;
+	std::string line;
+  
+	len = parseChunkedLength(lenPos);
+	line = parseChunkedBody(lenPos, bodyPos);
+	if (len < line.length())
 	{
-		len = parseChunkedLength(&pos);
-		line = parseChunkedBody(&pos);
-		if (len < line.length())
-		{
-			_event->setStatusCode(413);
-			throw std::exception();
-		}
-		_contentLength += len;
-		buf.append(line);
+		_event->setStatusCode(413);
+		throw std::exception();
 	}
-    ss << _contentLength;
-    _info.contentLength = ss.str();
-	_bodyBuf.clear();
-	_bodyBuf = buf;
+	_contentLength += len;
+	_info.body.append(line);
 }
 
 void HttpreqHandler::parseChunked(std::string req) 
 {
-	int pos = 0, endPos = 0;
+	int pos  = 0;
 	std::string line;
-	
-	if (_headerPended) //청크 헤더 덜들어옴
+	std::stringstream ss;
+
+	if (_bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴.
 	{
-		pos = _buf.find(CRLF2);
-		if (pos == std::string::npos)
-			return ;
-		_headerPended = false;
-		_bodyPended = true;
-		_chunkedWithoutBodyBuf.append(_buf.substr(0, pos + 4));
-	}
-	if (_bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴. 바디 끝 들어올 때 까지 파싱 x
-	{
-		endPos = _buf.find("0\r\n\r\n");
-		if (endPos == std::string::npos)
-			return ;
-		// 바디 다 들어옴, 길이, 바디 분리
-		pos = _buf.find(CRLF2);
-		_bodyBuf = _buf.substr(pos + 4);
-		_pended = false;
+		if (_bodyBuf.empty())
+			_bodyBuf.append(req);
+		while (!_bodyBuf.empty() && _bodyBuf.length() != 5 && _bodyBuf != "0\r\n\r\n")
+		{
+			std::cout << "in" <<std::endl;
+			pos = _bodyBuf.find(CRLF);
+			if (!pos && !_hasContentLength) // 길이 안들어옴
+			{
+
+			std::cout << "1" <<std::endl;
+				return ;
+			}
+			else if (!pos && _hasContentLength) // body 일부만 들어옴
+			{
+			std::cout << "2" <<std::endl;
+				_info.body.append(_bodyBuf);
+				_bodyBuf.clear();
+				return ;
+			}
+			else if (pos && !_hasContentLength) // 길이 들어옴
+			{
+			std::cout << "3" <<std::endl;
+				_hasContentLength = true;
+				_chunkedLength = parseChunkedLength(pos);
+				_contentLength += _chunkedLength;
+				_bodyBuf.erase(0, pos + 2);
+			}
+			else if (pos && _hasContentLength) // body 다 들어옴
+			{
+			std::cout << "4" <<std::endl;
+				_hasContentLength = false;
+				line = parseChunkedBody(0, pos);
+				if (line.length() > _chunkedLength)
+				{
+					_event->setStatusCode(413);
+					throw std::exception();
+				}
+				_info.body.append(line);
+				_bodyBuf.erase(0, pos + 2);
+			}
+		}
+		std::cout << "find 0 end" << std::endl;
 		_bodyPended = false;
-		splitChunked();
-		_buf.clear();
-		_buf.append(_chunkedWithoutBodyBuf);
-		_buf.append(_bodyBuf);		
+		_pended = false;
+		ss << _contentLength;
+		_info.contentLength = ss.str();
 	}
 }
 
@@ -274,7 +288,6 @@ void HttpreqHandler::parse(void)
 {
 	int pos = 0, prevPos = 0;
 	std::string line;
-
 	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)
 	{
 		line = _buf.substr(prevPos, pos - prevPos);
@@ -289,8 +302,6 @@ void HttpreqHandler::parse(void)
 				break ;
 		}
 	}
-	//body
 	parseCookie();
-	parseBody();
 }
 /* ============================================= */

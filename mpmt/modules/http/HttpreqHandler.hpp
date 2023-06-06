@@ -31,6 +31,8 @@ private:
 	std::string _chunkedWithoutBodyBuf;
 
 	int _contentLength;
+	int _chunkedLength;
+	int _infoBodyIdx;
 	bool _hasContentLength;
 	/* ========================================== */
 
@@ -91,9 +93,9 @@ private:
 
 	//chunked
 	void parseChunked(std::string req);
-	void splitChunked(void);
-	int parseChunkedLength(int *startPos);
-	std::string parseChunkedBody(int *startPos);
+	void splitChunked(int pos, int endPos);
+	int parseChunkedLength(int pos);
+	std::string parseChunkedBody(int lenPos, int bodyPos);
 
 	//separate
 	void parseSeparate(std::string req);
