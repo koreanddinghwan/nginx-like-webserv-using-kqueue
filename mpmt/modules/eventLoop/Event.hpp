@@ -42,10 +42,13 @@ typedef enum s_ServerType {
 } t_ServerType;
 
 typedef enum s_EventType {
-	E_SERVER_SOCKET = 0,
-	E_CLIENT_SOCKET,
-	E_PIPE,
-	E_FILE
+	E_R_SERVER_SOCKET = 0,
+	E_R_CLIENT_SOCKET,
+	E_R_FILE,
+	E_R_PIPE,
+	E_W_CLIENT_SOCKET,
+	E_W_FILE,
+	E_W_PIPE,
 } t_EventType;
 
 typedef struct s_SocketInfo
@@ -60,6 +63,13 @@ class Event {
 public:
 		typedef std::vector<HttpLocationData *> t_locationData;
 
+		bool r_serverEvent;
+		bool r_clientEvent;
+		bool r_fileEvent;
+		bool r_pipeEvent;
+		bool w_clientEvent;
+		bool w_fileEvent;
+		bool w_pipeEvent;
 
 private:
 	/* 이 이벤트는 어느 서버에서 처리될 fd인가? */

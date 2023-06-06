@@ -9,31 +9,15 @@ void EventLoop::readCallback(struct kevent *e)
 {
 	std::cout << "\033[32m"; 
 	std::cout<<"Read callback"<<std::endl;
-
-	//set event
 	Event *e_udata = static_cast<Event *>(e->udata);
-
-	switch (e_udata->getEventType()){
-		//check us server socket
-		case E_SERVER_SOCKET:
-			e_serverSocketReadCallback(e, e_udata);
-			break;
-		//check is client socket read
-		case E_CLIENT_SOCKET:
-			e_clientSocketReadCallback(e, e_udata);
-			break;
-		//check is pipe read
-		case E_PIPE:
-			e_pipeReadCallback(e, e_udata);
-			break;
-		//check is file read
-		case E_FILE:
-			e_fileReadCallback(e, e_udata);
-			break;
-		default:
-			std::cout<<"unknown event type"<<std::endl;
-			break;
-	}
+	if (e_udata->r_serverEvent)
+		e_serverSocketReadCallback(e, e_udata);
+	if (e_udata->r_clientEvent)
+		e_clientSocketReadCallback(e, e_udata);
+	if (e_udata->r_pipeEvent)
+		e_pipeReadCallback(e, e_udata);
+	if (e_udata->r_fileEvent)
+		e_fileReadCallback(e, e_udata);
 }
 
 /**
@@ -90,6 +74,13 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			std::cout<<"errno:"<<errno<<std::endl;
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
+			else if (errno == ECONNRESET)
+			{
+				std::cout<<"ECONNRESET"<<std::endl;
+				close(client_fd);
+				delete e_udata;
+				return ;
+			}
 		}
 		else if (read_len == 0)
 		{
@@ -124,10 +115,13 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			std::cout<<"header pendig::"<<reqHandler->isHeaderPending()<<std::endl;
 			std::cout<<"body pendig::"<<reqHandler->isBodyPending()<<std::endl;
 			std::cout<<"pending::"<<reqHandler->getIsPending()<<std::endl;
+			std::cout<<reqHandler->getRequestInfo().body<<std::endl;
 			if (reqHandler->isHeaderPending())
 				return ;
 			else
 			{
+				if (e_udata->locationData)
+					return ;
 				reqHandler->printReq();
 				/**
 				 * initialize internal method and uri
@@ -155,6 +149,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"pipeWrite"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
+		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 		//read from pipe
 		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, 65534);
 		/* std::cout<<"read len = " <<read_len<<std::endl; */
@@ -176,9 +171,14 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else if (read_len == 0)
 		{
-			unregisterPipeReadEvent(e_udata);
-			registerClientSocketWriteEvent(e_udata);
-			return;
+			if (reqHandler->getIsPending())
+				return ;
+			else
+			{
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return;
+			}
 		}
 		else
 		{

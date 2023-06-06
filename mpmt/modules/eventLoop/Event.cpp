@@ -9,6 +9,13 @@ Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::
 	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
+	this->r_serverEvent = false;
+	this->r_clientEvent = false;
+	this->r_fileEvent = false;
+	this->r_pipeEvent = false;
+	this->w_clientEvent = false;
+	this->w_fileEvent = false;
+	this->w_pipeEvent = false;
 	this->PtoCPipe[0] = -1;
 	this->PtoCPipe[1] = -1;
 	this->CtoPPipe[0] = -1;
@@ -34,7 +41,22 @@ void Event::setClientFd(int t)
 {this->client_socket_fd = t;}
 
 void Event::setEventType(t_EventType t)
-{this->eventInfo = t;}
+{
+	if (t == E_R_SERVER_SOCKET)
+		this->r_serverEvent = true;
+	else if (t == E_R_CLIENT_SOCKET)
+		this->r_clientEvent = true;
+	else if (t == E_R_FILE)
+		this->r_fileEvent = true;
+	else if (t == E_R_PIPE)
+		this->r_pipeEvent = true;
+	else if (t == E_W_CLIENT_SOCKET)
+		this->w_clientEvent = true;
+	else if (t == E_W_FILE)
+		this->w_fileEvent = true;
+	else if (t == E_W_PIPE)
+		this->w_pipeEvent = true;
+}
 
 void Event::setRequestHandler(IHandler *t)
 {this->requestHandler = t;}
@@ -138,7 +160,7 @@ Event *Event::createNewClientSocketEvent(Event *e)
 	 * event에 전달할 udata 채우기!
 	 * */
 	/* client socket에 대한 read event입니다.*/
-	new_udata->setEventType(E_CLIENT_SOCKET);
+	new_udata->setEventType(E_R_CLIENT_SOCKET);
 
 	/**
 	 * client socket의 fd를 등록
@@ -157,7 +179,7 @@ Event *Event::createNewServerSocketEvent(int port)
 	Event *e = new Event(HTTP_SERVER);
 	e->setServerDataByPort(port);
 	int fd;
-	t_EventType event_type = E_SERVER_SOCKET;
+	t_EventType event_type = E_R_SERVER_SOCKET;
 	t_SocketInfo socketInfo;
 
 	/* create socket */

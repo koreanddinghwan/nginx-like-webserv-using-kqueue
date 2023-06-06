@@ -17,12 +17,10 @@ void EventLoop::ws_method_GET(Event *e)
 		if (e->statBuf.st_size == 0)
 		{
 			e->setStatusCode(204);
-			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
 			return ;
 		}
 		e->setStatusCode(200);
-		unregisterClientSocketReadEvent(e);
 		registerFileReadEvent(e);
 		return ;
 	}
@@ -51,7 +49,6 @@ void EventLoop::ws_method_GET(Event *e)
 				/**
 				 * resBody에 autoindex내용 들어가있음.
 				 * */
-				unregisterClientSocketReadEvent(e);
 				registerClientSocketWriteEvent(e);
 				return ;
 			}
@@ -71,15 +68,12 @@ void EventLoop::ws_method_POST(Event *e)
 		 * */
 		if (ws_HttpUploadModule::processEvent(e))
 		{
-			unregisterClientSocketReadEvent(e);
+			std::cout<<"upload module process event success"<<std::endl;
 			registerFileWriteEvent(e);
 			return ;
 		}
 		else
-		{
-			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
-		}
 	}
 	else
 	{
@@ -88,7 +82,6 @@ void EventLoop::ws_method_POST(Event *e)
 		 * std::cout<<"upload store is not setted"<<std::endl;
 		 * */
 		e->setStatusCode(404);
-		unregisterClientSocketReadEvent(e);
 		errorCallback(e);
 	}
 }
