@@ -153,8 +153,12 @@ void setInternalUri(Event *e)
 		return ;
 	}
 
-
-	tmp = requestPath.substr(1);
+	std::cout<<"requestPath :";
+	std::cout<<requestPath<<std::endl;
+	if (requestPath == "")
+		tmp = "";
+	else
+		tmp = requestPath.substr(1);
 	pos = tmp.find("/");
 
 	if (e->locationData->getUri() == "/")

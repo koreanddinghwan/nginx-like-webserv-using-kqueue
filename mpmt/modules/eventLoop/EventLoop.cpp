@@ -44,22 +44,16 @@ void EventLoop::initEventLoop()
 		for (int i = 0; i < nevents; i++)
 		{
 			int fd = events[i].ident;
-			try {
-				if (events[i].filter == EVFILT_READ)
-					readCallback(events + i);
-				else if (events[i].filter == EVFILT_WRITE)
-					writeCallback(events + i);
-				else
-				{
-					std::cout<<"unknown event Filter"<<std::endl;
-					std::cout<<events[i].filter<<std::endl;
-					std::cout<<events[i].flags<<std::endl;
-					std::cout<<"end"<<std::endl;
-				}
-			} catch (std::exception &e)
+			if (events[i].filter == EVFILT_READ)
+				readCallback(events + i);
+			else if (events[i].filter == EVFILT_WRITE)
+				writeCallback(events + i);
+			else
 			{
-				std::cerr << e.what() << std::endl;
-				continue;
+				std::cout<<"unknown event Filter"<<std::endl;
+				std::cout<<events[i].filter<<std::endl;
+				std::cout<<events[i].flags<<std::endl;
+				std::cout<<"end"<<std::endl;
 			}
 		}
 	}
