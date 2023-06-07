@@ -10,7 +10,7 @@
 class responseHandler : public IHandler
 {
 public:
-	responseHandler();
+	responseHandler(Event *e);
 	responseHandler(const int &status);
 	~responseHandler();
 
@@ -34,6 +34,7 @@ public:
 private:
 	responseHandler& operator=(const responseHandler &rhs);
 	Response* _res;
+	Event *_event;
 };
 
 #endif

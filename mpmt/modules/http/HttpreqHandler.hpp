@@ -48,7 +48,7 @@ private:
 	/* ========================================== */
 
 public:
-	HttpreqHandler();
+	HttpreqHandler(Event *e);
 	~HttpreqHandler();
 
 public:

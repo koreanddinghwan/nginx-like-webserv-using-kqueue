@@ -223,9 +223,9 @@ void HttpreqHandler::checkStartLine(void)
 }
 
 /* =============== constructor ================== */
-HttpreqHandler::HttpreqHandler()
+HttpreqHandler::HttpreqHandler(Event *e)
 	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
-	_headerPended(false), _bodyPended(false)
+	_headerPended(false), _bodyPended(false), _event(e)
 {
 	//info = new HttpreqHandlerInfo();
 }
