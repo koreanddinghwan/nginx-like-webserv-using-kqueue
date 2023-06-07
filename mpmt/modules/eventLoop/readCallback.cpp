@@ -156,7 +156,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from pipe
-		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, 65534);
+		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, PIPEBUFFERSIZE - 1);
 		/* std::cout<<"read len = " <<read_len<<std::endl; */
 		/* std::cout<<"pipe readable data size:"<<e->data<<std::endl; */
 		if (read_len == -1)

@@ -21,6 +21,7 @@
 #include "../http/ws_HttpIndexModule.hpp"
 #include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/ws_HttpUploadModule.hpp"
+#define PIPEBUFFERSIZE 65536
 /**
  * @brief singleton eventloop
  */
@@ -40,7 +41,7 @@ public:
 	 */
 	void initEventLoop();
 
-	char pipeBuffer[65535];
+	char pipeBuffer[PIPEBUFFERSIZE];
 
 private:
 	int kq_fd;
