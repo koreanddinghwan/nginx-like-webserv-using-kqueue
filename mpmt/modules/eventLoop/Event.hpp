@@ -139,8 +139,6 @@ public:
 
 public:
 	void (*callback)(struct kevent *e, Event* ev);
-	std::fstream logger;
-	void log(const char *tt);
 
 public:
 	Event(t_ServerType t);
