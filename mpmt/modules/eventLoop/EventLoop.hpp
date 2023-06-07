@@ -21,7 +21,7 @@
 #include "../http/ws_HttpIndexModule.hpp"
 #include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/ws_HttpUploadModule.hpp"
-#define PIPEBUFFERSIZE 65536
+#define PIPEBUFFERSIZE 131072
 /**
  * @brief singleton eventloop
  */

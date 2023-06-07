@@ -80,6 +80,7 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 	std::cout<<"pipe Write callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
+		std::cerr<<"pipewrite data size : "<<static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length()<<std::endl;
 		if (static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length() == 0)
 		{
 			/**

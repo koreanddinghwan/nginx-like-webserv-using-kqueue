@@ -36,9 +36,9 @@ void EventLoop::initEventLoop()
 	 * */
 	while (true)
 	{
-		struct kevent events[12];
+		struct kevent events[1024];
 		int nevents;
-		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 12, NULL)) == -1) 
+		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 1024, NULL)) == -1) 
 			throw std::runtime_error("Failed to kevent\n");
 
 		for (int i = 0; i < nevents; i++)
@@ -58,7 +58,6 @@ void EventLoop::initEventLoop()
 				}
 			} catch (std::exception &e)
 			{
-				std::cerr << e.what() << std::endl;
 				continue;
 			}
 		}
