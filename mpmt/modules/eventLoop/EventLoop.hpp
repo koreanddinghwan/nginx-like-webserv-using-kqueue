@@ -70,12 +70,10 @@ private:
 	void e_pipeReadCallback(struct kevent *e, Event *e_udata);
 	void e_fileReadCallback(struct kevent *e, Event *e_udata);
 	void e_tmpFileReadCallback(struct kevent *e, Event *e_udata);
-
 	void e_clientSocketWriteCallback(struct kevent *e, Event *e_udata);
 	void e_pipeWriteCallback(struct kevent *e, Event *e_udata);
 	void e_fileWriteCallback(struct kevent *e, Event *e_udata);
 	void e_tmpFileWriteCallback(struct kevent *e, Event *e_udata);
-	
 
 	/**
 	 * kqueue에 event를 등록합니다.

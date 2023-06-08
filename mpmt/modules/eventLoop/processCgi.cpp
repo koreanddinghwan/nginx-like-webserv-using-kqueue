@@ -118,6 +118,7 @@ bool EventLoop::processCgi(Event *e)
 		e->setStatusCode(404);
 		return false;
 	}
+
 	
 
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
@@ -147,6 +148,7 @@ bool EventLoop::processCgi(Event *e)
 		std::cout << "fork error" << std::endl;
 		return false;
 	}
+
 	/**
 	 * 4. parent process
 	 * */
@@ -167,6 +169,7 @@ bool EventLoop::processCgi(Event *e)
 		registerTmpFileWriteEvent(e);
 
 		/* registerPipeReadEvent(e); */
+
 		return true;
 	}
 	/**
@@ -175,6 +178,7 @@ bool EventLoop::processCgi(Event *e)
 	else 
 	{
 		close(e->CtoPPipe[0]);
+
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
 			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1) */
@@ -188,6 +192,7 @@ bool EventLoop::processCgi(Event *e)
 			std::cout<<"dup2 error"<<errno<<std::endl;
         if (dup2(e->CtoPPipe[1], STDOUT_FILENO) == -1)
 			std::cout<<"dup2 error"<<errno<<std::endl;
+
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];
 		for (size_t i = 0; i < e->getCgiEnv().size(); i++)

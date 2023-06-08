@@ -31,6 +31,7 @@ void EventLoop::readCallback(struct kevent *e)
 		case E_TMP:
 			e_tmpFileReadCallback(e, e_udata);
 			break;
+
 		default:
 			std::cout<<"unknown event type"<<std::endl;
 			break;
@@ -57,6 +58,7 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 		new_udata->setRequestHandler(new HttpreqHandler(new_udata));
 		new_udata->setResponseHandler(new responseHandler(new_udata));
 
+
 		//kqueue에 event 등록
 		registerClientSocketReadEvent(new_udata);
 	}
@@ -66,6 +68,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout << "\033[34m";
 	std::cout<<"client socket read callback"<<std::endl;
+
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -73,6 +76,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		if (e->flags == EV_EOF)
 		{
 			std::cout<<"EOF"<<std::endl;
+
 			unregisterClientSocketReadEvent(e_udata);
 			//remove event
 			//client socket close
@@ -86,6 +90,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
 
 		std::cout<<"read_len:"<<read_len<<std::endl;
+
 		if (read_len == -1)
 		{
 			std::cout<<"errno:"<<errno<<std::endl;
@@ -94,6 +99,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			else if (errno == ECONNRESET)
 			{
 				std::cout<<"ECONNRESET"<<std::endl;
+
 				//remove event
 				unregisterClientSocketReadEvent(e_udata);
 				//client socket close
@@ -112,6 +118,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			std::cout<<"read_len == 0"<<std::endl;
 			unregisterClientSocketReadEvent(e_udata);
 		}
+
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
@@ -174,6 +181,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	{
 		//read from pipe
 		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, PIPEBUFFERSIZE - 1);
+
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -216,6 +224,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
 	std::cout<<"fileRead"<<std::endl;
+
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from file

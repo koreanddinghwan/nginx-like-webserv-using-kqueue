@@ -152,6 +152,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	delete e->getResponseHandler();
 	delete e->getRequestHandler();
 
+
 	e->setRequestHandler(new HttpreqHandler(e));
 	e->setResponseHandler(new responseHandler(e));
 	e->setStatusCode(200);

@@ -1,6 +1,7 @@
 #include "Event.hpp"
 #include "EventLoop.hpp"
 
+
 Event::Event(t_ServerType t)
 {
 	this->cgiEnv.resize(20);

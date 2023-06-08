@@ -23,7 +23,6 @@
 /* 	- Pipe Read */
 /* 	- File Read */
 
-class EventLoop;
 
 /* 2. Write (FILT)*/
 /* 	- Client Socket Write */
