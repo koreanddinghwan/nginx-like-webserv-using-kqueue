@@ -237,6 +237,11 @@ HttpreqHandler::HttpreqHandler(Event *e)
 
 HttpreqHandler::~HttpreqHandler()
 {
+	this->_method.clear();
+
+	this->_info.queryParamsV.clear();
+	this->_buf.clear();
+	this->_info.body.clear();
 	//delete this->info;
 }
 /* ============================================= */

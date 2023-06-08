@@ -123,7 +123,6 @@ bool EventLoop::processCgi(Event *e)
 
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	setEnv(e);
 
 	/* e->setTmpInPath(); */
 	e->setTmpOutPath();
@@ -197,6 +196,7 @@ bool EventLoop::processCgi(Event *e)
 		env[e->getCgiEnv().size()] = NULL;
 		if (execve(e->getRoute().c_str(), NULL, env) == -1)
 		{
+			std::cerr << "execve error" << std::endl;
 			e->setStatusCode(404);
 			exit(1);
 		}

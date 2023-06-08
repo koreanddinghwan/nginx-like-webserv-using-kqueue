@@ -73,17 +73,17 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//socket의 readfilter-> EOF flag는 client의 disconnect.
-		if (e->flags == EV_EOF)
-		{
-			std::cout<<"EOF"<<std::endl;
+		/* if (e->flags & EV_EOF) */
+		/* { */
+		/* 	std::cout<<"EOF"<<std::endl; */
 
-			unregisterClientSocketReadEvent(e_udata);
-			//remove event
-			//client socket close
-			close(e_udata->getClientFd());
-			//client socket event delete
-			delete e_udata;
-		}
+		/* 	unregisterClientSocketReadEvent(e_udata); */
+		/* 	//remove event */
+		/* 	//client socket close */
+		/* 	close(e_udata->getClientFd()); */
+		/* 	//client socket event delete */
+		/* 	delete e_udata; */
+		/* } */
 
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
@@ -115,19 +115,12 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else if (read_len == 0)
 		{
-			std::cout<<"read_len == 0"<<std::endl;
-			unregisterClientSocketReadEvent(e_udata);
+			return;
 		}
-
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			e_udata->readByte = read_len;
-
-			/* std::cout<<"[[[[[[[CLIENT REQUEST START]]]]]]]]"<<std::endl; */
-			/* std::cout<<HttpServer::getInstance().getHttpBuffer()<<std::endl; */
-			/* std::cout<<"[[[[[[[CLIENT REQUEST END]]]]]]]]"<<std::endl; */
-
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 
 			//handle request

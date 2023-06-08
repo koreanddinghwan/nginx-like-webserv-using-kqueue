@@ -19,6 +19,7 @@ responseHandler& responseHandler::operator=(const responseHandler &rhs) {
 };
 
 responseHandler::~responseHandler() {
+	std::cerr<<"responseHandler destructor"<<std::endl;
 	delete this->_res;
 };
 
