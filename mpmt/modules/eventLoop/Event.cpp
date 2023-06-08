@@ -265,7 +265,10 @@ void Event::setTmpOutPath()
 	char buf[10];
 
 	tmpOutFileName = "/tmp/";
-	sprintf(buf, "%d", this->client_socket_fd * 5);
+	sprintf(buf, "%d", this->client_socket_fd);
+	tmpOutFileName += buf;
+	tmpOutFileName += ".";
+	sprintf(buf, "%d", this->tmpOutFile);
 	tmpOutFileName += buf;
 	tmpOutFileName += ".out";
 }

@@ -44,9 +44,7 @@ void EventLoop::initEventLoop()
 		for (int i = 0; i < nevents; i++)
 		{
 			int fd = events[i].ident;
-      
-			std::cout<<"fd: "<<fd<<std::endl;
-			printEvent(events + i);
+
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);

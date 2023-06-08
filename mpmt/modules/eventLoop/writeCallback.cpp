@@ -4,9 +4,6 @@
 
 void EventLoop::writeCallback(struct kevent *e)
 {
-	std::cout << "\033[32m"; 
-	std::cout<<"write callback"<<std::endl;
-
 	//set event
 	Event *e_udata = static_cast<Event *>(e->udata);
 
@@ -33,8 +30,6 @@ void EventLoop::writeCallback(struct kevent *e)
 
 void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"CLIENT SOCKET WRITE CALLBACK"<<std::endl;
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -80,8 +75,6 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[35m"; 
-	std::cout<<"pipe Write callback"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		std::cerr<<"pipewrite data size : "<<static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length()<<std::endl;
@@ -105,18 +98,16 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 		 * */
 		int wroteByte = write(e_udata->PtoCPipe[1], static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str() + e_udata->fileWroteByte, fileSize - e_udata->fileWroteByte);
 
-		std::cout<<wroteByte<<std::endl;
 		if (wroteByte == -1)
 		{
 			if (errno == EAGAIN)
 			{
-				std::cout<<"there are no data to be read"<<std::endl;
 				return;
 			}
 			else
 			{
-				std::cout<<"UNKNOWN ERROR"<<std::endl;
-				std::cout<<"Errno: "<<errno<<std::endl;
+				std::cerr<<"UNKNOWN ERROR"<<std::endl;
+				std::cerr<<"Errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterPipeWriteEvent(e_udata);
 			}
@@ -142,8 +133,6 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"FILE WRITE CALLBACK"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		/**
@@ -160,13 +149,12 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 		{
 			if (errno == EAGAIN)
 			{
-				std::cout<<"there are no data to be read"<<std::endl;
 				return;
 			}
 			else
 			{
-				std::cout<<"UNKNOWN ERROR"<<std::endl;
-				std::cout<<"Errno: "<<errno<<std::endl;
+				std::cerr<<"UNKNOWN ERROR"<<std::endl;
+				std::cerr<<"Errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterFileWriteEvent(e_udata);
 				registerFileWriteEvent(e_udata);
@@ -193,8 +181,6 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"TMP FILE WRITE CALLBACK"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
@@ -203,8 +189,6 @@ void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 				reqHandler->getRequestInfo().body.c_str() + e_udata->fileWroteByte, 
 				fileSize - e_udata->fileWroteByte);
 
-		std::cout<<"wroteByte : "<<wroteByte<<std::endl;
-		std::cout<<"fileSize : "<<fileSize<<std::endl;
 		if (wroteByte == -1)
 		{
 			if (errno == EAGAIN)
@@ -214,8 +198,8 @@ void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 			}
 			else
 			{
-				std::cout<<"UNKNOWN ERROR"<<std::endl;
-				std::cout<<"Errno: "<<errno<<std::endl;
+				std::cerr<<"UNKNOWN ERROR"<<std::endl;
+				std::cerr<<"Errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterTmpFileWriteEvent(e_udata);
 				unlink(e_udata->tmpOutFileName.c_str());

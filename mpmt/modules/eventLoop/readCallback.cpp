@@ -72,28 +72,12 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
-		//socket의 readfilter-> EOF flag는 client의 disconnect.
-		/* if (e->flags & EV_EOF) */
-		/* { */
-		/* 	std::cout<<"EOF"<<std::endl; */
-
-		/* 	unregisterClientSocketReadEvent(e_udata); */
-		/* 	//remove event */
-		/* 	//client socket close */
-		/* 	close(e_udata->getClientFd()); */
-		/* 	//client socket event delete */
-		/* 	delete e_udata; */
-		/* } */
-
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
 
-		std::cout<<"read_len:"<<read_len<<std::endl;
-
 		if (read_len == -1)
 		{
-			std::cout<<"errno:"<<errno<<std::endl;
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
 			else if (errno == ECONNRESET)
@@ -132,16 +116,11 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				errorCallback(e_udata);
 				return;
 			}
-			//handle response by request
-			std::cout<<"pending status[header]"<<reqHandler->isHeaderPending()<<std::endl;
-			std::cout<<"pending status[body]"<<reqHandler->isBodyPending()<<std::endl;
-			std::cout<<"pending status[egt]"<<reqHandler->getIsPending()<<std::endl;
 
 			/**
 			 * pending state => client로부터 data를 더 받아야하는 상태
 			 * */
 			if (reqHandler->isHeaderPending()){
-				std::cout<<"header pending"<<std::endl;
 				return ;
 			}
 			else
@@ -183,7 +162,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				//관련 exception 처리 필요
 				//event 삭제?
 			{
-				std::cout<<"pipe read error. read len is -1, errno: "<<errno<<std::endl;
+				std::cerr<<"pipe read error. read len is -1, errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterPipeReadEvent(e_udata);
 				unlink(e_udata->tmpOutFileName.c_str());
@@ -200,7 +179,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			 * Returns when there is data to read; data contains the number of bytes available.
 			 * When the last writer disconnects, the filter will set EV_EOF in flags.
 			 * */
-			std::cout<<"readlen = 0, unregister pipe and register write event"<<std::endl;
+			std::cerr<<"readlen = 0, unregister pipe and register write event"<<"total pipe read: "<<e_udata->fileReadByte <<std::endl;
 			unregisterPipeReadEvent(e_udata);
 			unlink(e_udata->tmpOutFileName.c_str());
 			registerClientSocketWriteEvent(e_udata);
@@ -209,6 +188,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		else
 		{
 			EventLoop::getInstance().pipeBuffer[read_len] = '\0';
+			e_udata->fileReadByte += read_len;
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(EventLoop::getInstance().pipeBuffer);
 		}
 	}

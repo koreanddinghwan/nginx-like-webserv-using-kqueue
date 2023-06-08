@@ -114,7 +114,7 @@ bool EventLoop::processCgi(Event *e)
 	e->setRoute(e->locationData->getRoot() + e->locationData->getCgiPass());
 	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
-		std::cout << "stat error" << std::endl;
+		std::cerr << "stat error" << std::endl;
 		e->setStatusCode(404);
 		return false;
 	}
@@ -144,7 +144,7 @@ bool EventLoop::processCgi(Event *e)
 	if ((pid = fork())  == -1)
 	{
 		e->setStatusCode(500);
-		std::cout << "fork error" << std::endl;
+		std::cerr << "fork error" << std::endl;
 		return false;
 	}
 
@@ -155,14 +155,14 @@ bool EventLoop::processCgi(Event *e)
 	{
 		close(e->CtoPPipe[1]);
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_NONBLOCK | O_WRONLY)) == -1)
-			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
+			std::cerr<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_NONBLOCK | O_RDONLY)) == -1) */
-		/* 	std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl; */
+		/* 	std::cerr<<"error open file"<<e->tmpInFileName<< errno<<std::endl; */
 
 		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
-			std::cout<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
+			std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
-		/* 	std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
+		/* 	std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
 			//reserve
 		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
 		registerTmpFileWriteEvent(e);
@@ -176,18 +176,18 @@ bool EventLoop::processCgi(Event *e)
 		close(e->CtoPPipe[0]);
 		setEnv(e);
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
-			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
+			std::cerr<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1) */
 		/* 	std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl; */
 		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
-			std::cout<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
+			std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
 		/* 	std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
 
         if (dup2(e->tmpOutFile, STDIN_FILENO) == -1)
-			std::cout<<"dup2 error"<<errno<<std::endl;
+			std::cerr<<"dup2 error"<<errno<<std::endl;
         if (dup2(e->CtoPPipe[1], STDOUT_FILENO) == -1)
-			std::cout<<"dup2 error"<<errno<<std::endl;
+			std::cerr<<"dup2 error"<<errno<<std::endl;
 
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];

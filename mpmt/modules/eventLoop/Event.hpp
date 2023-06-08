@@ -1,6 +1,6 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
-
+#include <ctime>
 #include <stdio.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
