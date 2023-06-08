@@ -92,17 +92,17 @@ void setEnv(Event *e)
 	char pt[10];
     sprintf(pt, "%d", e->getDefaultServerData()->getListen());
 	tmp = pt;
-	e->getCgiEnv()[14] = strdup(("SERVER_PORT=" + tmp).c_str());
-	e->getCgiEnv()[15] = strdup("SERVER_PROTOCOL=HTTP/1.1");
-	e->getCgiEnv()[16] = strdup("SERVER_SOFTWARE=webserv/1.0");
+	e->getCgiEnv()[15] = strdup(("SERVER_PORT=" + tmp).c_str());
+	e->getCgiEnv()[16] = strdup("SERVER_PROTOCOL=HTTP/1.1");
+	e->getCgiEnv()[17] = strdup("SERVER_SOFTWARE=webserv/1.0");
 	if (reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test") != reqHandler->getRequestInfo().reqHeaderMap.end())
 	{
-		e->getCgiEnv()[17] = strdup(("HTTP_X_SECRET_HEADER_FOR_TEST=" + reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test")->second).c_str());
-		e->getCgiEnv()[18] = NULL;
+		e->getCgiEnv()[18] = strdup(("HTTP_X_SECRET_HEADER_FOR_TEST=" + reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test")->second).c_str());
+		e->getCgiEnv()[19] = NULL;
 	}
 	else 
 	{
-		e->getCgiEnv()[17] = NULL;
+		e->getCgiEnv()[18] = NULL;
 	}
 }
 
@@ -167,9 +167,6 @@ bool EventLoop::processCgi(Event *e)
 			//reserve
 		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
 		registerTmpFileWriteEvent(e);
-
-		/* registerPipeReadEvent(e); */
-
 		return true;
 	}
 	/**
@@ -178,7 +175,7 @@ bool EventLoop::processCgi(Event *e)
 	else 
 	{
 		close(e->CtoPPipe[0]);
-
+		setEnv(e);
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
 			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
 		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1) */

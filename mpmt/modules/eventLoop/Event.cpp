@@ -5,8 +5,6 @@
 Event::Event(t_ServerType t)
 {
 	this->cgiEnv.resize(20);
-	for (int i =0; i < 20; i++)
-		this->cgiEnv[i] = new char[100];
 	this->statusCode = 200;
 	this->server_socket_fd = -1;
 	this->client_socket_fd = -1;
@@ -102,8 +100,6 @@ Event::~Event()
 	//interface의 소멸자 호출하면, 연결된 소멸자 모두 호출.
 	delete this->requestHandler;
 	delete this->responseHandler;
-	for (int i = 0; i < 20; i++)
-		delete this->cgiEnv[i];
 }
 
 Event *Event::createNewClientSocketEvent(Event *e)
@@ -269,7 +265,7 @@ void Event::setTmpOutPath()
 	char buf[10];
 
 	tmpOutFileName = "/tmp/";
-	sprintf(buf, "%d", this->client_socket_fd);
+	sprintf(buf, "%d", this->client_socket_fd * 5);
 	tmpOutFileName += buf;
 	tmpOutFileName += ".out";
 }
