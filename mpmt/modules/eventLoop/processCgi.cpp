@@ -124,18 +124,18 @@ bool EventLoop::processCgi(Event *e)
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
-	/* e->setTmpInPath(); */
+	e->setTmpInPath();
 	e->setTmpOutPath();
 
 
 	(e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_CREAT | O_NONBLOCK | O_RDWR, 0777 ));
-	/* (e->tmpInFile = open(e->tmpInFileName.c_str(), O_CREAT | O_NONBLOCK | O_RDWR, 0777 )); */
+	(e->tmpInFile = open(e->tmpInFileName.c_str(), O_CREAT | O_NONBLOCK | O_RDWR, 0777 ));
 	close(e->tmpOutFile);
-	/* close(e->tmpInFile); */
+	close(e->tmpInFile);
 
-	pipe(e->CtoPPipe);
-	fcntl(e->CtoPPipe[0], F_SETFL, O_NONBLOCK);
-	fcntl(e->CtoPPipe[1], F_SETFL, O_NONBLOCK);
+	/* pipe(e->CtoPPipe); */
+	/* fcntl(e->CtoPPipe[0], F_SETFL, O_NONBLOCK); */
+	/* fcntl(e->CtoPPipe[1], F_SETFL, O_NONBLOCK); */
 
 	/**
 	 * 3. fork
@@ -153,16 +153,16 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	if (pid)
 	{
-		close(e->CtoPPipe[1]);
+		/* close(e->CtoPPipe[1]); */
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_NONBLOCK | O_WRONLY)) == -1)
 			std::cerr<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
-		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_NONBLOCK | O_RDONLY)) == -1) */
-		/* 	std::cerr<<"error open file"<<e->tmpInFileName<< errno<<std::endl; */
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_NONBLOCK | O_RDONLY)) == -1)
+			std::cerr<<"error open file"<<e->tmpInFileName<< errno<<std::endl;
 
 		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
 			std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
-		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
-		/* 	std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
+		if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 			//reserve
 		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
 		registerTmpFileWriteEvent(e);
@@ -177,16 +177,16 @@ bool EventLoop::processCgi(Event *e)
 		setEnv(e);
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
 			std::cerr<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
-		/* if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1) */
-		/* 	std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl; */
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1)
+			std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl;
 		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
 			std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
-		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
-		/* 	std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
+		if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 
         if (dup2(e->tmpOutFile, STDIN_FILENO) == -1)
 			std::cerr<<"dup2 error"<<errno<<std::endl;
-        if (dup2(e->CtoPPipe[1], STDOUT_FILENO) == -1)
+        if (dup2(e->tmpInFile, STDOUT_FILENO) == -1)
 			std::cerr<<"dup2 error"<<errno<<std::endl;
 
 		//실행

@@ -82,7 +82,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				return;
 			else if (errno == ECONNRESET)
 			{
-				std::cout<<"ECONNRESET"<<std::endl;
+				std::cerr<<"ECONNRESET"<<std::endl;
 
 				//remove event
 				unregisterClientSocketReadEvent(e_udata);
@@ -242,11 +242,10 @@ void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
 		//read from file
 		ssize_t read_len = read(e_udata->tmpInFile, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
 		stat(e_udata->tmpInFileName.c_str(), &e_udata->statBuf);
-		std::cout<<"Total file size = "<<e_udata->statBuf.st_size<<std::endl;
-
-		std::cout<<read_len<<std::endl;
-		if (e->flags & EV_EOF)
-			std::cout<<"EOF"<<std::endl;
+		std::cerr<<"Total file size = "<<e_udata->statBuf.st_size<<std::endl;
+		std::cerr<<"readble: "<<e->data<<std::endl;
+		std::cerr<<"eof?"<<e->flags<<std::endl;
+		std::cerr<<read_len<<std::endl;
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -259,7 +258,7 @@ void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
 				return ;
 			}
 		}
-		else if (read_len == 0 && e->flags & EV_EOF)
+		else if (read_len == 0 && e->flags == EV_EOF)
 		{
 			e_udata->setStatusCode(200);
 			unregisterTmpFileReadEvent(e_udata);
@@ -270,14 +269,18 @@ void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
-			std::cout<<"read byte: "<<e_udata->fileReadByte<<std::endl;
-			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
+			std::cerr<<"read byte: "<<e_udata->fileReadByte<<std::endl;
+
+			e_udata->setStatusCode(200);
+			if (e->data != e_udata->statBuf.st_size &&
+					e_udata->fileReadByte == e_udata->statBuf.st_size)
 			{
-				e_udata->setStatusCode(200);
+				std::cerr<<"read all, register client write and unregister tmpfile read"<<std::endl;
 				unregisterTmpFileReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
-				return ;
 			}
+
+
 		}
 	}
 }

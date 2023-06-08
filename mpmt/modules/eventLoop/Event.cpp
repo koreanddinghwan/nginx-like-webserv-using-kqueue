@@ -280,6 +280,9 @@ void Event::setTmpInPath()
 	tmpInFileName = "/tmp/";
 	sprintf(buf, "%d", this->client_socket_fd);
 	tmpInFileName += buf;
+	tmpOutFileName += ".";
+	sprintf(buf, "%d", this->tmpOutFile);
+	tmpOutFileName += buf;
 	tmpInFileName += ".in";
 }
 /**

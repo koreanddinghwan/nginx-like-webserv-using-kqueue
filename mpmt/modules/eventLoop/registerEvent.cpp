@@ -53,12 +53,18 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * */
 	e->getResponseHandler()->handle(e);
 
+
+
+	for (int i = 0; i < 200; i++)
+		std::cout<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBuf().c_str() + i);
+
+
 	/**
 	 * wrote byte set;
 	 * */
 	e->wrote = 0;
 	//client socket을 쓰기전용으로  kqueue에 등록
-	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
+	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register client socket write with kqueue\n");
 }
@@ -165,8 +171,8 @@ void EventLoop::unregisterTmpFileReadEvent(Event *e)
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file read with kqueue\n");
 	close(e->tmpInFile);
-	unlink(e->tmpInFileName.c_str());
-	unlink(e->tmpOutFileName.c_str());
+	/* unlink(e->tmpInFileName.c_str()); */
+	/* unlink(e->tmpOutFileName.c_str()); */
 }
 
 
