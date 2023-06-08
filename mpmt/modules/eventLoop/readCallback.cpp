@@ -240,47 +240,88 @@ void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
 	{
 		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
 		//read from file
-		ssize_t read_len = read(e_udata->tmpInFile, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
-		stat(e_udata->tmpInFileName.c_str(), &e_udata->statBuf);
+		std::cout<<e_udata->tmpInFileName<<std::endl;
 		std::cerr<<"Total file size = "<<e_udata->statBuf.st_size<<std::endl;
 		std::cerr<<"readble: "<<e->data<<std::endl;
 		std::cerr<<"eof?"<<e->flags<<std::endl;
-		std::cerr<<read_len<<std::endl;
-		if (read_len == -1)
+		ssize_t read_len = 0;
+
+		/**
+		 * @note This is not blocking
+		 * the data argument of kevent in file des- EV_READFLIT means
+		 * the 'data' bytes is available with non-block
+		 * */
+		int c = 0;
+		while (e_udata->fileReadByte < e_udata->statBuf.st_size)
 		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return ;
-			else
-			{
-				e_udata->setStatusCode(500);
-				unregisterTmpFileReadEvent(e_udata);
-				registerClientSocketWriteEvent(e_udata);
-				return ;
-			}
-		}
-		else if (read_len == 0 && e->flags == EV_EOF)
-		{
-			e_udata->setStatusCode(200);
-			unregisterTmpFileReadEvent(e_udata);
-			registerClientSocketWriteEvent(e_udata);
-		}
-		else
-		{
+			read_len = read(e_udata->tmpInFile, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
-			std::cerr<<"read byte: "<<e_udata->fileReadByte<<std::endl;
-
-			e_udata->setStatusCode(200);
-			if (e->data != e_udata->statBuf.st_size &&
-					e_udata->fileReadByte == e_udata->statBuf.st_size)
-			{
-				std::cerr<<"read all, register client write and unregister tmpfile read"<<std::endl;
-				unregisterTmpFileReadEvent(e_udata);
-				registerClientSocketWriteEvent(e_udata);
-			}
-
-
+			if (e_udata->fileReadByte < 2000000)
+				std::cerr<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
+			std::cerr<<"file read byte: "<<e_udata->fileReadByte<<std::endl;
+			std::cerr<<"read len: "<<read_len<<std::endl;
+			std::cerr<<"c: "<<c<<std::endl;
+			c++;
+			if (read_len == 0)
+				break;
 		}
+		std::cerr<<"end"<<std::endl;
+		unregisterTmpFileReadEvent(e_udata);
+		registerClientSocketWriteEvent(e_udata);
+
+
+		/* stat(e_udata->tmpInFileName.c_str(), &e_udata->statBuf); */
+		/* std::cerr<<"Total file size = "<<e_udata->statBuf.st_size<<std::endl; */
+		/* std::cerr<<"readble: "<<e->data<<std::endl; */
+		/* std::cerr<<"eof?"<<e->flags<<std::endl; */
+		/* std::cerr<<read_len<<std::endl; */
+		/* if (read_len == -1) */
+		/* { */
+		/* 	if (errno == EAGAIN || errno == EWOULDBLOCK) */
+		/* 		return ; */
+		/* 	else */
+		/* 	{ */
+		/* 		std::cerr<<"tmpfile read err"<<std::endl; */
+		/* 		e_udata->setStatusCode(500); */
+		/* 		unregisterTmpFileReadEvent(e_udata); */
+		/* 		registerClientSocketWriteEvent(e_udata); */
+		/* 		return ; */
+		/* 	} */
+		/* } */
+		/* else if (read_len == 0 && e->flags == EV_EOF) */
+		/* { */
+		/* 	e_udata->setStatusCode(200); */
+		/* 	unregisterTmpFileReadEvent(e_udata); */
+		/* 	registerClientSocketWriteEvent(e_udata); */
+		/* } */
+		/* else */
+		/* { */
+		/* 	HttpServer::getInstance().getHttpBuffer()[read_len] = '\0'; */
+		/* 	static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer()); */
+
+
+		/* if (e_udata->fileReadByte < 300) */
+		/* { */
+		/* 	std::cerr<<HttpServer::getInstance().getHttpBuffer()<<std::endl; */
+		/* } */
+
+		/* 	e_udata->fileReadByte += read_len; */
+		/* 	std::cerr<<"read byte: "<<e_udata->fileReadByte<<std::endl; */
+
+		/* 	if (e->data != e_udata->statBuf.st_size && */
+		/* 			e_udata->fileReadByte == e_udata->statBuf.st_size) */
+		/* 	{ */
+		/* 		e_udata->setStatusCode(200); */
+		/* 		std::cerr<<"read all, register client write and unregister tmpfile read"<<std::endl; */
+		/* 	for (int i = 0; i < 200; i++) */
+		/* 		std::cerr<<*(static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBody().c_str() + i); */
+
+	/* std::cerr<<(static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBody().size())<<std::endl; */
+		/* 		unregisterTmpFileReadEvent(e_udata); */
+		/* 		registerClientSocketWriteEvent(e_udata); */
+		/* 	} */
+		/* } */
 	}
 }

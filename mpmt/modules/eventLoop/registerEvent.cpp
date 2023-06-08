@@ -45,6 +45,10 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 		HttpServer::getInstance().issueSessionId();
 	}
 
+	for (int i = 0; i < 200; i++)
+		std::cerr<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBody().c_str() + i);
+
+	std::cerr<<(static_cast<responseHandler *>(e->getResponseHandler())->getResBody().size())<<std::endl;
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
 	 * */
@@ -56,7 +60,7 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 
 
 	for (int i = 0; i < 200; i++)
-		std::cout<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBuf().c_str() + i);
+		std::cerr<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBuf().c_str() + i);
 
 
 	/**
@@ -182,4 +186,5 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file write with kqueue\n");
 	close(e->tmpOutFile);
+	std::cerr<<"closed tmp file\n";
 }
