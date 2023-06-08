@@ -153,7 +153,7 @@ void setInternalUri(Event *e)
 		return ;
 	}
 
-
+	std::cout<<"requestPath : "<<requestPath<<std::endl;
 	tmp = requestPath.substr(1);
 	pos = tmp.find("/");
 

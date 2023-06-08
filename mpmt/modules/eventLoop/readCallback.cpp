@@ -169,7 +169,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 **/
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout<<"pipeWrite"<<std::endl;
+	std::cout<<"pipe Read"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from pipe
@@ -185,6 +185,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				std::cout<<"pipe read error. read len is -1, errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterPipeReadEvent(e_udata);
+				unlink(e_udata->tmpOutFileName.c_str());
 				registerClientSocketWriteEvent(e_udata);
 				return;
 			}
@@ -200,6 +201,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 			 * */
 			std::cout<<"readlen = 0, unregister pipe and register write event"<<std::endl;
 			unregisterPipeReadEvent(e_udata);
+			unlink(e_udata->tmpOutFileName.c_str());
 			registerClientSocketWriteEvent(e_udata);
 			return;
 		}

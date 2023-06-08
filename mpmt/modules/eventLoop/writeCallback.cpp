@@ -237,7 +237,7 @@ void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 			{
 				e_udata->setStatusCode(200);
 				unregisterTmpFileWriteEvent(e_udata);
-				registerTmpFileReadEvent(e_udata);
+				registerPipeReadEvent(e_udata);
 			}
 		}
 	}
