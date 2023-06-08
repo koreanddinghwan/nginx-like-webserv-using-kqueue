@@ -144,9 +144,6 @@ public:
 
 
 public:
-	void (*callback)(struct kevent *e, Event* event, EventLoop *eventLoop);
-
-public:
 	Event(t_ServerType t);
 	/* Event(Event &e); */
 	~Event();
