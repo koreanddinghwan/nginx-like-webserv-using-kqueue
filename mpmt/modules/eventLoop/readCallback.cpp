@@ -28,6 +28,9 @@ void EventLoop::readCallback(struct kevent *e)
 		case E_FILE:
 			e_fileReadCallback(e, e_udata);
 			break;
+		case E_TMP:
+			e_tmpFileReadCallback(e, e_udata);
+			break;
 		default:
 			std::cout<<"unknown event type"<<std::endl;
 			break;
@@ -51,8 +54,8 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 		Event *new_udata = Event::createNewClientSocketEvent(e_udata);
 
 		//handler 객체 설정
-		new_udata->setRequestHandler(new HttpreqHandler());
-		new_udata->setResponseHandler(new responseHandler(15));
+		new_udata->setRequestHandler(new HttpreqHandler(new_udata));
+		new_udata->setResponseHandler(new responseHandler(new_udata));
 
 		//kqueue에 event 등록
 		registerClientSocketReadEvent(new_udata);
@@ -61,13 +64,15 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[34m"; 
+	std::cout << "\033[34m";
+	std::cout<<"client socket read callback"<<std::endl;
 	//Http Server인 소켓에서 연결된 client_fd에 대한 read처리
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//socket의 readfilter-> EOF flag는 client의 disconnect.
 		if (e->flags == EV_EOF)
 		{
+			std::cout<<"EOF"<<std::endl;
 			unregisterClientSocketReadEvent(e_udata);
 			//remove event
 			//client socket close
@@ -79,7 +84,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		//read from client socket
 		int client_fd = e_udata->getClientFd();
 		ssize_t read_len = read(client_fd, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
-  
+
+		std::cout<<"read_len:"<<read_len<<std::endl;
 		if (read_len == -1)
 		{
 			std::cout<<"errno:"<<errno<<std::endl;
@@ -87,6 +93,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				return;
 			else if (errno == ECONNRESET)
 			{
+				std::cout<<"ECONNRESET"<<std::endl;
 				//remove event
 				unregisterClientSocketReadEvent(e_udata);
 				//client socket close
@@ -101,7 +108,10 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
+		{
+			std::cout<<"read_len == 0"<<std::endl;
 			unregisterClientSocketReadEvent(e_udata);
+		}
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
@@ -123,15 +133,20 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				return;
 			}
 			//handle response by request
+			std::cout<<"pending status[header]"<<reqHandler->isHeaderPending()<<std::endl;
+			std::cout<<"pending status[body]"<<reqHandler->isBodyPending()<<std::endl;
+			std::cout<<"pending status[egt]"<<reqHandler->getIsPending()<<std::endl;
+
 			/**
 			 * pending state => client로부터 data를 더 받아야하는 상태
-			 *
-			 * read_len : read return 0 when eof
 			 * */
-			if (reqHandler->isHeaderPending() && read_len != 0)
+			if (reqHandler->isHeaderPending()){
+				std::cout<<"header pending"<<std::endl;
 				return ;
+			}
 			else
 			{
+				std::cout<<"set response"<<std::endl;
 				/**
 				 * initialize internal method and uri
 				 * */
@@ -149,6 +164,8 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 * When the last writer disconnects, the filter will set EV_EOF in flags.
 * This may be cleared by passing in EV_CLEAR, at which point the filter will
 * resume waiting for data to become available before returning.
+*
+* @ read from cgi
 **/
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
@@ -157,8 +174,6 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	{
 		//read from pipe
 		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, PIPEBUFFERSIZE - 1);
-		/* std::cout<<"read len = " <<read_len<<std::endl; */
-		/* std::cout<<"pipe readable data size:"<<e->data<<std::endl; */
 		if (read_len == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -174,8 +189,16 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 				return;
 			}
 		}
-		else if (read_len == 0)
+		else if (read_len == 0 && e->flags & EV_EOF)
 		{
+			/**
+			 * EV_EOF to pipe : cgi process end
+			 * @ref man 2 kevent
+			 * Fifos, Pipes
+			 * Returns when there is data to read; data contains the number of bytes available.
+			 * When the last writer disconnects, the filter will set EV_EOF in flags.
+			 * */
+			std::cout<<"readlen = 0, unregister pipe and register write event"<<std::endl;
 			unregisterPipeReadEvent(e_udata);
 			registerClientSocketWriteEvent(e_udata);
 			return;
@@ -190,6 +213,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
+	std::cout<<"fileRead"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from file
@@ -211,13 +235,62 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 			{
-			HttpServer::getInstance().getHttpBuffer()[read_len - 1] = '\0';
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
 
 			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
 			{
 				unregisterFileReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return ;
+			}
+		}
+	}
+}
+
+void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
+{
+	std::cout<<"TmpfileRead"<<std::endl;
+	if (e_udata->getServerType() == HTTP_SERVER)
+	{
+		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
+		//read from file
+		ssize_t read_len = read(e_udata->tmpInFile, HttpServer::getInstance().getHttpBuffer(), HTTPBUFFER_SIZE - 1);
+		stat(e_udata->tmpInFileName.c_str(), &e_udata->statBuf);
+		std::cout<<"Total file size = "<<e_udata->statBuf.st_size<<std::endl;
+
+		std::cout<<read_len<<std::endl;
+		if (e->flags & EV_EOF)
+			std::cout<<"EOF"<<std::endl;
+		if (read_len == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return ;
+			else
+			{
+				e_udata->setStatusCode(500);
+				unregisterTmpFileReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return ;
+			}
+		}
+		else if (read_len == 0 && e->flags & EV_EOF)
+		{
+			e_udata->setStatusCode(200);
+			unregisterTmpFileReadEvent(e_udata);
+			registerClientSocketWriteEvent(e_udata);
+		}
+		else
+		{
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
+			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
+			e_udata->fileReadByte += read_len;
+			std::cout<<"read byte: "<<e_udata->fileReadByte<<std::endl;
+			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
+			{
+				e_udata->setStatusCode(200);
+				unregisterTmpFileReadEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
 				return ;
 			}

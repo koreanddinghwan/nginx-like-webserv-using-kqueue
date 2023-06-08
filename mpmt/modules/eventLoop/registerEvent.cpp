@@ -1,6 +1,8 @@
 #include "Event.hpp"
 #include "EventLoop.hpp"
+#include <cstdio>
 #include <sys/event.h>
+#include <sys/fcntl.h>
 #include <sys/socket.h>
 
 void EventLoop::registerClientSocketReadEvent(Event *e)
@@ -88,6 +90,29 @@ void EventLoop::registerFileWriteEvent(Event *e)
 		throw std::runtime_error("Failed to register file write with kqueue\n");
 }
 
+void EventLoop::registerTmpFileWriteEvent(Event *e)
+{
+	std::cout<<"EVENTLOOP: registerTmpFileWriteEvent"<<std::endl;
+	e->fileWroteByte = 0;
+	e->setEventType(E_TMP);
+	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+	{
+		std::cout<<"errno"<<errno<<std::endl;
+		throw std::runtime_error("Failed to register file write with kqueue\n");
+	}
+}
+
+void EventLoop::registerTmpFileReadEvent(Event *e)
+{
+	std::cout<<"EVENTLOOP: registerTmpFileReadEvent"<<std::endl;
+	e->fileReadByte = 0;
+	e->setEventType(E_TMP);
+	stat(e->tmpInFileName.c_str(), &e->statBuf);
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+		throw std::runtime_error("Failed to register file write with kqueue\n");
+}
 
 /**
  * unregister event
@@ -120,15 +145,15 @@ void EventLoop::unregisterFileReadEvent(Event *e)
 void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 {
 	std::cout<<"unregister client socket write event"<<std::endl;
-	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
+	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE , 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket write with kqueue\n");
 
 	delete e->getResponseHandler();
 	delete e->getRequestHandler();
 
-	e->setRequestHandler(new HttpreqHandler());
-	e->setResponseHandler(new responseHandler(-1));
+	e->setRequestHandler(new HttpreqHandler(e));
+	e->setResponseHandler(new responseHandler(e));
 	e->setStatusCode(200);
 	e->internal_status = -1;
 	registerClientSocketReadEvent(e);
@@ -149,4 +174,26 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file write with kqueue\n");
 	close(e->file_fd);
+}
+
+
+void EventLoop::unregisterTmpFileReadEvent(Event *e)
+{
+	std::cout<<"unregister file read event"<<std::endl;
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+		throw std::runtime_error("Failed to unregister file read with kqueue\n");
+	close(e->tmpInFile);
+	unlink(e->tmpInFileName.c_str());
+	unlink(e->tmpOutFileName.c_str());
+}
+
+
+void EventLoop::unregisterTmpFileWriteEvent(Event *e)
+{
+	std::cout<<"unregister file write event"<<std::endl;
+	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+		throw std::runtime_error("Failed to unregister file write with kqueue\n");
+	close(e->tmpOutFile);
 }

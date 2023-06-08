@@ -263,6 +263,25 @@ std::vector<char *> &Event::getCgiEnv()
 	return this->cgiEnv;
 }
 
+void Event::setTmpOutPath()
+{
+	char buf[10];
+
+	tmpOutFileName = "/tmp/";
+	sprintf(buf, "%d", this->client_socket_fd);
+	tmpOutFileName += buf;
+	tmpOutFileName += ".out";
+}
+
+void Event::setTmpInPath()
+{
+	char buf[10];
+
+	tmpInFileName = "/tmp/";
+	sprintf(buf, "%d", this->client_socket_fd);
+	tmpInFileName += buf;
+	tmpInFileName += ".in";
+}
 /**
  * @deprecated
  * */

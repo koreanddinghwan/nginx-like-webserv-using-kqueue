@@ -1,6 +1,7 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
 
+#include <stdio.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <sys/event.h>
@@ -22,6 +23,7 @@
 /* 	- Pipe Read */
 /* 	- File Read */
 
+class EventLoop;
 
 /* 2. Write (FILT)*/
 /* 	- Client Socket Write */
@@ -45,7 +47,8 @@ typedef enum s_EventType {
 	E_SERVER_SOCKET = 0,
 	E_CLIENT_SOCKET,
 	E_PIPE,
-	E_FILE
+	E_FILE,
+	E_TMP
 } t_EventType;
 
 typedef struct s_SocketInfo
@@ -59,7 +62,6 @@ typedef struct s_SocketInfo
 class Event {
 public:
 		typedef std::vector<HttpLocationData *> t_locationData;
-
 
 private:
 	/* 이 이벤트는 어느 서버에서 처리될 fd인가? */
@@ -136,9 +138,14 @@ public:
 	int fileReadByte;
 	int fileWroteByte;
 	unsigned int sid;
+	std::string tmpOutFileName;
+	std::string tmpInFileName;
+	int tmpOutFile;
+	int tmpInFile;
+
 
 public:
-	void (*callback)(struct kevent *e, Event* ev);
+	void (*callback)(struct kevent *e, Event* event, EventLoop *eventLoop);
 
 public:
 	Event(t_ServerType t);
@@ -199,6 +206,9 @@ public:
 	std::string&	getDir();
 	std::string&	getResource();
 	std::vector<char *>& getCgiEnv();
+
+	void			setTmpOutPath();
+	void			setTmpInPath();
 
 private:
 	Event(Event &e);

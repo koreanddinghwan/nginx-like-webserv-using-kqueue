@@ -227,7 +227,12 @@ HttpreqHandler::HttpreqHandler(Event *e)
 	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
 	_headerPended(false), _bodyPended(false), _event(e)
 {
-	//info = new HttpreqHandlerInfo();
+	/**
+	 * @ref https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size
+	 *
+	 * 이 길이 넘어가면 원래 tmp파일에 저장한다고합니다.
+	 * */
+	this->_info.body.reserve(16384);
 }
 
 HttpreqHandler::~HttpreqHandler()

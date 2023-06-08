@@ -1,4 +1,8 @@
 #include "EventLoop.hpp"
+#include <cstdio>
+#include <cstdlib>
+#include <sys/fcntl.h>
+#include <unistd.h>
 
 bool setFcntlToPipe(Event *e)
 {
@@ -114,69 +118,48 @@ bool EventLoop::processCgi(Event *e)
 		e->setStatusCode(404);
 		return false;
 	}
+	
 
-
+	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	setEnv(e);
 
-	/**
-	 * 1. create pipe
-	 * */
-	if (pipe(e->CtoPPipe) == -1)
-	{
-		e->setStatusCode(500);
-		std::cout << "pipe error" << std::endl;
-		return false;
-	}
-	if (pipe(e->PtoCPipe) == -1)
-	{
-		close(e->CtoPPipe[0]);
-		close(e->CtoPPipe[1]);
-		e->setStatusCode(500);
-		std::cout << "pipe error" << std::endl;
-		return false;
-	}
+	e->setTmpInPath();
+	e->setTmpOutPath();
 
-	/**
-	 * 2. set non blocking to pipe
-	 * */
-	if (setFcntlToPipe(e) == false)
-		return false;
+
+	(e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_CREAT | O_NONBLOCK | O_RDWR, 0777 ));
+	(e->tmpInFile = open(e->tmpInFileName.c_str(), O_CREAT | O_NONBLOCK | O_RDWR, 0777 ));
+	close(e->tmpOutFile);
+	close(e->tmpInFile);
 
 	/**
 	 * 3. fork
 	 * */
-	pid_t pid = fork();
-	if (pid == -1)
+	pid_t pid;
+	if ((pid = fork())  == -1)
 	{
-		close(e->CtoPPipe[0]);
-		close(e->CtoPPipe[1]);
-		close(e->PtoCPipe[0]);
-		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
 		std::cout << "fork error" << std::endl;
 		return false;
 	}
-
-
 	/**
 	 * 4. parent process
 	 * */
 	if (pid)
 	{
-		close(e->CtoPPipe[1]);
-		close(e->PtoCPipe[0]);
+		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_NONBLOCK | O_WRONLY)) == -1)
+			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_NONBLOCK | O_RDONLY)) == -1)
+			std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl;
 
-		e->setEventType(E_PIPE);
-
-		//unregisterClientSocketReadEvent(e);
-		unregisterClientSocketReadEvent(e);
-
-		//read from CtoPPipe[0]
-		registerPipeReadEvent(e);
-
-		//write to PtoCPipe[1]
-		registerPipeWriteEvent(e);
+		/* if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1) */
+		/* 	std::cout<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl; */
+		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
+		/* 	std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
+			//reserve
+		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
+		registerTmpFileWriteEvent(e);
 		return true;
 	}
 	/**
@@ -184,14 +167,19 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	else 
 	{
-		close(e->CtoPPipe[0]);
-		close(e->PtoCPipe[1]);
+		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
+			std::cout<<"error open file"<<e->tmpOutFileName<< errno<<std::endl;
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1)
+			std::cout<<"error open file"<<e->tmpInFileName<< errno<<std::endl;
+		/* if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1) */
+		/* 	std::cout<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl; */
+		/* if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1) */
+		/* 	std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl; */
 
-		// 표준 출력을 CtoP파이프의 쓰기용 파일 디스크립터로 리디렉션
-        dup2(e->CtoPPipe[1], STDOUT_FILENO);
-		// 표준 입력을 PtoC파이프의 읽기용 파일 디스크립터로 리디렉션해서 부모 프로세스로부터 데이터를 읽어들임
-        dup2(e->PtoCPipe[0], STDIN_FILENO);
-
+        if (dup2(e->tmpOutFile, STDIN_FILENO) == -1)
+			std::cout<<"dup2 error"<<errno<<std::endl;
+        if (dup2(e->tmpInFile, STDOUT_FILENO) == -1)
+			std::cout<<"dup2 error"<<errno<<std::endl;
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];
 		for (size_t i = 0; i < e->getCgiEnv().size(); i++)

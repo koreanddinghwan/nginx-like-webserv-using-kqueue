@@ -36,28 +36,24 @@ void EventLoop::initEventLoop()
 	 * */
 	while (true)
 	{
-		struct kevent events[1024];
+		struct kevent events[12];
 		int nevents;
-		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 1024, NULL)) == -1) 
+		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 12, NULL)) == -1) 
 			throw std::runtime_error("Failed to kevent\n");
 
 		for (int i = 0; i < nevents; i++)
 		{
 			int fd = events[i].ident;
+			std::cout<<"fd: "<<fd<<std::endl;
+			printEvent(events + i);
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);
 				else if (events[i].filter == EVFILT_WRITE)
 					writeCallback(events + i);
-				else
-				{
-					std::cout<<"unknown event Filter"<<std::endl;
-					std::cout<<events[i].filter<<std::endl;
-					std::cout<<events[i].flags<<std::endl;
-					std::cout<<"end"<<std::endl;
-				}
 			} catch (std::exception &e)
 			{
+				std::cout<<e.what()<<std::endl;
 				continue;
 			}
 		}

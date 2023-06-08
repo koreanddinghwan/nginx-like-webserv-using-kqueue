@@ -289,10 +289,15 @@ void EventLoop::setHttpResponse(Event *e)
 	 * internal loop
 	 * */
 	if (!checkAllowedMethods(e))
+	{
 		errorCallback(e);
+		return ;
+	}
 	if (!checkClientMaxBodySize(e))
+	{
 		errorCallback(e);
-
+		return;
+	}
 	/**
 	 * client's request is redirection.
 	 * */
@@ -304,7 +309,7 @@ void EventLoop::setHttpResponse(Event *e)
 		return;
 	}
 	/**
-	 * 7. if need cgi process
+	 * if need cgi process
 	 * */
 	if (!e->locationData->getCgiPass().empty())
 	{

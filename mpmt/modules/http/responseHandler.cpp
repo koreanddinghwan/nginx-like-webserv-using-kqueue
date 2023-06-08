@@ -27,10 +27,6 @@ void responseHandler::setRes(const int statusCode) {
 };
 
 void responseHandler::setResBody(std::string body) const { 
-	if (this->_event->locationData->getCgiPass() != "")
-		this->_res->getBody().reserve(
-				static_cast<HttpreqHandler *>(_event->getRequestHandler())->getRequestInfo().body.length()
-				);
 	this->_res->setBody(body); 
 };
 
