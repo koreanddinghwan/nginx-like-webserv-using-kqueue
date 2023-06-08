@@ -57,6 +57,7 @@ public:
 
 public:
 	int _contentLength;
+	int _currentBodyLength;
 	void *handle(void *data);
 
 	//getter

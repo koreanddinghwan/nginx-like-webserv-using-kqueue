@@ -87,7 +87,8 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * todo : file size
 		 * */
-		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_contentLength;
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_currentBodyLength;
+		//int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_contentLength;
 
 		/**
 		 * todo : file buffer
@@ -144,12 +145,15 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * todo : file size
 		 * */
-		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_contentLength;
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_currentBodyLength;
+		//int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_contentLength;
 
 		std::cout<<"file size : "<<fileSize<<std::endl;
 		/**
 		 * todo : file buffer
 		 * */
+		// std::cout << static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str()+ e_udata->fileWroteByte << std::endl;
+		// std::cout << fileSize - e_udata->fileWroteByte << std::endl;
 		int wroteByte = write(e_udata->file_fd, static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str() + e_udata->fileWroteByte, fileSize - e_udata->fileWroteByte);
 
 		if (wroteByte == -1)

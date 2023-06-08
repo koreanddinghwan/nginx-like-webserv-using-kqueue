@@ -232,7 +232,7 @@ void HttpreqHandler::checkStartLine(void)
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler()
 	: _buf(""), _messageState(basic), _pended(false), _contentLength(0),
-	_chunkedLength(0), _infoBodyIdx(0), _flag(false),
+	_chunkedLength(0), _infoBodyIdx(0), _flag(false), _currentBodyLength(0),
 	_hasContentLength(false), _headerPended(false), _bodyPended(false)
 {
 	//info = new HttpreqHandlerInfo();
