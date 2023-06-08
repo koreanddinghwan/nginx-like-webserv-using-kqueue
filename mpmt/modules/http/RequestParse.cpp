@@ -265,14 +265,12 @@ bool HttpreqHandler::parseHeader(std::string line){
 void HttpreqHandler::parseBody(void)
 {
 	int pos;
-	std::string line;
 
 	pos = _buf.find(CRLF2);
-	line = _buf.substr(pos + 4);
-	_info.body = line;
+	_info.body.assign(_buf.begin() + pos + 4, _buf.end());
 }
 
-void HttpreqHandler::parseWithoutBody(void)
+void HttpreqHandler::parse(void)
 {
 	int pos = 0, prevPos = 0;
 	std::string line;
@@ -291,5 +289,8 @@ void HttpreqHandler::parseWithoutBody(void)
 				break ;
 		}
 	}
+	//body
+	parseCookie();
+	parseBody();
 }
 /* ============================================= */

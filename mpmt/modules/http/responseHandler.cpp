@@ -3,7 +3,9 @@
 #include "HttpServer.hpp"
 
 
-responseHandler::responseHandler() {
+responseHandler::responseHandler(Event *e) : _event(e)
+{
+	this->_res = new Response(200);
 };
 
 

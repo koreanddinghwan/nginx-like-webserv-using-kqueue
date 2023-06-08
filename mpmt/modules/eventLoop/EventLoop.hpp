@@ -21,6 +21,7 @@
 #include "../http/ws_HttpIndexModule.hpp"
 #include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/ws_HttpUploadModule.hpp"
+#define PIPEBUFFERSIZE 131072
 /**
  * @brief singleton eventloop
  */
@@ -40,7 +41,7 @@ public:
 	 */
 	void initEventLoop();
 
-	char pipeBuffer[65535];
+	char pipeBuffer[PIPEBUFFERSIZE];
 
 private:
 	int kq_fd;
@@ -68,11 +69,11 @@ private:
 	void e_clientSocketReadCallback(struct kevent *e, Event *e_udata);
 	void e_pipeReadCallback(struct kevent *e, Event *e_udata);
 	void e_fileReadCallback(struct kevent *e, Event *e_udata);
-
-
+	void e_tmpFileReadCallback(struct kevent *e, Event *e_udata);
 	void e_clientSocketWriteCallback(struct kevent *e, Event *e_udata);
 	void e_pipeWriteCallback(struct kevent *e, Event *e_udata);
 	void e_fileWriteCallback(struct kevent *e, Event *e_udata);
+	void e_tmpFileWriteCallback(struct kevent *e, Event *e_udata);
 
 	/**
 	 * kqueue에 event를 등록합니다.
@@ -83,6 +84,8 @@ private:
 	void registerClientSocketWriteEvent(Event *e);
 	void registerPipeWriteEvent(Event *e);
 	void registerFileWriteEvent(Event *e);
+	void registerTmpFileWriteEvent(Event *e);
+	void registerTmpFileReadEvent(Event *e);
 
 
 	void unregisterClientSocketReadEvent(Event *e);
@@ -91,6 +94,8 @@ private:
 	void unregisterClientSocketWriteEvent(Event *e);
 	void unregisterPipeWriteEvent(Event *e);
 	void unregisterFileWriteEvent(Event *e);
+	void unregisterTmpFileWriteEvent(Event *e);
+	void unregisterTmpFileReadEvent(Event *e);
 
 	void errorCallback(Event *e);
 	/**

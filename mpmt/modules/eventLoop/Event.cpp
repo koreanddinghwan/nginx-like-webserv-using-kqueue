@@ -1,7 +1,8 @@
 #include "Event.hpp"
 #include "EventLoop.hpp"
 
-Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::ios::out)
+
+Event::Event(t_ServerType t)
 {
 	this->cgiEnv.resize(20);
 	for (int i =0; i < 20; i++)
@@ -13,7 +14,6 @@ Event::Event(t_ServerType t): logger("./logs/Eventlog.txt", std::ios::in | std::
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
-	logger<< "Event::Event(t_ServerType t)" << std::endl;
 }
 
 void Event::setServerType(t_ServerType t)
@@ -264,6 +264,25 @@ std::vector<char *> &Event::getCgiEnv()
 	return this->cgiEnv;
 }
 
+void Event::setTmpOutPath()
+{
+	char buf[10];
+
+	tmpOutFileName = "/tmp/";
+	sprintf(buf, "%d", this->client_socket_fd);
+	tmpOutFileName += buf;
+	tmpOutFileName += ".out";
+}
+
+void Event::setTmpInPath()
+{
+	char buf[10];
+
+	tmpInFileName = "/tmp/";
+	sprintf(buf, "%d", this->client_socket_fd);
+	tmpInFileName += buf;
+	tmpInFileName += ".in";
+}
 /**
  * @deprecated
  * */
