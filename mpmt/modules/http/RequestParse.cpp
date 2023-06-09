@@ -34,7 +34,6 @@ std::string HttpreqHandler::parseChunkedBody(int pos)
 {
 	std::string line;
 
-	// except 던지면서 임시변수 생성한 거 바로 던지게 하는 거 생각해보기....
 	line = _bodyBuf.substr(0, pos);
 	return line;
 }

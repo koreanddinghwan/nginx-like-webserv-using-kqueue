@@ -26,7 +26,9 @@ void *HttpreqHandler::handle(void *data)
 	fulfilled header
 	*/
 	if (!_headerPended && _info.method.empty())
+	{
 		parseWithoutBody();
+	}
 	/*
 	fulfilled state message
 	*/
@@ -72,10 +74,10 @@ void HttpreqHandler::initMessageState(void)
 
 void HttpreqHandler::initPendingState(void)
 {
-	if (_messageState != basic)
-		_pended = true;
+	if (!_headerPended && !_bodyPended)
+		_pended = false;
 	else
-	 	_pended = false;
+	 	_pended = true;
 }
 
 void HttpreqHandler::initVar(void)
