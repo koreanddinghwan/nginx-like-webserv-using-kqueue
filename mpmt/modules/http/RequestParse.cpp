@@ -66,7 +66,6 @@ void HttpreqHandler::parseChunked(std::string req)
 				_info.body.append(_bodyBuf);
 				_currentBodyLength += _bodyBuf.length();
 				_bodyBuf.clear();
-				std::cout << _bodyBuf.length() <<std::endl;
 				return ;
 			}
 			else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴

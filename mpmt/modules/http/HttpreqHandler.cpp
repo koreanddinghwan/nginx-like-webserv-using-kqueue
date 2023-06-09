@@ -10,7 +10,11 @@ void *HttpreqHandler::handle(void *data)
 	 처음 들어온 req massage
 	*/
 	if (_buf.empty())
+	{
 		initRequest(req);
+		if (_pended && _messageState == chunked)
+			parseChunked(req);
+	}
 	else
 	{
 		appendBuf(req);
