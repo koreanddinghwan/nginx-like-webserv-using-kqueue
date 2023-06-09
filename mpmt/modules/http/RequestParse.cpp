@@ -56,23 +56,24 @@ void HttpreqHandler::parseChunked(std::string req)
 			pos = _bodyBuf.find(CRLF);
 			if (pos == std::string::npos && !_hasContentLength) // 길이 안들어옴
 			{
-				_currentBodyLength = 0;
+				//_currentBodyLength = 0;
 				return ;
 			}
 			else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
 			{
-				if (_bodyBuf.find("\r") != std::string::npos)
+				if (_bodyBuf[_bodyBuf.length() - 1] == '\r')
 					return ;
 				_info.body.append(_bodyBuf);
 				_currentBodyLength += _bodyBuf.length();
 				_bodyBuf.clear();
+				std::cout << _bodyBuf.length() <<std::endl;
 				return ;
 			}
 			else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴
 			{
 				_chunkedLength = parseChunkedLength(pos);
 				if (!_chunkedLength)
-					break;
+					return ;
 				_hasContentLength = true;
 				_infoBodyIdx = _info.body.length();
 				_contentLength += _currentBodyLength;
@@ -84,12 +85,15 @@ void HttpreqHandler::parseChunked(std::string req)
 				_hasContentLength = false;
 				line = parseChunkedBody(pos);
 				_info.body.append(line);
-				//if (_info.body.length() - _infoBodyIdx > _chunkedLength)
-				//{
-				//	_event->setStatusCode(413);
-				//	throw std::exception();
-				//}
-				_currentBodyLength += line.length();
+				if (_info.body.length() - _infoBodyIdx > _chunkedLength)
+				{
+					std::cout << "길이 안맞음" << std::endl;
+					std::cout << _info.body.length() << std::endl;
+					std::cout << _infoBodyIdx << std::endl;
+					std::cout << _chunkedLength << std::endl;
+					_event->setStatusCode(413);
+					throw std::exception();
+				}
 				_bodyBuf.erase(0, pos + 2);
 			}
 		}
