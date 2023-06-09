@@ -6,21 +6,18 @@ void *HttpreqHandler::handle(void *data)
 {
 	_event = static_cast<Event *>(data);
 	std::string req = HttpServer::getInstance().getHttpBuffer();
+
 	/*
 	 처음 들어온 req massage
 	*/
 	if (_buf.empty())
-	{
 		initRequest(req);
-		if (_pended && _messageState == chunked)
-			parseChunked(req);
-	}
 	else
 	{
 		appendBuf(req);
 		if (_pended && _messageState == undefined)
 			parseUndefined();
-		if (_pended && _messageState == chunked)
+		else if (_pended && _messageState == chunked)
 			parseChunked(req);
 		else if (_pended && _messageState == separate)
 			parseSeparate(req);
@@ -34,16 +31,14 @@ void *HttpreqHandler::handle(void *data)
 	fulfilled state message
 	*/
 	if (!_pended && _messageState != chunked)
-	{
 		parseBody();
-		/* printReq(); */
-	}
 	return _event;
 }
 
 void HttpreqHandler::initMessageState(void)
 {
 	int bodyPos, pos;
+	std::string line;
 
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
@@ -53,14 +48,14 @@ void HttpreqHandler::initMessageState(void)
 	}
 	else
 	{
-		pos = _buf.find("Transfer-Encoding: chunked"); // 청크 형식 맞춰 들어옴, 헤더는 다 들어옴
+		pos = _buf.find("Transfer-Encoding: chunked");
 		if (pos != std::string::npos)
 		{	
 			_messageState = chunked;
 			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
-			_bodyBuf = _buf.substr(bodyPos + 4);
-			_flag = true;
+			line = _buf.substr(bodyPos + 4);
+			parseChunked(line);
 		}
 		else
 		{
@@ -234,9 +229,11 @@ void HttpreqHandler::checkStartLine(void)
 }
 
 /* =============== constructor ================== */
+HttpreqHandler::HttpreqHandler() {}
+
 HttpreqHandler::HttpreqHandler(Event *e)
-	: _buf(""), _messageState(basic), _pended(false), _contentLength(0),
-	_chunkedLength(0), _flag(false), _currentBodyLength(0),
+	: _messageState(basic), _pended(false), 
+	_contentLength(0), _chunkedLength(0), _currentBodyLength(0),
 	_hasContentLength(false), _headerPended(false), _bodyPended(false), _event(e)
 {
 	/**
@@ -245,20 +242,13 @@ HttpreqHandler::HttpreqHandler(Event *e)
 	 * 이 길이 넘어가면 원래 tmp파일에 저장한다고합니다.
 	 * */
 	this->_info.body.reserve(16384);
-	//info = new HttpreqHandlerInfo();
-	//_buf.clear();
-	//_messageState = basic;
-	//_pended = false;
-	//_contentLength = 0;
-	//_hasContentLength =false;
-	//_headerPended =false;
-	//_bodyPended =false;
 }
 
-HttpreqHandler::~HttpreqHandler()
-{
-	//delete this->info;
-}
+HttpreqHandler::~HttpreqHandler() {}
+
+HttpreqHandler::HttpreqHandler(HttpreqHandler &hrh) {}
+
+HttpreqHandler& HttpreqHandler::operator=(const HttpreqHandler &){ return *this; }
 /* ============================================= */
 
 

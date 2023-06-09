@@ -44,61 +44,52 @@ void HttpreqHandler::parseChunked(std::string &req)
 	int pos  = 0;
 	std::string line;
 	std::stringstream ss;
-
-	if (!_headerPended && _bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴.
+	
+	_bodyBuf.append(req);
+	while (!_bodyBuf.empty() && _bodyBuf != CHUNKED_END)
 	{
-		if (!_flag)
-			_bodyBuf.append(req);
-		else
-			_flag = false;
-		while (!_bodyBuf.empty() && _bodyBuf != "0\r\n\r\n")
+		pos = _bodyBuf.find(CRLF);
+		if (pos == std::string::npos && !_hasContentLength) // 길이 안들어옴
+			return ;
+		else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
 		{
-			pos = _bodyBuf.find(CRLF);
-			if (pos == std::string::npos && !_hasContentLength) // 길이 안들어옴
+			if (_bodyBuf[_bodyBuf.length() - 1] == '\r')
 				return ;
-			else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
-			{
-				if (_bodyBuf[_bodyBuf.length() - 1] == '\r')
-					return ;
-				_info.body.append(_bodyBuf);
-				_currentBodyLength += _bodyBuf.length();
-				_bodyBuf.clear();
-				return ;
-			}
-			else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴
-			{
-				_chunkedLength = parseChunkedLength(pos);
-				if (!_chunkedLength)
-					return ;
-				_hasContentLength = true;
-				_currentBodyLength = 0;
-				_bodyBuf.erase(0, pos + 2);
-			}
-			else if (pos != std::string::npos && _hasContentLength) // body 다 들어옴
-			{
-				_hasContentLength = false;
-				line = parseChunkedBody(pos);
-				_info.body.append(line);
-				_currentBodyLength += line.length();
-				if (_currentBodyLength > _chunkedLength)
-				{
-					std::cout << "길이 안맞음" << std::endl;
-					std::cout << _info.body.length() << std::endl;
-					std::cout << _chunkedLength << std::endl;
-					_event->setStatusCode(413);
-					throw std::exception();
-				}
-				_contentLength += _currentBodyLength;
-				_bodyBuf.erase(0, pos + 2);
-			}
+			_info.body.append(_bodyBuf);
+			_currentBodyLength += _bodyBuf.length();
+			_bodyBuf.clear();
+			return ;
 		}
-		if (_bodyBuf == "0\r\n\r\n")
+		else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴
 		{
-			_bodyPended = false;
-			_pended = false;
-			ss << _contentLength;
-			_info.contentLength = ss.str();
+			_chunkedLength = parseChunkedLength(pos);
+			if (!_chunkedLength)
+				return ;
+			_hasContentLength = true;
+			_currentBodyLength = 0;
+			_bodyBuf.erase(0, pos + 2);
 		}
+		else if (pos != std::string::npos && _hasContentLength) // body 다 들어옴
+		{
+			_hasContentLength = false;
+			line = parseChunkedBody(pos);
+			_info.body.append(line);
+			_currentBodyLength += line.length();
+			if (_currentBodyLength > _chunkedLength)
+			{
+				_event->setStatusCode(413);
+				throw std::exception();
+			}
+			_contentLength += _currentBodyLength;
+			_bodyBuf.erase(0, pos + 2);
+		}
+	}
+	if (_bodyBuf == CHUNKED_END)
+	{
+		_bodyPended = false;
+		_pended = false;
+		ss << _contentLength;
+		_info.contentLength = ss.str();
 	}
 }
 

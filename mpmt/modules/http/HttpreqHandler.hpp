@@ -10,6 +10,7 @@
 
 #define CRLF "\r\n"
 #define CRLF2 "\r\n\r\n"
+#define CHUNKED_END "0\r\n\r\n"
 
 enum messageStateEnum {
 	chunked = 1,
@@ -32,13 +33,9 @@ private:
 
 	int _chunkedLength;
 	bool _hasContentLength;
-
-	//구차..
-	bool _flag;
 	/* ========================================== */
 
 private:
-
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
@@ -58,7 +55,12 @@ private:
 
 public:
 	HttpreqHandler(Event *e);
+private:	
+	HttpreqHandler();
 	~HttpreqHandler();
+	HttpreqHandler(HttpreqHandler &hrh);
+	HttpreqHandler& operator=(const HttpreqHandler &);
+
 
 public:
 	void *handle(void *data);
