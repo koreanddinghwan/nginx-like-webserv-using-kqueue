@@ -9,8 +9,7 @@ void EventLoop::registerClientSocketReadEvent(Event *e)
 {
 	e->setEventType(E_CLIENT_SOCKET);
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register client socket read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerPipeReadEvent(Event *e)
@@ -18,8 +17,7 @@ void EventLoop::registerPipeReadEvent(Event *e)
 	e->setEventType(E_PIPE);
 	e->fileReadByte = 0;
 	EV_SET(&(dummyEvent), e->CtoPPipe[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register pipe read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerFileReadEvent(Event *e)
@@ -27,8 +25,7 @@ void EventLoop::registerFileReadEvent(Event *e)
 	e->setEventType(E_FILE);
 	e->fileReadByte = 0;
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register file read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerClientSocketWriteEvent(Event *e)
@@ -57,8 +54,7 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	e->wrote = 0;
 	//client socket을 쓰기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register client socket write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerPipeWriteEvent(Event *e)
@@ -66,8 +62,7 @@ void EventLoop::registerPipeWriteEvent(Event *e)
 	e->fileWroteByte = 0;
 	e->setEventType(E_PIPE);
 	EV_SET(&(dummyEvent), e->PtoCPipe[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register pipe write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerFileWriteEvent(Event *e)
@@ -75,8 +70,7 @@ void EventLoop::registerFileWriteEvent(Event *e)
 	e->fileWroteByte = 0;
 	e->setEventType(E_FILE);
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register file write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::registerTmpFileWriteEvent(Event *e)
@@ -84,7 +78,7 @@ void EventLoop::registerTmpFileWriteEvent(Event *e)
 	e->fileWroteByte = 0;
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 		std::cerr<<"kevent tmpfile wrtie errno:"<<errno<<std::endl;
 }
 
@@ -98,10 +92,9 @@ void EventLoop::registerTmpFileReadEvent(Event *e)
 	e->fileReadByte = 0;
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
 	{
 		std::cerr<<errno<<std::endl;
-		throw std::runtime_error("Failed to register file read with kqueue\n");
 	}
 }
 
@@ -109,7 +102,7 @@ void EventLoop::registerCgiExitEvent(Event *e)
 {
 	std::cout<<"register cgi exit event"<<std::endl;
 	EV_SET(&(dummyEvent), e->childPid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT, NOTE_EXIT, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
 		std::cerr<<"child proc exit event"<<errno<<std::endl;
 }
 
@@ -120,8 +113,7 @@ void EventLoop::registerCgiExitEvent(Event *e)
 void EventLoop::unregisterClientSocketReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister client socket read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 }
 
 void EventLoop::unregisterPipeReadEvent(Event *e)
@@ -134,8 +126,7 @@ void EventLoop::unregisterPipeReadEvent(Event *e)
 void EventLoop::unregisterFileReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister file read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 	close(e->file_fd);
 }
 
@@ -143,8 +134,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 {
 	std::cerr<<"unregisterClientSocketWriteEvent"<<std::endl;
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE , 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister client socket write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
 	delete (e->getResponseHandler());
 	delete (e->getRequestHandler());
@@ -176,8 +166,7 @@ void EventLoop::unregisterPipeWriteEvent(Event *e)
 void EventLoop::unregisterFileWriteEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister file write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 	close(e->file_fd);
 }
 
@@ -185,8 +174,7 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister file read with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 	close(e->tmpInFile);
 	/* unlink(e->tmpInFileName.c_str()); */
 	/* unlink(e->tmpOutFileName.c_str()); */
@@ -233,8 +221,7 @@ void setEnv(Event *e)
 void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to unregister file write with kqueue\n");
+	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
