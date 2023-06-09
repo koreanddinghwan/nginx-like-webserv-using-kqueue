@@ -39,7 +39,7 @@ std::string HttpreqHandler::parseChunkedBody(int pos)
 	return line;
 }
 
-void HttpreqHandler::parseChunked(std::string req) 
+void HttpreqHandler::parseChunked(std::string &req) 
 {
 	int pos  = 0;
 	std::string line;
@@ -55,10 +55,7 @@ void HttpreqHandler::parseChunked(std::string req)
 		{
 			pos = _bodyBuf.find(CRLF);
 			if (pos == std::string::npos && !_hasContentLength) // 길이 안들어옴
-			{
-				//_currentBodyLength = 0;
 				return ;
-			}
 			else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
 			{
 				if (_bodyBuf[_bodyBuf.length() - 1] == '\r')
@@ -74,8 +71,6 @@ void HttpreqHandler::parseChunked(std::string req)
 				if (!_chunkedLength)
 					return ;
 				_hasContentLength = true;
-				_infoBodyIdx = _info.body.length();
-				_contentLength += _currentBodyLength;
 				_currentBodyLength = 0;
 				_bodyBuf.erase(0, pos + 2);
 			}
@@ -84,15 +79,16 @@ void HttpreqHandler::parseChunked(std::string req)
 				_hasContentLength = false;
 				line = parseChunkedBody(pos);
 				_info.body.append(line);
-				if (_info.body.length() - _infoBodyIdx > _chunkedLength)
+				_currentBodyLength += line.length();
+				if (_currentBodyLength > _chunkedLength)
 				{
 					std::cout << "길이 안맞음" << std::endl;
 					std::cout << _info.body.length() << std::endl;
-					std::cout << _infoBodyIdx << std::endl;
 					std::cout << _chunkedLength << std::endl;
 					_event->setStatusCode(413);
 					throw std::exception();
 				}
+				_contentLength += _currentBodyLength;
 				_bodyBuf.erase(0, pos + 2);
 			}
 		}

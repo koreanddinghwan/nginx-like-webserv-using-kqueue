@@ -31,7 +31,6 @@ private:
 	std::string _chunkedWithoutBodyBuf;
 
 	int _chunkedLength;
-	int _infoBodyIdx;
 	bool _hasContentLength;
 
 	//구차..
@@ -96,7 +95,7 @@ private:
 	void parseQueryParam(std::string line, int *prevPos, int *pos);
 
 	//chunked
-	void parseChunked(std::string req);
+	void parseChunked(std::string &req);
 	void splitChunked(int pos, int endPos);
 	int parseChunkedLength(int pos);
 	std::string parseChunkedBody(int pos);
