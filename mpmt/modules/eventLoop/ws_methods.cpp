@@ -63,6 +63,7 @@ void EventLoop::ws_method_GET(Event *e)
 
 void EventLoop::ws_method_POST(Event *e)
 {
+	std::cerr<<"post method"<<std::endl;
 	if (!e->locationData->getUploadStore().empty())
 	{
 		/**

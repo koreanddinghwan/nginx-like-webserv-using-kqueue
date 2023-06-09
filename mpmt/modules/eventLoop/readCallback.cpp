@@ -98,13 +98,19 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
+		{
+			unregisterClientSocketReadEvent(e_udata);
+			//client socket close
+			close(client_fd);
+			//client socket event delete
+			delete e_udata;
 			return;
+		}
 		else
 		{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			e_udata->readByte = read_len;
 			HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e_udata->getRequestHandler());
-
 			//handle request
 			try {
 				/* std::cout<<"use handle"<<std::endl; */
@@ -123,20 +129,17 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 			std::cerr<<"is headerpending : "<<reqHandler->isHeaderPending()<<std::endl;
 			std::cerr<<"is bodypending : "<<reqHandler->isBodyPending()<<std::endl;
 
-			if (e->data == 100233)
-				std::cerr<<HttpServer::getInstance().getHttpBuffer()<<std::endl;
 			if (reqHandler->getIsPending())
 				return ;
 			else
 			{
-				std::cout<<"set response"<<std::endl;
+				std::cerr<<"set response"<<std::endl;
 				/**
 				 * initialize internal method and uri
 				 * */
 				e_udata->internal_method = reqHandler->getRequestInfo().method;
 				e_udata->internal_uri = reqHandler->getRequestInfo().path;
 				setHttpResponse(e_udata);
-				unregisterClientSocketReadEvent(e_udata);
 			}
 		}
 	}

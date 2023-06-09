@@ -145,6 +145,7 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->setStatusCode(200);
 	e->internal_status = -1;
 	e->internal_uri = "";
+	e->internal_method = "";
 	e->locationData = NULL;
 	e->tmpOutFile = -1;
 	e->tmpInFile = -1;
