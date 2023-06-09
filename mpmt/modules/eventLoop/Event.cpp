@@ -264,11 +264,10 @@ std::vector<char *> &Event::getCgiEnv()
 void Event::setTmpOutPath()
 {
 	char buf[128];
-	time_t current_time;
-    time(&current_time);
+    srand(time(NULL));
 
 	tmpOutFileName = "/tmp/";
-	sprintf(buf, "%ld", (long)time & 0x0ffff);
+	sprintf(buf, "%d", rand() & 0x0ffff);
 	tmpOutFileName += buf;
 	tmpOutFileName += ".out";
 }
@@ -276,11 +275,10 @@ void Event::setTmpOutPath()
 void Event::setTmpInPath()
 {
 	char buf[128];
-	time_t current_time;
-    time(&current_time);
+    srand(time(NULL));
 
 	tmpInFileName = "/tmp/";
-	sprintf(buf, "%ld", (long) time & 0x0ffff);
+	sprintf(buf, "%d", rand() & 0x0ffff);
 	tmpInFileName += buf;
 	tmpInFileName += ".in";
 }
