@@ -64,6 +64,7 @@ private:
 
 	void readCallback(struct kevent *e);
 	void writeCallback(struct kevent *e);
+	void e_processCallback(struct kevent *e);
 
 	void e_serverSocketReadCallback(struct kevent *e, Event *e_udata);
 	void e_clientSocketReadCallback(struct kevent *e, Event *e_udata);
@@ -86,6 +87,7 @@ private:
 	void registerFileWriteEvent(Event *e);
 	void registerTmpFileWriteEvent(Event *e);
 	void registerTmpFileReadEvent(Event *e);
+	void registerCgiExitEvent(Event *e);
 
 
 	void unregisterClientSocketReadEvent(Event *e);

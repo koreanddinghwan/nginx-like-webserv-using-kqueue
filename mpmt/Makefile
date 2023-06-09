@@ -22,7 +22,7 @@ CONFIGOBJS = $(addprefix ./modules/config/, $(CONFIGSRCS:.cpp=.o))
 WEBSERVSRCS = WebServ.cpp WebServManager.cpp
 WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 
-EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp setHttpResponse.cpp processCgi.cpp ws_methods.cpp
+EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp setHttpResponse.cpp processCgi.cpp ws_methods.cpp processCallback.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
 EXCEPTIONSRCS = configParseException.cpp httpException.cpp

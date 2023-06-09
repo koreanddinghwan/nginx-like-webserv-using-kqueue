@@ -49,10 +49,12 @@ void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
+		std::cerr<<"new server socket event callback"<<std::endl;
 		//create client socket
 		//모든 pipe, file의 이벤트는 client socket에서 부터 시작한다.
 		Event *new_udata = Event::createNewClientSocketEvent(e_udata);
 
+		std::cerr<<"create client fd:"<<new_udata->getClientFd()<<std::endl;
 		//handler 객체 설정
 		new_udata->setRequestHandler(new HttpreqHandler(new_udata));
 		new_udata->setResponseHandler(new responseHandler(new_udata));
@@ -80,7 +82,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
-			else if (errno == ECONNRESET)
+			else if (errno == ECONNRESET || errno == ENOTCONN)
 			{
 				std::cerr<<"ECONNRESET"<<std::endl;
 
@@ -99,12 +101,13 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else if (read_len == 0)
 		{
-			unregisterClientSocketReadEvent(e_udata);
-			//client socket close
-			close(client_fd);
-			//client socket event delete
-			delete e_udata;
-			return;
+			if (e->flags & EV_EOF)
+			{
+				unregisterClientSocketReadEvent(e_udata);
+				close(client_fd);
+				delete e_udata;
+				return;
+			}
 		}
 		else
 		{
@@ -270,31 +273,18 @@ void EventLoop::e_tmpFileReadCallback(struct kevent *e, Event *e_udata)
 				return ;
 			}
 		}
-		else if (read_len == 0 && 
-				e_udata->fileReadByte == e_udata->statBuf.st_size)
-		{
-			int status;
-			
-			//끝났던안끝났던 논블로킹으로 빠르게 리턴
-			pid_t terminated_child_pid = waitpid(e_udata->childPid, &status, WNOHANG);
-			if (WIFEXITED(status))
-			{
-				//자식 종료상태면 파일 다 읽은거임
-				std::cerr<<"read len is 0, unregister tmpfile read event and register write event"<<std::endl;
-				std::cerr<<"child process terminated"<<std::endl;
-				std::cerr<<"child status:"<<status<<std::endl;
-				e_udata->setStatusCode(200);
-				unregisterTmpFileReadEvent(e_udata);
-				registerClientSocketWriteEvent(e_udata);
-			}
-			else
-				return;
-		}
 		else
 		{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
+
+			if (e_udata->fileReadByte == e_udata->statBuf.st_size)
+			{
+				unregisterTmpFileReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return ;
+			}
 		}
 	}
 }

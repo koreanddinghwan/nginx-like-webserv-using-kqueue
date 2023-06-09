@@ -52,9 +52,8 @@ void EventLoop::initEventLoop()
 					readCallback(events + i);
 				else if (events[i].filter == EVFILT_WRITE)
 					writeCallback(events + i);
-				else if (events[i].filter == EVFILT_VNODE)
-					e_tmpFileReadCallback(events + i, 
-							static_cast<Event *>(events[i].udata));
+				else if (events[i].filter == EVFILT_PROC)
+					e_processCallback(events + i);
 			} catch (std::exception &e)
 			{
 				std::cout<<e.what()<<std::endl;

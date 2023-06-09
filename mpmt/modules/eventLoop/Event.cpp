@@ -1,5 +1,6 @@
 #include "Event.hpp"
 #include "EventLoop.hpp"
+#include <netinet/tcp.h>
 
 
 Event::Event(t_ServerType t)
@@ -184,7 +185,7 @@ Event *Event::createNewServerSocketEvent(int port)
 	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 
 	/* listen */
-	if (listen(fd, 1024) == -1)
+	if (listen(fd, MAX_TCPOPTLEN) == -1)
 		throw(std::runtime_error("listen error"));
 
 	e->setServerFd(fd);

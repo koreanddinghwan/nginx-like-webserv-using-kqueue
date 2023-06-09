@@ -97,13 +97,22 @@ void EventLoop::registerTmpFileReadEvent(Event *e)
 		std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 	e->fileReadByte = 0;
 	e->setEventType(E_TMP);
-	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_VNODE, EV_ADD | EV_ENABLE, NOTE_WRITE, 0, e);
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
 	{
 		std::cerr<<errno<<std::endl;
 		throw std::runtime_error("Failed to register file read with kqueue\n");
 	}
 }
+
+void EventLoop::registerCgiExitEvent(Event *e)
+{
+	std::cout<<"register cgi exit event"<<std::endl;
+	EV_SET(&(dummyEvent), e->childPid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT, NOTE_EXIT, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+		std::cerr<<"child proc exit event"<<errno<<std::endl;
+}
+
 
 /**
  * unregister event
@@ -124,7 +133,7 @@ void EventLoop::unregisterPipeReadEvent(Event *e)
 
 void EventLoop::unregisterFileReadEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
+	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file read with kqueue\n");
 	close(e->file_fd);
@@ -175,7 +184,7 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 
 void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_VNODE, EV_DELETE | EV_DISABLE, NOTE_WRITE, 0, e);
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file read with kqueue\n");
 	close(e->tmpInFile);
@@ -251,7 +260,7 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 		e->childPid = pid;
 		//reserve
 		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
-		registerTmpFileReadEvent(e);
+		registerCgiExitEvent(e);
 		return;
 	}
 	/**
