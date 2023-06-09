@@ -49,7 +49,7 @@ void HttpreqHandler::parseChunked(std::string req)
 	{
 		if (!_flag)
 			_bodyBuf.append(req);
-		else 
+		else
 			_flag = false;
 		while (!_bodyBuf.empty() && _bodyBuf != "0\r\n\r\n")
 		{
@@ -61,6 +61,8 @@ void HttpreqHandler::parseChunked(std::string req)
 			}
 			else if (pos == std::string::npos && _hasContentLength) // body 일부만 들어옴
 			{
+				if (_bodyBuf.find("\r") != std::string::npos)
+					return ;
 				_info.body.append(_bodyBuf);
 				_currentBodyLength += _bodyBuf.length();
 				_bodyBuf.clear();
@@ -68,8 +70,10 @@ void HttpreqHandler::parseChunked(std::string req)
 			}
 			else if (pos != std::string::npos && !_hasContentLength) // 길이 들어옴
 			{
-				_hasContentLength = true;
 				_chunkedLength = parseChunkedLength(pos);
+				if (!_chunkedLength)
+					break;
+				_hasContentLength = true;
 				_infoBodyIdx = _info.body.length();
 				_contentLength += _currentBodyLength;
 				_currentBodyLength = 0;
@@ -271,7 +275,7 @@ void HttpreqHandler::parseBody(void)
 	_info.body.assign(_buf.begin() + pos + 4, _buf.end());
 }
 
-void HttpreqHandler::parse(void)
+void HttpreqHandler::parseWithoutBody(void)
 {
 	int pos = 0, prevPos = 0;
 	std::string line;
