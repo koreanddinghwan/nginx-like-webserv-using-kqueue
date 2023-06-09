@@ -11,6 +11,7 @@
 #define CRLF "\r\n"
 #define CRLF2 "\r\n\r\n"
 #define CHUNKED_END "0\r\n\r\n"
+#define CONTENT_LENGTH 15
 
 enum messageStateEnum {
 	chunked = 1,

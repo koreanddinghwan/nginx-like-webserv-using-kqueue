@@ -121,8 +121,7 @@ bool HttpreqHandler::parseContentLength(void) // findContentLength
 	if (prevPos == std::string::npos)
 		return (false);
 	pos = _buf.find(CRLF, prevPos);
-	//15 == Content-Length길이
-	lengthStr = _buf.substr(prevPos + 15, pos - prevPos - 15);
+	lengthStr = _buf.substr(prevPos + CONTENT_LENGTH, pos - prevPos - CONTENT_LENGTH);
 	_info.contentLength = lengthStr;
 	_contentLength = std::strtod(lengthStr.c_str(), &endptr);
 	return (true); // 헤더랑 밸류 모두 있음, 메소드 모름
