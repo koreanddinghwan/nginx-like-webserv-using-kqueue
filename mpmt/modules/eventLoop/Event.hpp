@@ -141,7 +141,7 @@ public:
 	std::string tmpInFileName;
 	int tmpOutFile;
 	int tmpInFile;
-
+	int	childPid;
 
 public:
 	Event(t_ServerType t);

@@ -9,11 +9,13 @@
 
 void printEvent(struct kevent *e)
 {
-	std::cout<<"filter: "<<e->filter<<std::endl;
-	std::cout<<"flag: "<<e->flags<<std::endl;
-	std::cout<<"fflag: "<<e->fflags<<std::endl;
-	std::cout<<"data: "<<e->data<<std::endl;
-	std::cout<<"udata: "<<e->udata<<std::endl;
+	std::cerr<<"===================="<<std::endl;
+	std::cerr<<"ident: "<<e->ident<<std::endl;
+	std::cerr<<"filter: "<<e->filter<<std::endl;
+	std::cerr<<"flag: "<<e->flags<<std::endl;
+	std::cerr<<"fflag: "<<e->fflags<<std::endl;
+	std::cerr<<"data: "<<e->data<<std::endl;
+	std::cerr<<"udata: "<<e->udata<<std::endl;
 }
 
 EventLoop& EventLoop::getInstance() {
@@ -36,20 +38,23 @@ void EventLoop::initEventLoop()
 	 * */
 	while (true)
 	{
-		struct kevent events[12];
+		struct kevent events[1];
 		int nevents;
-		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 12, NULL)) == -1) 
+		if ((nevents = kevent(this->kq_fd, NULL, 0, events, 1, NULL)) == -1) 
 			throw std::runtime_error("Failed to kevent\n");
 
 		for (int i = 0; i < nevents; i++)
 		{
 			int fd = events[i].ident;
-
+			printEvent(events + i);
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);
 				else if (events[i].filter == EVFILT_WRITE)
 					writeCallback(events + i);
+				else if (events[i].filter == EVFILT_VNODE)
+					e_tmpFileReadCallback(events + i, 
+							static_cast<Event *>(events[i].udata));
 			} catch (std::exception &e)
 			{
 				std::cout<<e.what()<<std::endl;

@@ -262,20 +262,24 @@ std::vector<char *> &Event::getCgiEnv()
 
 void Event::setTmpOutPath()
 {
-	char buf[10];
+	char buf[128];
+	time_t current_time;
+    time(&current_time);
 
 	tmpOutFileName = "/tmp/";
-	sprintf(buf, "%d", this->client_socket_fd);
+	sprintf(buf, "%ld", (long)time & 0x0ffff);
 	tmpOutFileName += buf;
 	tmpOutFileName += ".out";
 }
 
 void Event::setTmpInPath()
 {
-	char buf[10];
+	char buf[128];
+	time_t current_time;
+    time(&current_time);
 
 	tmpInFileName = "/tmp/";
-	sprintf(buf, "%d", this->client_socket_fd);
+	sprintf(buf, "%ld", (long) time & 0x0ffff);
 	tmpInFileName += buf;
 	tmpInFileName += ".in";
 }

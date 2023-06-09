@@ -1,6 +1,6 @@
 NAME = webserv
 CXX = c++
-CXXFLAGS = -std=c++98 -O3 -g3 # -fsanitize=address
+CXXFLAGS = -std=c++98 -O3 -g3  -fsanitize=address
 
 INC = .
 

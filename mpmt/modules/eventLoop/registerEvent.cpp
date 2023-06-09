@@ -8,7 +8,6 @@
 void EventLoop::registerClientSocketReadEvent(Event *e)
 {
 	e->setEventType(E_CLIENT_SOCKET);
-	//client socket을 읽기전용으로  kqueue에 등록
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to register client socket read with kqueue\n");
@@ -41,14 +40,9 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	e->setEventType(E_CLIENT_SOCKET);
 
 	if (!static_cast<HttpreqHandler *>(e->getRequestHandler())->getHasSid())
-	{
 		HttpServer::getInstance().issueSessionId();
-	}
 
-	for (int i = 0; i < 200; i++)
-		std::cerr<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBody().c_str() + i);
 
-	std::cerr<<(static_cast<responseHandler *>(e->getResponseHandler())->getResBody().size())<<std::endl;
 	/**
 	 * 최종적으로 client socket에 write하기전에 한 번만 호출되는 곳이므로, 여기서 response message와 wrotebyte를 설정해야함.
 	 * */
@@ -56,12 +50,6 @@ void EventLoop::registerClientSocketWriteEvent(Event *e)
 	 * make response message here
 	 * */
 	e->getResponseHandler()->handle(e);
-
-
-
-	for (int i = 0; i < 200; i++)
-		std::cerr<<*(static_cast<responseHandler *>(e->getResponseHandler())->getResBuf().c_str() + i);
-
 
 	/**
 	 * wrote byte set;
@@ -97,17 +85,24 @@ void EventLoop::registerTmpFileWriteEvent(Event *e)
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register file write with kqueue\n");
+		std::cerr<<"kevent tmpfile wrtie errno:"<<errno<<std::endl;
 }
 
 void EventLoop::registerTmpFileReadEvent(Event *e)
 {
+	std::cerr<<"tmp file read event register"<<std::endl;
+	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_RDONLY)) == -1)
+		std::cerr<<"error open"<<e->tmpInFileName<< errno<<std::endl;
+	if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+		std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 	e->fileReadByte = 0;
 	e->setEventType(E_TMP);
-	stat(e->tmpInFileName.c_str(), &e->statBuf);
-	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
-	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
-		throw std::runtime_error("Failed to register file write with kqueue\n");
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_VNODE, EV_ADD | EV_ENABLE, NOTE_WRITE, 0, e);
+	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1)
+	{
+		std::cerr<<errno<<std::endl;
+		throw std::runtime_error("Failed to register file read with kqueue\n");
+	}
 }
 
 /**
@@ -137,6 +132,7 @@ void EventLoop::unregisterFileReadEvent(Event *e)
 
 void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 {
+	std::cerr<<"unregisterClientSocketWriteEvent"<<std::endl;
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE , 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister client socket write with kqueue\n");
@@ -150,6 +146,13 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->internal_status = -1;
 	e->internal_uri = "";
 	e->locationData = NULL;
+	e->tmpOutFile = -1;
+	e->tmpInFile = -1;
+	e->childPid = -1;	
+	e->fileReadByte = 0;
+	e->fileWroteByte = 0;
+	e->wrote = 0;
+	e->readByte = 0;
 	registerClientSocketReadEvent(e);
 }
 
@@ -171,7 +174,7 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 
 void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
+	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_VNODE, EV_DELETE | EV_DISABLE, NOTE_WRITE, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file read with kqueue\n");
 	close(e->tmpInFile);
@@ -179,12 +182,111 @@ void EventLoop::unregisterTmpFileReadEvent(Event *e)
 	/* unlink(e->tmpOutFileName.c_str()); */
 }
 
+void setEnv(Event *e)
+{
+	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
+	std::string tmp;
+	std::cout<<e->getRoute()<<std::endl;
+	e->getCgiEnv()[0] = strdup("AUTH_TYPE=Basic");
+	e->getCgiEnv()[1] = strdup(("CONTENT_LENGTH="+ reqHandler->getRequestInfo().contentLength).c_str());
+	e->getCgiEnv()[2] = strdup(("CONTENT_TYPE=" + reqHandler->getRequestInfo().contentType).c_str());
+	e->getCgiEnv()[3] = strdup("GATEWAY_INTERFACE=CGI/1.1");
+	e->getCgiEnv()[4] = strdup(("PATH_INFO=" + reqHandler->getRequestInfo().path).c_str());
+	e->getCgiEnv()[5] = strdup(("PATH_TRANSLATED=" + e->getRoute()).c_str());
+	e->getCgiEnv()[6] = strdup(("QUERY_STRING=" + reqHandler->getRequestInfo().queryParam).c_str());
+	tmp = inet_ntoa(e->getSocketInfo().socket_addr.sin_addr);
+	e->getCgiEnv()[7] = strdup(("REMOTE_ADDR=" + tmp).c_str());
+	e->getCgiEnv()[8] = strdup("REMOTE_HOST=");
+	e->getCgiEnv()[9] = strdup("REMOTE_IDENT=");
+	e->getCgiEnv()[10] = strdup("REMOTE_USER=");
+	e->getCgiEnv()[11] = strdup(("REQUEST_METHOD=" + reqHandler->getRequestInfo().method).c_str());
+	e->getCgiEnv()[12] = strdup(("REQUEST_URI=" + reqHandler->getRequestInfo().path).c_str());
+	e->getCgiEnv()[13] = strdup(("SCRIPT_NAME=" + reqHandler->getRequestInfo().path).c_str());
+	e->getCgiEnv()[14] = strdup("SERVER_NAME=cgi");
+	char pt[10];
+    sprintf(pt, "%d", e->getDefaultServerData()->getListen());
+	tmp = pt;
+	e->getCgiEnv()[15] = strdup(("SERVER_PORT=" + tmp).c_str());
+	e->getCgiEnv()[16] = strdup("SERVER_PROTOCOL=HTTP/1.1");
+	e->getCgiEnv()[17] = strdup("SERVER_SOFTWARE=webserv/1.0");
+	if (reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test") != reqHandler->getRequestInfo().reqHeaderMap.end())
+	{
+		e->getCgiEnv()[18] = strdup(("HTTP_X_SECRET_HEADER_FOR_TEST=" + reqHandler->getRequestInfo().reqHeaderMap.find("X-Secret-Header-For-Test")->second).c_str());
+		e->getCgiEnv()[19] = NULL;
+	}
+	else 
+	{
+		e->getCgiEnv()[18] = NULL;
+	}
+}
 
 void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	if (kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL) == -1) 
 		throw std::runtime_error("Failed to unregister file write with kqueue\n");
+
+	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
+	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	close(e->tmpOutFile);
-	std::cerr<<"closed tmp file\n";
+	close(e->tmpInFile);
+	/**
+	 * 3. fork
+	 * */
+	std::cerr<<"exec cgi\n";
+	pid_t pid;
+	if ((pid = fork())  == -1)
+	{
+		e->setStatusCode(500);
+		std::cerr << "fork error" << std::endl;
+		return;
+	}
+
+	/**
+	 * parent process
+	 * */
+	if (pid)
+	{
+		e->childPid = pid;
+		//reserve
+		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
+		registerTmpFileReadEvent(e);
+		return;
+	}
+	/**
+	 * child process
+	 * */
+	else 
+	{
+		setEnv(e);
+		std::cerr<<"tmpOutFile: "<<e->tmpOutFileName<<std::endl;
+		std::cerr<<"tmpInFile: "<<e->tmpInFileName<<std::endl;
+		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
+			exit(1);
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1)
+			exit(1);
+
+		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cerr<<"child fcntl error"<<errno<<std::endl;
+		if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cerr<<"child fcntl error"<<errno<<std::endl;
+
+        if (dup2(e->tmpInFile, STDOUT_FILENO) == -1)
+			std::cerr<<"dup2 error"<<errno<<std::endl;
+        if (dup2(e->tmpOutFile, STDIN_FILENO) == -1)
+			std::cerr<<"dup2 error"<<errno<<std::endl;
+
+		//실행
+		char **env = new char*[e->getCgiEnv().size() + 1];
+		for (size_t i = 0; i < e->getCgiEnv().size(); i++)
+			env[i] = const_cast<char *>(e->getCgiEnv()[i]);
+		env[e->getCgiEnv().size()] = NULL;
+		if (execve(e->getRoute().c_str(), NULL, env) == -1)
+		{
+			std::cerr << "execve error" << std::endl;
+			e->setStatusCode(404);
+			exit(1);
+		}
+		exit(1);
+	}
 }
