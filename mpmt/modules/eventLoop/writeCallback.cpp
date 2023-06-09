@@ -95,7 +95,7 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * todo : file size
 		 * */
-		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_currentBodyLength;
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getCurrentBodyLength();
 
 		/**
 		 * todo : file buffer
@@ -142,8 +142,7 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 		/**
 		 * todo : file size
 		 * */
-		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->_currentBodyLength;
-
+		int fileSize = static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getCurrentBodyLength();
 		/**
 		 * todo : file buffer
 		 * */

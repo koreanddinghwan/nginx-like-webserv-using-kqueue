@@ -263,15 +263,21 @@ HttpreqHandler::~HttpreqHandler()
 
 
 /* =============== utils ================== */
-std::string HttpreqHandler::getBuf() const { return _buf; }
 
 void HttpreqHandler::appendBuf(std::string req) { _buf.append(req); }
 
+/* ============================================= */
+
+/* =============== getter ================== */
 bool HttpreqHandler::getIsPending(void) const { return _pended; }
 
 bool HttpreqHandler::isHeaderPending(void) const { return _headerPended; }
 
 bool HttpreqHandler::isBodyPending(void) const { return _bodyPended; }
+
+int HttpreqHandler::getContentLength(void) const { return _contentLength; }
+
+int HttpreqHandler::getCurrentBodyLength(void) const { return _currentBodyLength; }
 
 bool HttpreqHandler::getHasSid(void) const { return (!_sidString.empty() ? true : false); }
 

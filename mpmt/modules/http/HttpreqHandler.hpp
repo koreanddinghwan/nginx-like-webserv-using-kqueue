@@ -37,6 +37,8 @@ private:
 	bool _flag;
 	/* ========================================== */
 
+private:
+
 	/* ======== 패킷 모두 전송 후에 사용할 변수 ======= */
 	//파싱 후 result
 	struct httpRequestInfo _info;
@@ -50,25 +52,42 @@ private:
 	std::string _sidString;
 	/* ========================================== */
 
+private:
+	int _contentLength;
+	int _currentBodyLength;
+
 public:
 	HttpreqHandler(Event *e);
 	~HttpreqHandler();
 
 public:
-	int _contentLength;
-	int _currentBodyLength;
 	void *handle(void *data);
 
-	//getter
+	/************** getter **************/
+
+	/* state */
 	bool getIsPending(void) const;
 	bool isHeaderPending(void) const;
 	bool isBodyPending(void) const;
+
+	/* length */
+	int getContentLength(void) const;
+	int getCurrentBodyLength(void) const;
+
+	/* sid */
 	bool getHasSid(void) const;
 	int getSid(void) const;
 	std::string getSidString(void) const;
-	const httpRequestInfo &getRequestInfo(void) const;
 
+	/*info*/
+	const httpRequestInfo &getRequestInfo(void) const;
+	/************** getter **************/
+
+
+	/************** print **************/
 	void printReq(void);
+
+
 private:
 	//init
 	void initRequest(std::string req);
@@ -108,9 +127,7 @@ private:
 	//undefine
 	void parseUndefined(void);
 	
-
 	void appendBuf(std::string buf);
-	std::string getBuf(void) const;
 
 	//check start Line
 	void checkStartLine(void);
