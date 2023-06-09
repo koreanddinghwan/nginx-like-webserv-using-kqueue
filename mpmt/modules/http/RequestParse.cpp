@@ -71,6 +71,7 @@ void HttpreqHandler::parseChunked(std::string req)
 				_hasContentLength = true;
 				_chunkedLength = parseChunkedLength(pos);
 				_infoBodyIdx = _info.body.length();
+				_contentLength += _currentBodyLength;
 				_currentBodyLength = 0;
 				_bodyBuf.erase(0, pos + 2);
 			}
