@@ -164,6 +164,7 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	if (pid)
 	{
+		e->childPid = pid;
 		close(e->CtoPPipe[1]);
 		close(e->PtoCPipe[0]);
 

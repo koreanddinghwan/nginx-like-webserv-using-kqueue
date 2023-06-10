@@ -2,6 +2,7 @@
 #include "EventLoop.hpp"
 #include <exception>
 #include <sys/event.h>
+#include <sys/wait.h>
 
 void EventLoop::readCallback(struct kevent *e)
 {
@@ -192,9 +193,33 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else if (read_len == 0)
 		{
-			unregisterPipeReadEvent(e_udata);
-			registerClientSocketWriteEvent(e_udata);
-			return;
+			//reclaim child process
+			//child process가 종료되었을 때, child process의 exit status를 얻어온다.
+
+			int status;
+			//cgi 로 fork된 자식프로세스의 상태를 논블로킹으로 확인합니다..
+			pid_t pid = waitpid(e_udata->childPid, &status, WNOHANG);
+			if (pid == e_udata->childPid)
+			{
+				//자식 회수 성공
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return;
+			}
+			else if (pid == 0)
+			{
+				//종료된 자식프로세스가 없다는 것. 그냥 리턴하고 다음번에 다시 확인하도록 합니다.
+				return;
+			}
+			else 
+			{
+				//자식 회수 실패
+				std::cout<<"waitpid error"<<std::endl;
+				e_udata->setStatusCode(500);
+				unregisterPipeReadEvent(e_udata);
+				registerClientSocketWriteEvent(e_udata);
+				return;
+			}
 		}
 		else
 		{
