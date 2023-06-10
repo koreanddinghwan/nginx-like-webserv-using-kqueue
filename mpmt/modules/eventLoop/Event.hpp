@@ -135,6 +135,7 @@ public:
 	struct stat statBuf;
 	int fileReadByte;
 	int fileWroteByte;
+	int	childPid;
 
 
 public:
