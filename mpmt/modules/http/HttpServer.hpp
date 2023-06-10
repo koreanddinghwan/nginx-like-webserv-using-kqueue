@@ -61,6 +61,8 @@ public:
    */
   char* getHttpBuffer();
 
+  unsigned int issueSessionId();
+
 private:
   HttpServer(); 
   ~HttpServer(); 

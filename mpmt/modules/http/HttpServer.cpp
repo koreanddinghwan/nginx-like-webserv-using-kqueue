@@ -1,5 +1,15 @@
 #include "HttpServer.hpp"
 
+
+unsigned int hash(unsigned int x) 
+{
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = (x >> 16) ^ x;
+    return x;
+}
+
+
 HttpServer& HttpServer::getInstance()
 {
 	static HttpServer instance;
@@ -19,6 +29,11 @@ void HttpServer::init() throw(std::runtime_error)
 		EV_SET(&kev, e->getServerFd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 		this->kevents.push_back(kev);
 	}
+}
+
+unsigned int HttpServer::issueSessionId()
+{
+	return hash(static_cast<unsigned int>(time(NULL)));
 }
 
 std::vector<struct kevent> & HttpServer::getKevents() { return this->kevents; }

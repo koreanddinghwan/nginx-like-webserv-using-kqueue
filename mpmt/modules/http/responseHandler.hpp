@@ -10,7 +10,7 @@
 class responseHandler : public IHandler
 {
 public:
-	responseHandler();
+	responseHandler(Event *e);
 	responseHandler(const int &status);
 	~responseHandler();
 
@@ -21,6 +21,8 @@ public:
 	void setResAddtionalOptions(Event *event) const;
 	void setResStatusCode(const int& statusCode) const;
 	void setResStatusMsg(const int& statusCode) const;
+	void setResCookie(std::string cookieString) const;
+
 	void setResBuf() const;
 	std::string& getResBody() const;
 	std::string& getResHeader() const;
@@ -32,6 +34,7 @@ public:
 private:
 	responseHandler& operator=(const responseHandler &rhs);
 	Response* _res;
+	Event *_event;
 };
 
 #endif
