@@ -15,6 +15,9 @@ void EventLoop::registerClientSocketReadEvent(Event *e)
 
 void EventLoop::registerPipeReadEvent(Event *e)
 {
+	responseHandler *rh = static_cast<responseHandler *>(e->getResponseHandler());
+
+	rh->getResBody().reserve(1000000);
 	std::cout<<"EVENTLOOP: registerPipeReadEvent"<<std::endl;
 	e->setEventType(E_PIPE);
 	EV_SET(&(dummyEvent), e->CtoPPipe[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);

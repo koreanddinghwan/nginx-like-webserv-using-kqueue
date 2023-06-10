@@ -40,7 +40,7 @@ public:
 	 */
 	void initEventLoop();
 
-	char pipeBuffer[65535];
+	char pipeBuffer[HTTPBUFFER_SIZE];
 
 private:
 	int kq_fd;

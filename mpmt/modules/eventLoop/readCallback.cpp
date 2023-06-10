@@ -172,7 +172,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from pipe
-		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, 65534);
+		ssize_t read_len = read(e_udata->CtoPPipe[0], EventLoop::getInstance().pipeBuffer, HTTPBUFFER_SIZE - 1);
 		/* std::cout<<"read len = " <<read_len<<std::endl; */
 		/* std::cout<<"pipe readable data size:"<<e->data<<std::endl; */
 		if (read_len == -1)
@@ -229,7 +229,7 @@ void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else
 			{
-			HttpServer::getInstance().getHttpBuffer()[read_len - 1] = '\0';
+			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
 			static_cast<responseHandler *>(e_udata->getResponseHandler())->setResBody(HttpServer::getInstance().getHttpBuffer());
 			e_udata->fileReadByte += read_len;
 
