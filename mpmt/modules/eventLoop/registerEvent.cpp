@@ -4,6 +4,7 @@
 #include <sys/event.h>
 #include <sys/fcntl.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 void EventLoop::registerClientSocketReadEvent(Event *e)
 {
@@ -87,15 +88,18 @@ void EventLoop::registerTmpFileReadEvent(Event *e)
 	std::cerr<<"tmp file read event register"<<std::endl;
 	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_RDONLY)) == -1)
 		std::cerr<<"error open"<<e->tmpInFileName<< errno<<std::endl;
-	if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+
+	int flag;
+
+	flag = fcntl(e->tmpInFile, F_GETFL, 0);
+	flag |= O_NONBLOCK;
+	if (fcntl(e->tmpInFile, F_SETFL, flag) == -1)
 		std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 	e->fileReadByte = 0;
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
-	{
 		std::cerr<<errno<<std::endl;
-	}
 }
 
 void EventLoop::registerCgiExitEvent(Event *e)
@@ -175,9 +179,11 @@ void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
+	dup2(e->oldStdOut, STDOUT_FILENO);
+	close(STDOUT_FILENO);
 	close(e->tmpInFile);
-	/* unlink(e->tmpInFileName.c_str()); */
-	/* unlink(e->tmpOutFileName.c_str()); */
+	unlink(e->tmpInFileName.c_str());
+	unlink(e->tmpOutFileName.c_str());
 }
 
 void setEnv(Event *e)
@@ -223,6 +229,8 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
+	e->oldStdin = dup(STDIN_FILENO);
+	e->oldStdOut = dup(STDOUT_FILENO);
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	close(e->tmpOutFile);
@@ -259,13 +267,29 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 		std::cerr<<"tmpOutFile: "<<e->tmpOutFileName<<std::endl;
 		std::cerr<<"tmpInFile: "<<e->tmpInFileName<<std::endl;
 		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
+		{
+			close(e->tmpOutFile);
+			close(e->tmpInFile);
+			std::cerr<<"open error"<<errno<<std::endl;
 			exit(1);
+		}
 		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1)
+		{
+			close(e->tmpInFile);
+			close(e->tmpOutFile);
+			std::cerr<<"open error"<<errno<<std::endl;
 			exit(1);
-
-		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
+		}
+		std::cout<<"tmpOutFile: "<<e->tmpOutFile<<std::endl;
+		std::cout<<"tmpInFile: "<<e->tmpInFile<<std::endl;
+		int flag;
+		flag = fcntl(e->tmpOutFile, F_GETFL, 0);
+		flag |= O_NONBLOCK;
+		if (fcntl(e->tmpOutFile, F_SETFL, flag) == -1)
 			std::cerr<<"child fcntl error"<<errno<<std::endl;
-		if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+		flag = fcntl(e->tmpInFile, F_GETFL, 0);
+		flag |= O_NONBLOCK;
+		if (fcntl(e->tmpInFile, F_SETFL, flag) == -1)
 			std::cerr<<"child fcntl error"<<errno<<std::endl;
 
         if (dup2(e->tmpInFile, STDOUT_FILENO) == -1)

@@ -266,7 +266,7 @@ void Event::setTmpOutPath()
 	char buf[128];
     srand(time(NULL));
 
-	tmpOutFileName = "/tmp/";
+	tmpOutFileName = "./tmp/";
 	sprintf(buf, "%d", rand() & 0x0ffff);
 	tmpOutFileName += buf;
 	tmpOutFileName += ".out";
@@ -277,7 +277,7 @@ void Event::setTmpInPath()
 	char buf[128];
     srand(time(NULL));
 
-	tmpInFileName = "/tmp/";
+	tmpInFileName = "./tmp/";
 	sprintf(buf, "%d", rand() & 0x0ffff);
 	tmpInFileName += buf;
 	tmpInFileName += ".in";

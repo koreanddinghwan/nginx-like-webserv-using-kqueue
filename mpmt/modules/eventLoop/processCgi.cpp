@@ -27,10 +27,15 @@ bool EventLoop::processCgi(Event *e)
 	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666) == -1))
 		std::cerr<<"register tmp file read event error"<<std::endl;
 
-	if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
-		std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
-	if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
-		std::cerr<<"error fcntl"<<e->tmpOutFileName<< errno<<std::endl;
+	int flag;
+	flag = fcntl(e->tmpOutFile, F_GETFL, 0);
+	flag |= O_NONBLOCK;
+	if (fcntl(e->tmpOutFile, F_SETFL, flag) == -1)
+		std::cerr<<"parent fcntl error"<<errno<<std::endl;
+	flag = fcntl(e->tmpInFile, F_GETFL, 0);
+	flag |= O_NONBLOCK;
+	if (fcntl(e->tmpInFile, F_SETFL, flag) == -1)
+		std::cerr<<"parent fcntl error"<<errno<<std::endl;
 	registerTmpFileWriteEvent(e);
 	return true;
 }

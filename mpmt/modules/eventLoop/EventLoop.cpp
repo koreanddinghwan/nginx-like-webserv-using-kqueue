@@ -46,6 +46,7 @@ void EventLoop::initEventLoop()
 		{
 			int fd = events[i].ident;
 			printEvent(events + i);
+			std::cout<<static_cast<HttpreqHandler *>(events[i].udata)->getRequestInfo().path<<std::endl;
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);

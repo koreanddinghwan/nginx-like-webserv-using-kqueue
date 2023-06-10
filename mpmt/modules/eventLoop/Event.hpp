@@ -142,6 +142,8 @@ public:
 	int tmpOutFile;
 	int tmpInFile;
 	int	childPid;
+	int oldStdin;
+	int oldStdOut;
 
 public:
 	Event(t_ServerType t);
