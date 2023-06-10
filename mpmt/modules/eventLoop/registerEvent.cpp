@@ -79,19 +79,23 @@ void EventLoop::registerTmpFileWriteEvent(Event *e)
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
+		std::cerr<<"kevent tmpfile wrtie errno:"<<errno<<std::endl;
 }
 
 void EventLoop::registerTmpFileReadEvent(Event *e)
 {
-	std::cout<<"tmp file read event register"<<std::endl;
-	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_RDONLY | O_NONBLOCK)) == -1)
-		std::cout<<"error open"<<e->tmpInFileName<< errno<<std::endl;
+	std::cerr<<"tmp file read event register"<<std::endl;
+	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_RDONLY)) == -1)
+		std::cerr<<"error open"<<e->tmpInFileName<< errno<<std::endl;
 	if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
-		std::cout<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
+		std::cerr<<"error fcntl"<<e->tmpInFileName<< errno<<std::endl;
 	e->fileReadByte = 0;
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
+	{
+		std::cerr<<errno<<std::endl;
+	}
 }
 
 void EventLoop::registerCgiExitEvent(Event *e)
@@ -99,6 +103,7 @@ void EventLoop::registerCgiExitEvent(Event *e)
 	std::cout<<"register cgi exit event"<<std::endl;
 	EV_SET(&(dummyEvent), e->childPid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT, NOTE_EXIT, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
+		std::cerr<<"child proc exit event"<<errno<<std::endl;
 }
 
 
@@ -123,12 +128,11 @@ void EventLoop::unregisterFileReadEvent(Event *e)
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_READ, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 	close(e->file_fd);
-	std::cout<<"close fd:"<<e->file_fd<<std::endl;
 }
 
 void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 {
-	std::cout<<"unregisterClientSocketWriteEvent"<<std::endl;
+	std::cerr<<"unregisterClientSocketWriteEvent"<<std::endl;
 	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE , 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
@@ -142,9 +146,6 @@ void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 	e->internal_uri = "";
 	e->internal_method = "";
 	e->locationData = NULL;
-	e->file_fd = -1;
-	e->tmpInFileName = "";
-	e->tmpOutFileName = "";
 	e->tmpOutFile = -1;
 	e->tmpInFile = -1;
 	e->childPid = -1;	
@@ -167,7 +168,6 @@ void EventLoop::unregisterFileWriteEvent(Event *e)
 	EV_SET(&(dummyEvent), e->file_fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 	close(e->file_fd);
-	std::cout<<"close fd:"<<e->file_fd<<std::endl;
 }
 
 
@@ -175,14 +175,9 @@ void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
-
-	int flags = fcntl(e->tmpInFile, F_GETFL);
-	int newFlags = flags & (~O_NONBLOCK);
-	fcntl(e->tmpInFile, F_SETFL, newFlags);
 	close(e->tmpInFile);
-	std::cout<<"close fd:"<<e->tmpInFile<<std::endl;
-	remove(e->tmpInFileName.c_str());
-	remove(e->tmpOutFileName.c_str());
+	/* unlink(e->tmpInFileName.c_str()); */
+	/* unlink(e->tmpOutFileName.c_str()); */
 }
 
 void setEnv(Event *e)
@@ -225,27 +220,22 @@ void setEnv(Event *e)
 
 void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 {
-	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE | EV_CLEAR, 0, 0, e);
+	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
 	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-	std::cout<<"unregister tmp file write event\n";
-	std::cout<<"close fd:"<<std::endl;
 	close(e->tmpOutFile);
 	close(e->tmpInFile);
-	std::cout<<e->tmpOutFile<<std::endl;
-	std::cout<<e->tmpInFile<<std::endl;
-
 	/**
 	 * 3. fork
 	 * */
-	std::cout<<"exec cgi\n";
+	std::cerr<<"exec cgi\n";
 	pid_t pid;
 	if ((pid = fork())  == -1)
 	{
 		e->setStatusCode(500);
-		std::cout << "fork error" << std::endl;
+		std::cerr << "fork error" << std::endl;
 		return;
 	}
 
@@ -256,7 +246,7 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 	{
 		e->childPid = pid;
 		//reserve
-		resHandler->getResBody().reserve(1000000);
+		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
 		registerCgiExitEvent(e);
 		return;
 	}
@@ -266,11 +256,22 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 	else 
 	{
 		setEnv(e);
-		(e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY));
-		(e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY));
+		std::cerr<<"tmpOutFile: "<<e->tmpOutFileName<<std::endl;
+		std::cerr<<"tmpInFile: "<<e->tmpInFileName<<std::endl;
+		if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_RDONLY)) == -1)
+			exit(1);
+		if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_WRONLY)) == -1)
+			exit(1);
 
-        (dup2(e->tmpOutFile, STDIN_FILENO));
-        (dup2(e->tmpInFile, STDOUT_FILENO));
+		if (fcntl(e->tmpOutFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cerr<<"child fcntl error"<<errno<<std::endl;
+		if (fcntl(e->tmpInFile, F_SETFL, O_NONBLOCK) == -1)
+			std::cerr<<"child fcntl error"<<errno<<std::endl;
+
+        if (dup2(e->tmpInFile, STDOUT_FILENO) == -1)
+			std::cerr<<"dup2 error"<<errno<<std::endl;
+        if (dup2(e->tmpOutFile, STDIN_FILENO) == -1)
+			std::cerr<<"dup2 error"<<errno<<std::endl;
 
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];
@@ -279,7 +280,7 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 		env[e->getCgiEnv().size()] = NULL;
 		if (execve(e->getRoute().c_str(), NULL, env) == -1)
 		{
-			std::cout << "execve error" << std::endl;
+			std::cerr << "execve error" << std::endl;
 			e->setStatusCode(404);
 			exit(1);
 		}

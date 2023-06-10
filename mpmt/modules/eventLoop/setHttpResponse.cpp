@@ -326,6 +326,7 @@ void EventLoop::setHttpResponse(Event *e)
 			 * */
 			errorCallback(e);
 		}
+		unregisterClientSocketReadEvent(e);
 		return ;
 	}
 	/**
