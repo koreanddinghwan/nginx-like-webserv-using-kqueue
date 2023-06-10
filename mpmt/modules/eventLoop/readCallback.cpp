@@ -101,13 +101,13 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 		}
 		else if (read_len == 0)
 		{
-			if (e->flags & EV_EOF)
-			{
+			/* if (e->flags & EV_EOF) */
+			/* { */
 				unregisterClientSocketReadEvent(e_udata);
 				close(client_fd);
 				delete e_udata;
 				return;
-			}
+			/* } */
 		}
 		else
 		{

@@ -2,6 +2,7 @@
 
 void EventLoop::ws_method_GET(Event *e)
 {
+	std::cout<<"method is get"<<std::endl;
 	std::cout<<e->locationData->getRoot() + e->internal_uri<<std::endl;
 	if ((stat((e->locationData->getRoot() + e->internal_uri).c_str(), &e->statBuf) == 0) &&
 			(e->statBuf.st_mode & S_IFREG) &&
@@ -71,12 +72,14 @@ void EventLoop::ws_method_POST(Event *e)
 		 * */
 		if (ws_HttpUploadModule::processEvent(e))
 		{
+			printf("upload ready\n");
 			unregisterClientSocketReadEvent(e);
 			registerFileWriteEvent(e);
 			return ;
 		}
 		else
 		{
+			printf("upload not ready\n");
 			unregisterClientSocketReadEvent(e);
 			registerClientSocketWriteEvent(e);
 		}

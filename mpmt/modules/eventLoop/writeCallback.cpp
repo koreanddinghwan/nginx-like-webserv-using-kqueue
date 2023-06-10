@@ -208,7 +208,10 @@ void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 				std::cerr<<"Errno: "<<errno<<std::endl;
 				e_udata->setStatusCode(500);
 				unregisterTmpFileWriteEvent(e_udata);
+				close(e_udata->tmpOutFile);
+				close(e_udata->tmpInFile);
 				unlink(e_udata->tmpOutFileName.c_str());
+				unlink(e_udata->tmpInFileName.c_str());
 				registerClientSocketWriteEvent(e_udata);
 			}
 		}
@@ -218,7 +221,10 @@ void EventLoop::e_tmpFileWriteCallback(struct kevent *e, Event *e_udata)
 			if (fileSize == 0)
 			{
 				e_udata->setStatusCode(200);
+				close(e_udata->tmpOutFile);
+				close(e_udata->tmpInFile);
 				unlink(e_udata->tmpOutFileName.c_str());
+				unlink(e_udata->tmpInFileName.c_str());
 				unregisterTmpFileWriteEvent(e_udata);
 				registerClientSocketWriteEvent(e_udata);
 				return ;

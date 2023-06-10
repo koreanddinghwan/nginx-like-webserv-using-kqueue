@@ -80,11 +80,13 @@ void EventLoop::registerTmpFileWriteEvent(Event *e)
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
-		std::cerr<<"kevent tmpfile wrtie errno:"<<errno<<std::endl;
 }
 
 void EventLoop::registerTmpFileReadEvent(Event *e)
 {
+	printf("tmpfile read event register\n");
+	printf("%d, %d, %d, %d", e->oldStdOut, e->oldStdin, STDIN_FILENO, STDOUT_FILENO);
+	printf("%d, %d", e->tmpInFile, e->tmpOutFile);
 	std::cerr<<"tmp file read event register"<<std::endl;
 	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_RDONLY)) == -1)
 		std::cerr<<"error open"<<e->tmpInFileName<< errno<<std::endl;
@@ -99,7 +101,6 @@ void EventLoop::registerTmpFileReadEvent(Event *e)
 	e->setEventType(E_TMP);
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL));
-		std::cerr<<errno<<std::endl;
 }
 
 void EventLoop::registerCgiExitEvent(Event *e)
@@ -136,13 +137,15 @@ void EventLoop::unregisterFileReadEvent(Event *e)
 
 void EventLoop::unregisterClientSocketWriteEvent(Event *e)
 {
-	std::cerr<<"unregisterClientSocketWriteEvent"<<std::endl;
-	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE , 0, 0, e);
+	printf( "%s\n", "unregisterClientSocketWriteEvent");
+	EV_SET(&(dummyEvent), e->getClientFd(), EVFILT_WRITE, EV_DELETE | EV_DISABLE | EV_CLEAR , 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
 	delete (e->getResponseHandler());
 	delete (e->getRequestHandler());
 
+	printf("reset event\n");
+	printf("client fd : %d", e->getClientFd());
 	e->setRequestHandler(new HttpreqHandler(e));
 	e->setResponseHandler(new responseHandler(e));
 	e->setStatusCode(200);
@@ -179,9 +182,9 @@ void EventLoop::unregisterTmpFileReadEvent(Event *e)
 {
 	EV_SET(&(dummyEvent), e->tmpInFile, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
-	dup2(e->oldStdOut, STDOUT_FILENO);
-	close(STDOUT_FILENO);
 	close(e->tmpInFile);
+	close(e->oldStdOut);
+	close(e->oldStdin);
 	unlink(e->tmpInFileName.c_str());
 	unlink(e->tmpOutFileName.c_str());
 }
@@ -226,18 +229,19 @@ void setEnv(Event *e)
 
 void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 {
+	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
+	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	EV_SET(&(dummyEvent), e->tmpOutFile, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, e);
 	(kevent(this->kq_fd, &(dummyEvent), 1, NULL, 0, NULL)); 
 
+	//FD백업
 	e->oldStdin = dup(STDIN_FILENO);
 	e->oldStdOut = dup(STDOUT_FILENO);
-	responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
+
+	//FD작업
 	close(e->tmpOutFile);
 	close(e->tmpInFile);
-	/**
-	 * 3. fork
-	 * */
+
 	std::cerr<<"exec cgi\n";
 	pid_t pid;
 	if ((pid = fork())  == -1)
@@ -252,6 +256,8 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 	 * */
 	if (pid)
 	{
+		/* close(e->tmpOutFile); */
+		/* close(e->tmpInFile); */
 		e->childPid = pid;
 		//reserve
 		resHandler->getResBody().reserve(reqHandler->getRequestInfo().body.length());
@@ -280,8 +286,6 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 			std::cerr<<"open error"<<errno<<std::endl;
 			exit(1);
 		}
-		std::cout<<"tmpOutFile: "<<e->tmpOutFile<<std::endl;
-		std::cout<<"tmpInFile: "<<e->tmpInFile<<std::endl;
 		int flag;
 		flag = fcntl(e->tmpOutFile, F_GETFL, 0);
 		flag |= O_NONBLOCK;
@@ -304,10 +308,14 @@ void EventLoop::unregisterTmpFileWriteEvent(Event *e)
 		env[e->getCgiEnv().size()] = NULL;
 		if (execve(e->getRoute().c_str(), NULL, env) == -1)
 		{
+			close(e->tmpInFile);
+			close(e->tmpOutFile);
 			std::cerr << "execve error" << std::endl;
 			e->setStatusCode(404);
 			exit(1);
 		}
+		close(e->tmpInFile);
+		close(e->tmpOutFile);
 		exit(1);
 	}
 }

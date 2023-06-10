@@ -9,7 +9,7 @@ bool EventLoop::processCgi(Event *e)
 	std::cerr << "processCgi" << std::endl;
 	std::cerr<<"file des:"<<e->getClientFd()<<std::endl;
 
-	if (static_cast<HttpreqHandler *>(e->getRequestHandler())->getCurrentBodyLength() == 0)
+	if (static_cast<HttpreqHandler *>(e->getRequestHandler())->getContentLength() == 0)
 	{
 		e->setStatusCode(204);
 		return false;
@@ -29,8 +29,6 @@ bool EventLoop::processCgi(Event *e)
 	e->setTmpOutPath();
 
 
-		close(e->tmpOutFile);
-		close(e->tmpInFile);
 	if ((e->tmpOutFile = open(e->tmpOutFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644 )) == -1)
 		std::cerr<<"register tmp file write event error"<<std::endl;
 	if ((e->tmpInFile = open(e->tmpInFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666) == -1))

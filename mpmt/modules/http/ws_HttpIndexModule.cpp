@@ -33,8 +33,8 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 			 * */
 			std::cout<<"relative path"<<std::endl;
 			std::string tmp = e->locationData->getRoot() + "/" + e->openFileName;
-			std::cout<<tmp<<std::endl;
-			std::cout<<e->internal_uri<<std::endl;
+			std::cout<<"open file : "<<tmp<<std::endl;
+			std::cout<<"internal uri:"<<e->internal_uri<<std::endl;
 			if (stat(tmp.c_str(), &e->statBuf) == 0 &&
 					S_ISREG(e->statBuf.st_mode))
 			{
