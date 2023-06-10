@@ -51,6 +51,7 @@ void responseHandler::setResAddtionalOptions(Event *event) const {
 	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
 	int statusCode = this->getResStatusCode();
 	
+	std::cout << "================================" << static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid() << "========================" << std::endl;
 	if (static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid())
 	{
 		std::string cookieString = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().reqHeaderMap.find("Cookie")->second;
