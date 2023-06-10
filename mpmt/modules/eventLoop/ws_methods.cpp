@@ -102,6 +102,12 @@ void EventLoop::ws_method_POST(Event *e)
 	}
 }
 
+/** 
+ * A 202 (Accepted) status code if the action will likely succeed but has not yet been enacted. 
+ * A 204 (No Content) status code if the action has been enacted and no further information is to be supplied.
+ * A 200 (OK) status code if the action has been enacted and the 
+ * response message includes a representation describing the status. 
+ **/
 void EventLoop::ws_method_DELETE(Event *e)
 {
 	std::cout<<"method is DELETE"<<std::endl;
@@ -110,4 +116,30 @@ void EventLoop::ws_method_DELETE(Event *e)
 	 * */
 	std::string filePath;
 	filePath = e->locationData->getRoot() + e->internal_uri;
+
+	std::cout<<"filePath: "<<filePath<<std::endl;
+
+	//delete file
+	if (e->internal_uri == "/")
+	{
+		//delete root directory not allowed
+		e->setStatusCode(403);
+		errorCallback(e);
+	}
+	else
+	
+	if (unlink(filePath.c_str()) == 0)
+	{
+		//delete success
+		//server do not send response body
+		e->setStatusCode(204);
+		unregisterClientSocketReadEvent(e);
+		registerClientSocketWriteEvent(e);
+	}
+	else
+	{
+		//delete fail
+		e->setStatusCode(404);
+		errorCallback(e);
+	}
 }
