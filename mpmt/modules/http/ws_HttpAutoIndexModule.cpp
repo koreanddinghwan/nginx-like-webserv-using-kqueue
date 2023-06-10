@@ -30,11 +30,11 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 			if (ent->d_name[0] == '.')
 			{
 				std::string tmp = ent->d_name;
-				list.push_back(tmp + "/");
+				list.push_back(tmp +  "/");
 			}
 			else {
-				path = e->internal_uri;
-				path.back() == '/' ? path = path + "/" + ent->d_name  :  path += ent->d_name;
+				path =  e->internal_uri;
+				path.back() == '/' ? path = path  + ent->d_name  :  path = path + "/" + ent->d_name;
 				if (path.front() == '/')
 					path = path.substr(1);
 				stat((e->getRoute() + ent->d_name).c_str(), &(e->statBuf));
@@ -51,7 +51,6 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 		 * */
 		responseHandler *resHandler = static_cast<responseHandler *>(e->getResponseHandler());
 		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-		char buf[6];
 
 		resHandler->setResBody("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\" /><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>");
 		resHandler->setResBody(e->getRoute());
@@ -61,10 +60,7 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 		for (int i = 0; i < list.size(); i++)
 		{
 			resHandler->setResBody("<a href=http://");
-			resHandler->setResBody(reqHandler->getRequestInfo().host);
-			resHandler->setResBody(":");
-			sprintf(buf, "%d/", e->locationData->getListen());
-			resHandler->setResBody(buf);
+			resHandler->setResBody(reqHandler->getRequestInfo().host + "/");
 			resHandler->setResBody(list[i]);
 			resHandler->setResBody(">");
 			resHandler->setResBody(list[i]);
