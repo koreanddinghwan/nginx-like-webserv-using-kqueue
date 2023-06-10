@@ -1,6 +1,4 @@
 #include "HttpreqHandler.hpp"
-#include "../http/HttpServer.hpp"
-#include <stdexcept>
 
 void *HttpreqHandler::handle(void *data) 
 {
@@ -17,7 +15,7 @@ void *HttpreqHandler::handle(void *data)
 		if (_pended && _messageState == undefined)
 			parseUndefined();
 		if (_pended && _messageState == chunked)
-			parseChunked(req);
+			parseChunked();
 		else if (_pended && _messageState == separate)
 			parseSeparate(req);
 	}
@@ -25,10 +23,7 @@ void *HttpreqHandler::handle(void *data)
 	fulfilled state message
 	*/
 	if (!_pended)
-	{
 		parse();
-		/* printReq(); */
-	}	
 	return _event;
 }
 
@@ -50,6 +45,7 @@ void HttpreqHandler::initMessageState(void)
 			_messageState = chunked;
 			_bodyPended = true;
 			_chunkedWithoutBodyBuf.append(_buf.substr(0, bodyPos + 4));
+			parseChunked();
 		}
 		else
 		{
@@ -66,10 +62,10 @@ void HttpreqHandler::initMessageState(void)
 
 void HttpreqHandler::initPendingState(void)
 {
-	if (_messageState != basic)
-		_pended = true;
+	if (!_headerPended && !_bodyPended)
+		_pended = false;
 	else
-	 	_pended = false;
+	 	_pended = true;
 }
 
 void HttpreqHandler::initVar(void)
