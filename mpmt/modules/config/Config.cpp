@@ -53,8 +53,6 @@ HttpBlock* Config::getHTTPBlock()
 
 void Config::printConfigData()
 {
-	std::cout<<"\033[35m"<<"Config Result"<<std::endl;
-
 	std::cout<<"=====General====="<<std::endl;
 	std::cout<<"worker_processes: "<<static_cast<GeneralBlock::generalConfig*>(blocks[0]->getConfigData())->worker_processes<<std::endl;
 	std::cout<<"=====Events======"<<std::endl;

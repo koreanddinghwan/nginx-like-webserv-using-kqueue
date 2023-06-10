@@ -140,16 +140,16 @@ bool HttpreqHandler::checkSeparate(int CRLF2Pos)
 	{
 		if (!line.empty())
 		{
-			_event->setStatusCode(411);
-			throw std::exception();
+			/* _event->setStatusCode(411); */
+			/* throw std::exception(); */
 		}
 	}
 	else if (_hasContentLength)
 	{
 		if (line.length() > _contentLength)
 		{
-			_event->setStatusCode(413);
-			throw std::exception();
+			/* _event->setStatusCode(413); */
+			/* throw std::exception(); */
 		}
 		if (line.length() < _contentLength)
 		{
@@ -166,8 +166,8 @@ void HttpreqHandler::checkMethod(void)
 	{
 		if (!_hasContentLength && _messageState != chunked)
 		{
-			_event->setStatusCode(411);
-			throw std::exception();
+			/* _event->setStatusCode(411); */
+			/* throw std::exception(); */
 		}
 		return ;
 	}
@@ -178,16 +178,16 @@ void HttpreqHandler::checkMethod(void)
 	}
 	else if (_info.method == "GET" || _info.method == "DELETE" || _info.method == "HEAD")
 		return ;
-	_event->setStatusCode(405);
-	throw std::exception();
+	/* _event->setStatusCode(405); */
+	/* throw std::exception(); */
 }
 
 void HttpreqHandler::checkHttpVersion(void)
 {
 	if (_info.httpVersion != "HTTP/1.1")
 	{
-		_event->setStatusCode(400);
-		throw std::exception();
+		/* _event->setStatusCode(400); */
+		/* throw std::exception(); */
 	}
 }
 

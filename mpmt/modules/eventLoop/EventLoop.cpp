@@ -9,13 +9,13 @@
 
 void printEvent(struct kevent *e)
 {
-	std::cerr<<"===================="<<std::endl;
-	std::cerr<<"ident: "<<e->ident<<std::endl;
-	std::cerr<<"filter: "<<e->filter<<std::endl;
-	std::cerr<<"flag: "<<e->flags<<std::endl;
-	std::cerr<<"fflag: "<<e->fflags<<std::endl;
-	std::cerr<<"data: "<<e->data<<std::endl;
-	std::cerr<<"udata: "<<e->udata<<std::endl;
+	std::cout<<"===================="<<std::endl;
+	std::cout<<"ident: "<<e->ident<<std::endl;
+	std::cout<<"filter: "<<e->filter<<std::endl;
+	std::cout<<"flag: "<<e->flags<<std::endl;
+	std::cout<<"fflag: "<<e->fflags<<std::endl;
+	std::cout<<"data: "<<e->data<<std::endl;
+	std::cout<<"udata: "<<e->udata<<std::endl;
 }
 
 EventLoop& EventLoop::getInstance() {
