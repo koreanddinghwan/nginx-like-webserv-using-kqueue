@@ -116,7 +116,7 @@ enum http_known_headers {
 };
 
 
-#define V(name, code) HTTP_STATUS_##name = code,
+#define V(name, code) HTTP_STATUS_##name = code
 #define HTTP_STATUS_CODES_ENUM(name, code) HTTP_STATUS_##name,
 #define HTTP_STATUS_CODES_STRING(name, code) \
   if (status == name) return (code);

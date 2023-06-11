@@ -19,7 +19,7 @@ enum messageStateEnum {
 	chunked = 1,
 	separate,
 	basic,
-	undefined,
+	undefined
 };
 
 class HttpreqHandler : public IHandler
