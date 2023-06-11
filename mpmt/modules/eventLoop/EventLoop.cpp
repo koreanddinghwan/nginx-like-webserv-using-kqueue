@@ -1,5 +1,6 @@
 #include "./EventLoop.hpp"
 #include "Event.hpp"
+#include <cstdio>
 #include <exception>
 #include <stdexcept>
 #include <sys/_types/_ssize_t.h>

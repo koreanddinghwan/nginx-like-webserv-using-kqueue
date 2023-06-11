@@ -153,8 +153,10 @@ void setInternalUri(Event *e)
 		return ;
 	}
 
-
-	tmp = requestPath.substr(1);
+	if (requestPath == "")
+		tmp = "/";
+	else
+		tmp = requestPath.substr(1);
 	pos = tmp.find("/");
 
 	if (e->locationData->getUri() == "/")
@@ -291,9 +293,17 @@ void EventLoop::setHttpResponse(Event *e)
 	 * internal loop
 	 * */
 	if (!checkAllowedMethods(e))
+	{
+		e->setStatusCode(405);
 		errorCallback(e);
+		return;
+	}
 	if (!checkClientMaxBodySize(e))
+	{
+		e->setStatusCode(413);
 		errorCallback(e);
+		return;
+	}
 
 	/**
 	 * client's request is redirection.

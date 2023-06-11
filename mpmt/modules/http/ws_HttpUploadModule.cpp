@@ -4,6 +4,14 @@
 
 bool ws_HttpUploadModule::processEvent(Event *e)
 {
+	HttpreqHandler *h = static_cast<HttpreqHandler *>(e->getRequestHandler());
+
+	if (h->getRequestInfo().body.length() == 0)
+	{
+		e->setStatusCode(204);
+		return false;
+	}
+
 	/**
 	 * POST method do not allow create directory
 	 * */
@@ -13,6 +21,7 @@ bool ws_HttpUploadModule::processEvent(Event *e)
 		e->setStatusCode(204);
 		return false;
 	}
+
 
 	std::string filePath;
 	if (e->internal_uri[0] == '/')
