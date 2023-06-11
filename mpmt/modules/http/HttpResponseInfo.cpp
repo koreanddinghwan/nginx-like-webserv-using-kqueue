@@ -1,12 +1,12 @@
 #include "HttpResponseInfo.hpp"
 #include <algorithm>
 
-Response::Response(){};
+Response::Response(){}
 
 Response::Response(const int &status) {
 	setStatusCode(status);
 	setStatusMsg(status);
-};
+}
 
 Response& Response::operator=(const Response &rhs) {
 	this->setStatusCode(rhs.getStatusCode());
@@ -74,7 +74,7 @@ void Response::setHeaders(std::string const &httpV) {
 }	
 void Response::setLocation(std::string const &location) {
 	this->_location = location;
-};
+}
 
 void Response::setBody(std::string const &body) {
 	this->_body += body;
@@ -85,9 +85,9 @@ void Response::setBuf(){
 	this->_buf += getBody();
 }
 
-std::string& Response::getBody(){ return this->_body;};
-std::string& Response::getHeader() { return this->_headers;};
-std::string& Response::getBuf() {return this->_buf; };
-std::string& Response::getStatusMsg() { return this->_statusMsg; };
-std::string& Response::getCookie() { return this->_cookie; };
-int Response::getStatusCode() const { return this->_statusCode; };
+std::string& Response::getBody(){ return this->_body;}
+std::string& Response::getHeader() { return this->_headers;}
+std::string& Response::getBuf() {return this->_buf; }
+std::string& Response::getStatusMsg() { return this->_statusMsg; }
+std::string& Response::getCookie() { return this->_cookie; }
+int Response::getStatusCode() const { return this->_statusCode; }
