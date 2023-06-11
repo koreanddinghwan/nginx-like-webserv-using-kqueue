@@ -110,7 +110,16 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				throw std::runtime_error("Failed to read from client socket, unknown err\n");
 		}
 		else if (read_len == 0)
+		{
+			//remove event
+			unregisterClientSocketReadEvent(e_udata);
+			//client socket close
+			close(client_fd);
+			//client socket event delete
+			delete e_udata;
+			std::cout<<"client disconnected"<<std::endl;
 			return;
+		}
 		else
 			{
 			HttpServer::getInstance().getHttpBuffer()[read_len] = '\0';
