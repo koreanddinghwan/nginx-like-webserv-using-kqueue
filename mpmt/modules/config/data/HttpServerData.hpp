@@ -29,7 +29,6 @@ class HttpServerData : public HttpData
 		void setListen(int port);
 		void setServerName(std::string name);
 		void setHttpLocationBlock(HttpLocationBlock *n);
-		void printServerDataConfig();
 
 		std::string getUploadStore();
 		void setUploadStore(std::string upload_store);

@@ -9,7 +9,6 @@ bool setFcntlToPipe(Event *e)
 		close(e->PtoCPipe[0]);
 		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 	if (fcntl(e->CtoPPipe[1], F_SETFL, O_NONBLOCK) == -1)
@@ -19,7 +18,6 @@ bool setFcntlToPipe(Event *e)
 		close(e->PtoCPipe[0]);
 		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 	if (fcntl(e->PtoCPipe[0], F_SETFL, O_NONBLOCK) == -1)
@@ -29,7 +27,6 @@ bool setFcntlToPipe(Event *e)
 		close(e->PtoCPipe[0]);
 		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 	if (fcntl(e->PtoCPipe[1], F_SETFL, O_NONBLOCK) == -1)
@@ -39,7 +36,6 @@ bool setFcntlToPipe(Event *e)
 		close(e->PtoCPipe[0]);
 		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "fcntl error" << std::endl;
 		return false;
 	}
 	return true;
@@ -49,7 +45,6 @@ void setEnv(Event *e)
 {
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	std::string tmp;
-	std::cout<<e->getRoute()<<std::endl;
 	e->getCgiEnv()[0] = strdup("AUTH_TYPE=Basic");
 	e->getCgiEnv()[1] = strdup(("CONTENT_LENGTH="+ reqHandler->getRequestInfo().contentLength).c_str());
 	e->getCgiEnv()[2] = strdup(("CONTENT_TYPE=" + reqHandler->getRequestInfo().contentType).c_str());
@@ -91,7 +86,6 @@ bool EventLoop::processCgi(Event *e)
 	e->setRoute(e->locationData->getRoot() + e->locationData->getCgiPass());
 	if (stat(e->getRoute().c_str(), &e->statBuf) != 0)
 	{
-		std::cout << "stat error" << std::endl;
 		e->setStatusCode(404);
 		return false;
 	}
@@ -105,7 +99,6 @@ bool EventLoop::processCgi(Event *e)
 	if (pipe(e->CtoPPipe) == -1)
 	{
 		e->setStatusCode(500);
-		std::cout << "pipe error" << std::endl;
 		return false;
 	}
 	if (pipe(e->PtoCPipe) == -1)
@@ -113,7 +106,6 @@ bool EventLoop::processCgi(Event *e)
 		close(e->CtoPPipe[0]);
 		close(e->CtoPPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "pipe error" << std::endl;
 		return false;
 	}
 
@@ -134,7 +126,6 @@ bool EventLoop::processCgi(Event *e)
 		close(e->PtoCPipe[0]);
 		close(e->PtoCPipe[1]);
 		e->setStatusCode(500);
-		std::cout << "fork error" << std::endl;
 		return false;
 	}
 

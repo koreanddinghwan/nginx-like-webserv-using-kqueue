@@ -1,7 +1,7 @@
 #ifndef SINGLETONCONFIG_HPP
 # define SINGLETONCONFIG_HPP
 
-#include "http/httpBlock.conf.hpp"
+#include "http/HttpBlock.conf.hpp"
 #include "../../exceptions/configParseException.hpp"
 #include "../../interface/IHttpBlock.hpp"
 #include "../../interface/IGeneralBlock.hpp"
@@ -44,9 +44,6 @@ class Config : public IConfig
 		GeneralBlock *getGeneralBlock();
 		EventBlock *getEventBlock();
 		HttpBlock *getHTTPBlock();
-
-
-		void printConfigData();
 
 		/*
 		 * 아래 3개는 구현부가 아닙니다.

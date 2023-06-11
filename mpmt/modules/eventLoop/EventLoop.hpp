@@ -58,8 +58,6 @@ private:
 
 	EventLoop();
 	~EventLoop();
-	void printCurrentData();
-
 
 	void readCallback(struct kevent *e);
 	void writeCallback(struct kevent *e);

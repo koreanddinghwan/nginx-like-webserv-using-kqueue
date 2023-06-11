@@ -51,7 +51,6 @@ void responseHandler::setResAddtionalOptions(Event *event) const {
 	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
 	int statusCode = this->getResStatusCode();
 	
-	std::cout << "================================" << static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid() << "========================" << std::endl;
 	if (static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid())
 	{
 		std::string cookieString = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().reqHeaderMap.find("Cookie")->second;
@@ -115,8 +114,6 @@ void *responseHandler::handle(void *event) {
 
 	Event *e = static_cast<Event *>(event);
 
-	std::cout<<"statussss:"<<e->getStatusCode()<<std::endl;
-
 	/**
 	 * 1. apply event's status code
 	 * */
@@ -132,17 +129,16 @@ void *responseHandler::handle(void *event) {
 	 * */
 	this->setResAddtionalOptions(e);
 
-	/* std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl; */
 	
 	/**
 	 * 3. set resHeader
 	 * */
 	this->setResHeader(HTTPV11);
-	/* std::cout << "=====================\n" << this->getResHeader() << "=====================\n" << std::endl; */
 
 	/**
 	 * 4. set resBuffer to send
 	 * */
 	this->setResBuf();
-	/* std::cout << "=====================\n" << this->getResBuf() << "\n=====================" << std::endl; */
+
+	return event;
 }

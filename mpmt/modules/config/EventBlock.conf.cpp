@@ -13,12 +13,10 @@ void EventBlock::parse(std::ifstream &File)
 	while (buf.length() == 0)
 		std::getline(File, buf);
 
-	std::cout<<buf<<std::endl;
 	if (buf.find("events") == std::string::npos)
 	{
 		File.seekg(cur_offset);
 		this->confData.worker_connections = 1024;
-		std::cout<<"\033[31m"<<"worker_connection is set 1024"<< "\033[0m" <<std::endl;
 		return ;
 	}
 	else

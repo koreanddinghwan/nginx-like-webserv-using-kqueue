@@ -43,7 +43,6 @@ void Event::setServerDataByPort(int port)
 	{
 		if (serverBlock->at(i)->getServerData().getListen() == port)
 		{
-			std::cout<<port<<std::endl;
 			this->serverData.push_back(&(serverBlock->at(i)->getServerData()));
 			for (int j = 0; j < this->serverData.back()->getHttpLocationBlock().size(); j++)
 			{
@@ -126,6 +125,13 @@ Event *Event::createNewClientSocketEvent(Event *e)
 		delete new_udata;
 		throw std::runtime_error("Failed to accept client socket\n");
 	}
+	
+	struct linger _linger;
+
+    _linger.l_onoff = 1;
+    _linger.l_linger = 0;
+
+    setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &_linger, sizeof(_linger));  
 
 	/**
 	 * event에 전달할 udata 채우기!
@@ -157,6 +163,13 @@ Event *Event::createNewServerSocketEvent(int port)
 	/* create socket */
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		throw(std::runtime_error("socket error"));
+
+    struct linger _linger;
+
+    _linger.l_onoff = 1;
+    _linger.l_linger = 0;
+
+    setsockopt(fd, SOL_SOCKET, SO_LINGER, &_linger, sizeof(_linger));  
 
 	/* set socket option */
 	socketInfo.reUseAddr = 1;
@@ -198,22 +211,16 @@ Event *Event::createNewServerSocketEvent(int port)
 
 void Event::closeAllFd()
 {
-	std::cout<<"closeAllFd\n";
-
-
 	if (this->server_socket_fd != -1)
 	{
-		std::cout<<"|||close server_socket_fd\n";
 		close(this->server_socket_fd);
 	}
 	if (this->client_socket_fd != -1)
 	{
-		std::cout<<"|||close client_socket_fd\n";
 		close(this->client_socket_fd);
 	}
 	if (this->file_fd != -1)
 	{
-		std::cout<<"|||close file_fd\n";
 		close(this->file_fd);
 	}
 }

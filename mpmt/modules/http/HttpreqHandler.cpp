@@ -252,32 +252,6 @@ const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info
 
 /* ============================================= */
 
-void HttpreqHandler::printReq(void)
-{
-	std::cout<<"\033[35m"<<"=============Request Result============"<<std::endl;
-
-	std::cout<<"\033[35m"<<"Start Line"<<std::endl<<std::endl;
-	std::cout<<"\033[35m"<<_info.method<<std::endl;
-	std::cout<<"\033[35m"<<_info.path<<std::endl;
-	std::cout<<"\033[35m"<<_info.httpVersion<<std::endl<<std::endl;
-
-	std::cout<<"Header"<<std::endl<<std::endl;
-	for (std::map<std::string, std::string>::iterator it = _info.reqHeaderMap.begin(); it != _info.reqHeaderMap.end(); it++)
-		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
-
-	std::cout<<"\nBody"<<std::endl<<std::endl;
-	std::cout<<"\033[35m"<<_info.body<<std::endl<<std::endl;
-
-	std::cout<<"Cookie"<<std::endl<<std::endl;
-	for (std::map<std::string, std::string>::iterator it = _info.reqCookieMap.begin(); it != _info.reqCookieMap.end(); it++)
-		std::cout<<"\033[35m"<<"key:"<< it->first <<" value:"<<it->second<<std::endl;
-
-	std::cout<<"\nQuery String"<<std::endl<<std::endl;
-	std::cout<<"\033[35m"<<_info.queryParam<<std::endl<<std::endl;
-
-	std::cout<<"\033[35m"<<"=============Request Result End============"<<std::endl;
-}
-
 int convertHexToDec(std::string line)
 {
 	int hex, dec = 0;

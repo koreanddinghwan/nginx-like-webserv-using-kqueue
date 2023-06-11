@@ -7,13 +7,11 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 	{
 		e->openFileName = e->locationData->getIndex().at(i);
 		//if index file start with /, absolute path
-		std::cout<<"index file name: "<<e->openFileName<<std::endl;
 		if (e->openFileName[0] == '/')
 		{
 			/**
 			 * 절대경로 index파일
 			 * */
-			std::cout<<"absolute path"<<std::endl;
 			//만약 있으면
 			if (stat(e->openFileName.c_str(), &e->statBuf) == 0)
 			{
@@ -31,10 +29,7 @@ bool ws_HttpIndexModule::processEvent(Event *e)
 			/**
 			 * 상대경로 index파일 설정은 root에 붙여서 식별해야함.
 			 * */
-			std::cout<<"relative path"<<std::endl;
 			std::string tmp = e->locationData->getRoot() + "/" + e->openFileName;
-			std::cout<<tmp<<std::endl;
-			std::cout<<e->internal_uri<<std::endl;
 			if (stat(tmp.c_str(), &e->statBuf) == 0 &&
 					S_ISREG(e->statBuf.st_mode))
 			{

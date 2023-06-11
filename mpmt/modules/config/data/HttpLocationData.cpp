@@ -6,7 +6,6 @@ HttpLocationData::HttpLocationData():
 	uri_match_mode(PREFIX),
 	return_status(-1)
 {
-	std::cout<<"Default location block"<<std::endl;
 	//allow all methods default
 	std::memset(&(this->lim_methods), ALLOW, sizeof(t_limited_methods));
 }
@@ -101,60 +100,5 @@ void HttpLocationData::setLimitedMethods(std::vector<std::string> r)
 			this->lim_methods.methods[UNLOCK] = ALLOW;
 		else if (r[i] == "PATCH")
 			this->lim_methods.methods[PATCH] = ALLOW;
-	}
-}
-
-
-void HttpLocationData::printLocationData() {
-	this->printServerDataConfig();
-	std::cout<<"uri_match_mode: ";	
-	if (uri_match_mode == PREFIX)
-		std::cout<<"PREFIX"<<std::endl;
-	else
-		std::cout<<"EXACT"<<std::endl;
-
-	std::cout<<"uri: "<<uri<<std::endl;
-	std::cout<<"proxy_pass: "<<proxy_pass<<std::endl;
-	std::cout<<"cgi_pass: "<<cgi_pass<<std::endl;
-	std::cout<<"fastcgi_pass: "<<fastcgi_pass<<std::endl;
-	std::cout<<"return_status: "<<return_status<<std::endl;
-	std::cout<<"redirect_url: "<<redirect_url<<std::endl;
-	std::cout<<"allowed_methods: "<<std::endl;
-	for (int i = 0; i < 14; i++)
-	{
-		std::string text;
-		if (lim_methods.methods[i] == ALLOW)
-			text = "ALLOW";
-		else
-			text = "DENY";
-
-		if (i == GET)
-			std::cout<<"GET: "<<text<<std::endl;
-		else if (i == HEAD)
-			std::cout<<"HEAD: "<<text<<std::endl;
-		else if (i == POST)
-			std::cout<<"POST: "<<text<<std::endl;
-		else if (i == PUT)
-			std::cout<<"PUT: "<<text<<std::endl;
-		else if (i == DELETE)
-			std::cout<<"DELETE: "<<text<<std::endl;
-		else if (i == MKCOL)
-			std::cout<<"MKCOL: "<<text<<std::endl;
-		else if (i == COPY)
-			std::cout<<"COPY: "<<text<<std::endl;
-		else if (i == MOVE)
-			std::cout<<"MOVE: "<<text<<std::endl;
-		else if (i == OPTIONS)
-			std::cout<<"OPTIONS: "<<text<<std::endl;
-		else if (i == PROPFIND)
-			std::cout<<"PROPFIND: "<<text<<std::endl;
-		else if (i == PROPPATCH)
-			std::cout<<"PROPPATCH: "<<text<<std::endl;
-		else if (i == LOCK)
-			std::cout<<"LOCK: "<<text<<std::endl;
-		else if (i == UNLOCK)
-			std::cout<<"UNLOCK: "<<text<<std::endl;
-		else if (i == PATCH)
-			std::cout<<"PATCH: "<<text<<std::endl;
 	}
 }

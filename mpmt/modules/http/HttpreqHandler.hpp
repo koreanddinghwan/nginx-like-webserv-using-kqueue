@@ -65,7 +65,6 @@ public:
 	std::string getSid(void) const;
 	const httpRequestInfo &getRequestInfo(void) const;
 
-	void printReq(void);
 private:
 	//init
 	void initRequest(std::string req);

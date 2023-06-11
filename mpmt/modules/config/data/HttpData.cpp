@@ -30,6 +30,3 @@ void HttpData::setServerBlock(HttpServerBlock *serverBlock)
 	this->httpServerBlock.push_back(serverBlock);
 }
 
-void HttpData::printData() {
-	this->printConfig();
-}

@@ -14,7 +14,6 @@ void GeneralBlock::parse(std::ifstream &File)
 	{
 		File.seekg(0);
 		this->confData.worker_processes = 0;
-		std::cout<<"\033[31m"<<"worker_processes is set 0"<< "\033[0m" <<std::endl;
 		return ;
 	}
 	else

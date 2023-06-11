@@ -1,11 +1,7 @@
 #include "EventLoop.hpp"
-#include <sys/errno.h>
 
 void EventLoop::writeCallback(struct kevent *e)
 {
-	std::cout << "\033[32m"; 
-	std::cout<<"write callback"<<std::endl;
-
 	//set event
 	Event *e_udata = static_cast<Event *>(e->udata);
 
@@ -22,41 +18,24 @@ void EventLoop::writeCallback(struct kevent *e)
 			e_fileWriteCallback(e, e_udata);
 			break;
 		default:
-			std::cout<<"unknown event type"<<std::endl;
 			break;
 	}
 }
 
 void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"CLIENT SOCKET WRITE CALLBACK"<<std::endl;
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		/**
 		 * size of e->data만큼 작성
 		 * */
-		std::cout<<"=================================================="<<std::endl;
-		std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length()<<std::endl;
-		std::cout<<"=================================================="<<std::endl;
 		int size = static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().length();
 		int wroteByte = write(e_udata->getClientFd(), static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBuf().c_str() + e_udata->wrote, size - e_udata->wrote);
-		std::cout<<"wroteByte : "<<e_udata->wrote<<std::endl;
 		if (wroteByte == -1)
 		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-			{
-				std::cout<<"EWOULDBLOCK"<<std::endl;
-				return;
-			}
-			else
-			{
-				std::cout<<"write error"<<std::endl;
-				std::cout<<"errno : "<<errno<<std::endl;
-			}
+			return;
 		}
-
 		else
 		{
 			/**
@@ -68,7 +47,6 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 			e_udata->wrote += wroteByte; 
 			if (e_udata->wrote == size)
 			{
-				std::cout<<"wrote all the data"<<std::endl;
 				/**
 				 * if all the data wrote, unregister write event
 				 * */
@@ -80,8 +58,7 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[35m"; 
-	std::cout<<"pipe Write callback"<<std::endl;
+
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		if (static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length() == 0)
@@ -104,29 +81,15 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 		 * */
 		int wroteByte = write(e_udata->PtoCPipe[1], static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.c_str() + e_udata->fileWroteByte, fileSize - e_udata->fileWroteByte);
 
-		std::cout<<wroteByte<<std::endl;
 		if (wroteByte == -1)
 		{
-			if (errno == EAGAIN)
-			{
-				std::cout<<"there are no data to be read"<<std::endl;
-				return;
-			}
-			else
-			{
-				std::cout<<"UNKNOWN ERROR"<<std::endl;
-				std::cout<<"Errno: "<<errno<<std::endl;
-				e_udata->setStatusCode(500);
-				unregisterPipeWriteEvent(e_udata);
-			}
+			e_udata->setStatusCode(500);
+			unregisterPipeWriteEvent(e_udata);
 		}
 		else if (wroteByte == 0)
 			return ;
 		else
 		{
-			/* std::cout<<static_cast<responseHandler *>(e_udata->getResponseHandler())->getResBody()<<std::endl; */
-
-
 			//update wrote byte
 			e_udata->fileWroteByte += wroteByte;
 
@@ -144,8 +107,6 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 {
-	std::cout << "\033[33m"; 
-	std::cout<<"FILE WRITE CALLBACK"<<std::endl;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		/**
@@ -160,19 +121,9 @@ void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 
 		if (wroteByte == -1)
 		{
-			if (errno == EAGAIN)
-			{
-				std::cout<<"there are no data to be read"<<std::endl;
-				return;
-			}
-			else
-			{
-				std::cout<<"UNKNOWN ERROR"<<std::endl;
-				std::cout<<"Errno: "<<errno<<std::endl;
-				e_udata->setStatusCode(500);
-				unregisterFileWriteEvent(e_udata);
-				registerFileWriteEvent(e_udata);
-			}
+			e_udata->setStatusCode(500);
+			unregisterFileWriteEvent(e_udata);
+			registerFileWriteEvent(e_udata);
 		}
 		else
 		{
