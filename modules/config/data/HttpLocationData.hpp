@@ -32,7 +32,7 @@ public:
 	enum e_uri_match_mode 
 	{
 		PREFIX = 0,
-		EXACT, // = 
+		EXACT // = 
 		/* REGEX, */
 		/* PREFERENTIAL */
 	};
