@@ -165,6 +165,7 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	else 
 	{
+		setEnv(e);
 		close(e->CtoPPipe[0]);
 		close(e->PtoCPipe[1]);
 
@@ -173,7 +174,6 @@ bool EventLoop::processCgi(Event *e)
 		// 표준 입력을 PtoC파이프의 읽기용 파일 디스크립터로 리디렉션해서 부모 프로세스로부터 데이터를 읽어들임
         dup2(e->PtoCPipe[0], STDIN_FILENO);
 
-		setEnv(e);
 		//실행
 		char **env = new char*[e->getCgiEnv().size() + 1];
 		for (size_t i = 0; i < e->getCgiEnv().size(); i++)
