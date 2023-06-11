@@ -135,6 +135,7 @@ bool EventLoop::processCgi(Event *e)
 	 * */
 	if (pid)
 	{
+		e->setStatusCode(200);
 		e->childPid = pid;
 		close(e->CtoPPipe[1]);
 		close(e->PtoCPipe[0]);

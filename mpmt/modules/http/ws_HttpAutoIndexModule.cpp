@@ -7,6 +7,23 @@
 #include "HttpreqHandler.hpp"
 #include "responseHandler.hpp"
 
+std::string converter(std::string &s) {
+    std::string output;
+    int idx = 0;
+    int find;
+    while (s[idx]) {
+        if (s[idx] == '/') {
+            output += '/';
+            while (s[idx + 1] == '/')
+                ++idx;
+        } else {
+            output += s[idx];
+        }
+        ++idx;
+    }
+    return output;
+}
+
 bool ws_HttpAutoIndexModule::processEvent(Event *e)
 {
 	/**
@@ -52,17 +69,19 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 		HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 
 		resHandler->setResBody("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\" /><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>");
-		resHandler->setResBody(e->getRoute());
+		resHandler->setResBody(converter(e->getRoute()));
 		resHandler->setResBody("</title></head><body><h1>Index of ");
-		resHandler->setResBody(e->getRoute());
+		resHandler->setResBody(converter(e->getRoute()));
 		resHandler->setResBody("</h1><hr />");
+		std::string tmp;
+
 		for (int i = 0; i < list.size(); i++)
 		{
+			tmp = reqHandler->getRequestInfo().host + "/" + list[i] + ">" + list[i];
+			tmp = converter(tmp);
+
 			resHandler->setResBody("<a href=http://");
-			resHandler->setResBody(reqHandler->getRequestInfo().host + "/");
-			resHandler->setResBody(list[i]);
-			resHandler->setResBody(">");
-			resHandler->setResBody(list[i]);
+			resHandler->setResBody(tmp);
 			resHandler->setResBody("</a><br />");
 		}
 		resHandler->setResBody("<hr /></body></html>");

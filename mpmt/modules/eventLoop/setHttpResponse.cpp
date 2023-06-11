@@ -85,8 +85,8 @@ bool setLocationData(Event *e)
 		{
 			std::string ext = locationUri.substr(1);
 			// request가 ext로 끝나면
-			if (requestPath.find(ext) != std::string::npos &&
-					requestPath.find(ext) == requestPath.length() - ext.length())
+			if (requestPath.rfind(ext) != std::string::npos &&
+					requestPath.rfind(ext) == requestPath.length() - ext.length())
 			{
 				e->locationData = e->getDefaultServerData()->getLocationDatas().at(i);
 				return true;
