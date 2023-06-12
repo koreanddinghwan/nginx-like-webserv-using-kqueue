@@ -17,7 +17,7 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <sys/event.h>
-# define HTTPBUFFER_SIZE 99998
+# define HTTPBUFFER_SIZE 65536
 
 class HttpServer : public IServer {
 private:
