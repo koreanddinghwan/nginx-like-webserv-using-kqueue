@@ -20,7 +20,7 @@ void EventLoop::initEventLoop()
 
 	this->initServerEvents();
 
-	int max_events = static_cast<EventBlock *>(Config::getInstance().getEventBlock())->getEventConfigData().worker_connections; 
+	// int max_events = static_cast<EventBlock *>(Config::getInstance().getEventBlock())->getEventConfigData().worker_connections; 
 
 	/*
 	 * EventLoop
@@ -34,7 +34,6 @@ void EventLoop::initEventLoop()
 
 		for (int i = 0; i < nevents; i++)
 		{
-			int fd = events[i].ident;
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);

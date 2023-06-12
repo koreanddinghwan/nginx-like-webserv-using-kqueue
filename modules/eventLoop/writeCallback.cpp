@@ -24,6 +24,7 @@ void EventLoop::writeCallback(struct kevent *e)
 
 void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 {
+	(void)e;
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -58,7 +59,7 @@ void EventLoop::e_clientSocketWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 {
-
+	(void)e;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		if (static_cast<HttpreqHandler *>(e_udata->getRequestHandler())->getRequestInfo().body.length() == 0)
@@ -107,6 +108,7 @@ void EventLoop::e_pipeWriteCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileWriteCallback(struct kevent *e, Event *e_udata)
 {
+	(void)e;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		/**

@@ -16,7 +16,7 @@ void HttpData::operator=(HttpData &c) {
 	this->setSendFile(c.getSendFile());
 	this->setTcpNoDelay(c.getTcpNoDelay());
 	this->setTcpNoPush(c.getTcpNoPush());
-	for (int i = 0 ; i < c.getIndex().size(); i++)
+	for (size_t i = 0 ; i < c.getIndex().size(); i++)
 	{
 		this->setIndex(c.getIndex()[i]);
 	}

@@ -5,6 +5,9 @@
 #include "../modules/config/data/HttpConfigData.hpp"
 #include <fstream>
 
-class IHttpBlock : public IBlock {};
+class IHttpBlock : public IBlock {
+public:
+    virtual ~IHttpBlock() {}
+};
 
 #endif

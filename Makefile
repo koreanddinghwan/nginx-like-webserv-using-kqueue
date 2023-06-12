@@ -1,6 +1,6 @@
 NAME = webserv
 CXX = c++
-CXXFLAGS = -std=c++98 -O3 #-g3 -fsanitize=address
+CXXFLAGS = -Werror -Wall -Wextra -std=c++98 -O3 #-g3 -fsanitize=address
 INC = .
 
 FACTORYSRCS = MethodFactory.cpp
@@ -24,7 +24,7 @@ WEBSERVOBJS = $(addprefix ./modules/webserv/, $(WEBSERVSRCS:.cpp=.o))
 EVENTLOOPSRCS = EventLoop.cpp Event.cpp readCallback.cpp writeCallback.cpp registerEvent.cpp setHttpResponse.cpp processCgi.cpp ws_methods.cpp
 EVENTLOOPOBJS = $(addprefix ./modules/eventLoop/, $(EVENTLOOPSRCS:.cpp=.o))
 
-EXCEPTIONSRCS = configParseException.cpp httpException.cpp
+EXCEPTIONSRCS = configParseException.cpp
 EXCEPTIONOBJS = $(addprefix ./exceptions/, $(EXCEPTIONSRCS:.cpp=.o))
 
 LIBSRCS = strSplit.cpp FileGuard.cpp ft_split.cpp

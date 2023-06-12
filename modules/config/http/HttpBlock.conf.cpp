@@ -13,12 +13,12 @@ HttpBlock::HttpBlock(std::ifstream &File)
 
 	std::vector<HttpServerBlock *> serverBlock = static_cast<HttpData *>(this->getConfigData())->getServerBlock();
 
-	for (int i = 0; i < serverBlock.size(); i++)
+	for (size_t i = 0; i < serverBlock.size(); i++)
 	{
 		int serverPort = serverBlock.at(i)->getServerData().getListen();
 		int flag = 0;
 
-		for (int i = 0; i < this->identicalPorts.size(); i++)
+		for (size_t i = 0; i < this->identicalPorts.size(); i++)
 		{
 			if (this->identicalPorts[i] == serverPort)
 			{
@@ -33,7 +33,7 @@ HttpBlock::HttpBlock(std::ifstream &File)
 
 HttpBlock::~HttpBlock() 
 {
-	for (int i = 0; i < this->confData.getServerBlock().size(); i++)
+	for (size_t i = 0; i < this->confData.getServerBlock().size(); i++)
 		delete  static_cast<HttpServerBlock *>(this->confData.getServerBlock()[i]);
 }
 

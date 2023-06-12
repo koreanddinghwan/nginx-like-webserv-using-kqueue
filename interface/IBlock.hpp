@@ -9,6 +9,7 @@ class IBlock
 public:
 	virtual void parse(std::ifstream &File) = 0;
 	virtual IConfigData* getConfigData() = 0;
+	virtual ~IBlock() {}
 };
 
 #endif

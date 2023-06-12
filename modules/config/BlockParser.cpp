@@ -21,7 +21,7 @@
 	else if (buf.find("error_page") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
-		for (int i = 1; i < s.get().size() - 1; i++)
+		for (size_t i = 1; i < s.get().size() - 1; i++)
 		{
 			confData.setErrorPage(std::atoi(s.get()[i].c_str()), s.get()[s.get().size() - 1]);
 		}
@@ -69,7 +69,7 @@
 	else if (buf.find("index ") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
-		for (int i = 1; i < s.get().size(); i++)
+		for (size_t i = 1; i < s.get().size(); i++)
 		{
 			confData.setIndex(s.get()[i]);
 		}
@@ -93,7 +93,7 @@
 	if (buf.find("server_name") != std::string::npos)
 	{
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
-		for (int i = 1; i < s.get().size(); i++)
+		for (size_t i = 1; i < s.get().size(); i++)
 			static_cast<HttpServerData&>(confData).setServerName(s.get()[i]);
 	};
 
@@ -177,6 +177,6 @@ void BlockParser::httpLocationBlockParser(std::ifstream &File, std::string &buf,
 
 BlockParser::BlockParser() {}
 BlockParser::~BlockParser() {}
-void BlockParser::operator=(BlockParser &p) {}
-BlockParser::BlockParser(const BlockParser &p) {}
+void BlockParser::operator=(BlockParser &p) { (void)p; }
+BlockParser::BlockParser(const BlockParser &p) {(void)p;}
 

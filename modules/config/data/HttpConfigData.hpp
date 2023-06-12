@@ -20,7 +20,7 @@ private:
 	/*
 	 * http, server location block 모두에 적용
 	 * */
-	int client_max_body_size;
+	size_t client_max_body_size;
 
 	/* error_page 404             /404.html; */
 	/* error_page 500 502 503 504 /50x.html; */
@@ -52,7 +52,7 @@ public:
 	HttpConfigData& operator=(HttpConfigData &c);
 	HttpConfigData(HttpConfigData &c);
 
-	int		getClientMaxBodySize() const;
+	size_t		getClientMaxBodySize() const;
 	const std::map<int, std::string> &getErrorPage() const;
 	std::string getRoot() const;
 	bool	getSendFile() const;

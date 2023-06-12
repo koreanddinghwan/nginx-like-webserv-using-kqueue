@@ -19,7 +19,7 @@ HttpConfigData& HttpConfigData::operator=(HttpConfigData &c)
 	this->sendfile = c.getSendFile();
 	this->tcp_nodelay = c.getTcpNoDelay();
 	this->tcp_nopush = c.getTcpNoPush();
-	for (int i = 0 ; i < c.getIndex().size(); i++)
+	for (size_t i = 0 ; i < c.getIndex().size(); i++)
 	{
 		this->index.push_back(c.getIndex()[i]);
 	}
@@ -36,7 +36,7 @@ std::string HttpConfigData::getRoot() const {return this->root;}
 bool	HttpConfigData::getSendFile() const {return this->sendfile;}
 bool	HttpConfigData::getTcpNoDelay() const {return this->tcp_nodelay;}
 bool	HttpConfigData::getTcpNoPush() const {return this->tcp_nopush;}
-int		HttpConfigData::getClientMaxBodySize() const {return this->client_max_body_size;}
+size_t		HttpConfigData::getClientMaxBodySize() const {return this->client_max_body_size;}
 bool	HttpConfigData::getAutoIndex() const {return this->autoindex;}
 std::vector<std::string> HttpConfigData::getIndex() const {return this->index;}
 

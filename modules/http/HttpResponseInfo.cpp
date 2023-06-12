@@ -46,9 +46,9 @@ void Response::setCookie(std::string const &cookie) {
 
 void Response::setHeaders(std::string const &httpV) {
 	if (this->_body != "" && (this->_body.find("Status: ") != std::string::npos && this->_body.find("\r\n\r\n") != std::string::npos)) {
-	 	int contentPos = this->_body.find("Content-Length");
+	 	size_t contentPos = this->_body.find("Content-Length");
 		//잘라야 하는 지점 시작점
-		int cutPos = this->_body.find("\r\n\r\n");
+		size_t cutPos = this->_body.find("\r\n\r\n");
 		if (contentPos != std::string::npos) {
 			this->_headers += httpV + " " + this->_body.substr(8, contentPos-8) + "\r\n";
 		} else {

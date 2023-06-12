@@ -2,7 +2,6 @@
 # define EVENTLOOP_HPP
 
 #include "../../factory/MethodFactory.hpp"
-#include "../../exceptions/httpException.hpp"
 #include <cstdlib>
 #include <exception>
 #include <sys/_types/_socklen_t.h>

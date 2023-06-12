@@ -10,7 +10,6 @@
 std::string converter(std::string &s) {
     std::string output;
     int idx = 0;
-    int find;
     while (s[idx]) {
         if (s[idx] == '/') {
             output += '/';
@@ -75,7 +74,7 @@ bool ws_HttpAutoIndexModule::processEvent(Event *e)
 		resHandler->setResBody("</h1><hr />");
 		std::string tmp;
 
-		for (int i = 0; i < list.size(); i++)
+		for (size_t i = 0; i < list.size(); i++)
 		{
 			tmp = reqHandler->getRequestInfo().host + "/" + list[i] + ">" + list[i];
 			tmp = converter(tmp);

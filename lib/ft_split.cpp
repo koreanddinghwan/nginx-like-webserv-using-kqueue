@@ -34,6 +34,7 @@ ft_split::~ft_split() {}
 
 void ft_split::makeWord(int p_index, char const *s, char c)
 {
+	(void)p_index;
 	int i = 0;
 	std::string str;
 
@@ -45,6 +46,7 @@ void ft_split::makeWord(int p_index, char const *s, char c)
 void ft_split::makeWordRemoveSemiColon(int p_index, char const *s, char c)
 {
 	int i = 0;
+	(void)p_index;
 	std::string str;
 
 	while (s[i] && (s[i] != c && s[i] != '\t') && s[i] != ';')

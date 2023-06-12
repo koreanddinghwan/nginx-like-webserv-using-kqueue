@@ -40,6 +40,7 @@ void EventLoop::readCallback(struct kevent *e)
  */
 void EventLoop::e_serverSocketReadCallback(struct kevent *e, Event *e_udata)
 {
+	(void)e;
 	//we need to verify http
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
@@ -145,6 +146,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 **/
 void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 {
+	(void)e;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from pipe
@@ -195,6 +197,7 @@ void EventLoop::e_pipeReadCallback(struct kevent *e, Event *e_udata)
 
 void EventLoop::e_fileReadCallback(struct kevent *e, Event *e_udata)
 {
+	(void)e;
 	if (e_udata->getServerType() == HTTP_SERVER)
 	{
 		//read from file

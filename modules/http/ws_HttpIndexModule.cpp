@@ -3,7 +3,7 @@
 
 bool ws_HttpIndexModule::processEvent(Event *e)
 {
-	for (int i = 0; i < e->locationData->getIndex().size(); i++)
+	for (size_t i = 0; i < e->locationData->getIndex().size(); i++)
 	{
 		e->openFileName = e->locationData->getIndex().at(i);
 		//if index file start with /, absolute path

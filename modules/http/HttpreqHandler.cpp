@@ -29,7 +29,7 @@ void *HttpreqHandler::handle(void *data)
 
 void HttpreqHandler::initMessageState(void)
 {
-	int bodyPos, pos;
+	size_t bodyPos, pos;
 
 	bodyPos = _buf.find(CRLF2);
 	if (bodyPos == std::string::npos)
@@ -87,7 +87,7 @@ void HttpreqHandler::initRequest(std::string req)
 
 void HttpreqHandler::parseMethod(std::string line)
 {
-	int pos;
+	size_t pos;
 
 	if (line.compare(""))
 		pos = _buf.find(" ");
@@ -103,7 +103,7 @@ void HttpreqHandler::parseMethod(std::string line)
 */
 bool HttpreqHandler::parseContentLength(void) // findContentLength
 {
-	int prevPos, pos;
+	size_t prevPos, pos;
 	char *endptr = NULL;
 	std::string lengthStr;
 
@@ -118,7 +118,7 @@ bool HttpreqHandler::parseContentLength(void) // findContentLength
 	return (true); // 헤더랑 밸류 모두 있음, 메소드 모름
 }
 
-bool HttpreqHandler::checkSeparate(int CRLF2Pos)
+bool HttpreqHandler::checkSeparate(size_t CRLF2Pos)
 {
 	std::string line;
 
@@ -180,7 +180,7 @@ void HttpreqHandler::checkHttpVersion(void)
 	}
 }
 
-void HttpreqHandler::parseQueryParam(std::string line, int *prevPos, int *pos)
+void HttpreqHandler::parseQueryParam(std::string line, size_t *prevPos, size_t *pos)
 {
 	std::string key, value;
 
@@ -193,7 +193,7 @@ void HttpreqHandler::parseQueryParam(std::string line, int *prevPos, int *pos)
 
 void HttpreqHandler::checkQueryParam(void)
 {
-	int pos = 0, prevPos = 0, questionPos = 0;
+	size_t pos = 0, prevPos = 0, questionPos = 0;
 	std::string line;
 
 	if ((questionPos = _info.path.find("?")) != std::string::npos)
@@ -220,10 +220,11 @@ void HttpreqHandler::checkStartLine(void)
 
 /* =============== constructor ================== */
 HttpreqHandler::HttpreqHandler()
-	: _buf(""), _messageState(basic), _pended(false), _contentLength(0), _hasContentLength(false),
+	: _contentLength(0), _hasContentLength(false),
 	_headerPended(false), _bodyPended(false)
 {
-	//info = new HttpreqHandlerInfo();
+	_messageState = basic;
+	_pended = false;
 }
 
 HttpreqHandler::~HttpreqHandler()
@@ -252,9 +253,9 @@ const httpRequestInfo &HttpreqHandler::getRequestInfo(void) const { return _info
 
 /* ============================================= */
 
-int convertHexToDec(std::string line)
+size_t convertHexToDec(std::string line)
 {
-	int hex, dec = 0;
+	size_t hex, dec = 0;
 	const char *c;
 	char *endptr;
 	std::string tmp;
@@ -305,7 +306,7 @@ std::string encodePercentEncoding(const std::string& str)
     }
     // Any other characters are percent-encoded
     escaped << std::uppercase;
-    escaped << '%' << std::setw(2) << static_cast<int>(static_cast<unsigned char>(c));
+    escaped << '%' << std::setw(2) << static_cast<size_t>(static_cast<unsigned char>(c));
     escaped << std::nouppercase;
   }
   return (escaped.str());
@@ -315,7 +316,7 @@ std::string urlDecode(std::string &SRC)
 {
     std::string ret;
     char ch;
-    int i, ii;
+    unsigned int i, ii;
     for (i=0; i<SRC.length(); i++) {
         if (SRC[i]=='%') {
             sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);

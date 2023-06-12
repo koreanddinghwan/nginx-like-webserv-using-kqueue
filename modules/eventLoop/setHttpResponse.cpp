@@ -43,10 +43,10 @@ void setServerName(Event *e)
 	 * */
 	// 효율 안좋다 ..
 	std::string host = reqHandler->getRequestInfo().host;
-	for (int i = 0; i < e->getServerData()->size(); i++)
+	for (unsigned long i = 0; i < e->getServerData()->size(); i++)
 	{
 		std::vector<std::string>& serverNames = (e->getServerData()->at(i)->getServerNames());
-		for (int j = 0; j < serverNames.size(); j++)
+		for (unsigned long j = 0; j < serverNames.size(); j++)
 		{
 			//i번째 serverData에 있는 server names에서 host가 있으면
 			if (host == serverNames[j])
@@ -71,12 +71,10 @@ void setServerName(Event *e)
  */
 bool setLocationData(Event *e)
 {
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-
 	std::string requestPath = e->internal_uri;
 	e->locationData = NULL;
 	int matchScore = -1;
-	for (int i = 0; i < e->getDefaultServerData()->getLocationDatas().size(); i++)
+	for (unsigned long i = 0; i < e->getDefaultServerData()->getLocationDatas().size(); i++)
 	{
 		std::string &locationUri = e->getDefaultServerData()->getLocationDatas().at(i)->getUri();
 
@@ -116,7 +114,6 @@ bool setLocationData(Event *e)
  */
 bool checkAllowedMethods(Event *e) throw (std::exception)
 {
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	int methodIndex = MethodFactory::getInstance().getMethodIndex(e->internal_method);
 
 	if ((e->locationData->getLimitedMethods().methods[methodIndex]) == 0)
@@ -144,7 +141,7 @@ bool checkClientMaxBodySize(Event *e) throw(std::exception)
 void setInternalUri(Event *e)
 {
 	std::string requestPath = e->internal_uri;
-	int pos;
+	size_t pos;
 	std::string tmp;
 
 	if (!e->locationData->getCgiPass().empty())
@@ -285,8 +282,6 @@ void EventLoop::errorCallback(Event *e)
  * */
 void EventLoop::setHttpResponse(Event *e)
 {
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-
 	setServerName(e);
 	ws_internalRedir(e);
 	/**

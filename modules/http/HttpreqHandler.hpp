@@ -10,7 +10,6 @@
 #include "../eventLoop/Event.hpp"
 #include "../http/HttpServer.hpp"
 #include "../../interface/IHandler.hpp"
-#include "../../exceptions/httpException.hpp"
 
 #define CRLF "\r\n"
 #define CRLF2 "\r\n\r\n"
@@ -34,7 +33,7 @@ private:
 	std::string _bodyBuf;
 	std::string _chunkedWithoutBodyBuf;
 
-	int _contentLength;
+	size_t _contentLength;
 	bool _hasContentLength;
 	/* ========================================== */
 
@@ -75,11 +74,11 @@ private:
 	//init utils
 	bool parseContentLength(void);
 	void parseMethod(std::string line);
-	bool checkSeparate(int CRLF2Pos);
+	bool checkSeparate(size_t CRLF2Pos);
 
 	//cookie
 	void parseCookie(void);
-	void insertCookieMap(std::string cookies, int *prevPos, int *pos);
+	void insertCookieMap(std::string cookies, size_t *prevPos, size_t *pos);
 	void saveSid(std::string key, std::string value);
 
 	//parse
@@ -88,13 +87,13 @@ private:
 	bool parseHeader(std::string line);
 	void parseBody(void);
 	void saveGenericHeader(std::string key, std::string value);
-	void parseQueryParam(std::string line, int *prevPos, int *pos);
+	void parseQueryParam(std::string line, size_t *prevPos, size_t *pos);
 
 	//chunked
 	void parseChunked(void);
 	void splitChunked(void);
-	int parseChunkedLength(int *startPos);
-	std::string parseChunkedBody(int *startPos);
+	size_t parseChunkedLength(size_t *startPos);
+	std::string parseChunkedBody(size_t *startPos);
 
 	//separate
 	void parseSeparate(std::string req);
@@ -115,7 +114,7 @@ private:
 	void checkQueryParam(void);
 };
 
-int convertHexToDec(std::string line);
+size_t convertHexToDec(std::string line);
 std::string encodePercentEncoding(const std::string& str);
 std::string urlDecode(std::string &SRC);
 

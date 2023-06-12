@@ -3,7 +3,7 @@
 /* =================== undefine =================== */
 void HttpreqHandler::parseUndefined(void)
 {
-	int pos;
+	size_t pos;
 
 	pos = _buf.find(CRLF2);
 	if (pos == std::string::npos)
@@ -17,10 +17,10 @@ void HttpreqHandler::parseUndefined(void)
 
 /* =============== chunked parse =============== */
 
-int HttpreqHandler::parseChunkedLength(int *startPos)
+size_t HttpreqHandler::parseChunkedLength(size_t *startPos)
 {
 	std::string line;
-	int pos;
+	size_t pos;
 
 	pos = _bodyBuf.find(CRLF, *startPos);
 	line = _bodyBuf.substr(*startPos, pos - *startPos);
@@ -28,10 +28,10 @@ int HttpreqHandler::parseChunkedLength(int *startPos)
 	return (convertHexToDec(line));
 }
 
-std::string HttpreqHandler::parseChunkedBody(int *startPos)
+std::string HttpreqHandler::parseChunkedBody(size_t *startPos)
 {
 	std::string line;
-	int	pos;
+	size_t	pos;
 
 	pos = _bodyBuf.find(CRLF, *startPos);
 	line = _bodyBuf.substr(*startPos, pos - *startPos);
@@ -41,8 +41,8 @@ std::string HttpreqHandler::parseChunkedBody(int *startPos)
 
 void HttpreqHandler::splitChunked(void)
 {
-	int pos = 0, len = 0;
-	int endPos = _bodyBuf.length() - 5;
+	size_t pos = 0, len = 0;
+	size_t endPos = _bodyBuf.length() - 5;
 	std::string line, buf;
     std::stringstream ss;
 	
@@ -66,7 +66,7 @@ void HttpreqHandler::splitChunked(void)
 
 void HttpreqHandler::parseChunked(void)
 {
-	int pos = 0, endPos = 0;
+	size_t pos = 0, endPos = 0;
 	std::string line;
 	
 	endPos = _buf.find("0\r\n\r\n");
@@ -89,7 +89,7 @@ void HttpreqHandler::parseChunked(void)
 
 void HttpreqHandler::findMethod(void)
 {
-	int pos;
+	size_t pos;
 	std::string line;
 
 	if ((pos = _buf.find(CRLF)) != std::string::npos)
@@ -101,7 +101,7 @@ void HttpreqHandler::findMethod(void)
 
 void HttpreqHandler::appendBodyBuf(std::string req)
 {
-	int pos;
+	size_t pos;
 	std::string line;
 
 	if ((pos = _buf.find(CRLF2)) == std::string::npos)
@@ -119,7 +119,7 @@ void HttpreqHandler::appendBodyBuf(std::string req)
 
 void HttpreqHandler::parseSeparate(std::string req)
 {
-	int pos;
+	size_t pos;
 	std::string line;
 
 	if (_method.empty())
@@ -160,7 +160,7 @@ void HttpreqHandler::saveSid(std::string key, std::string value)
 		_sid = value;
 }
 
-void HttpreqHandler::insertCookieMap(std::string line, int *prevPos, int *pos)
+void HttpreqHandler::insertCookieMap(std::string line, size_t *prevPos, size_t *pos)
 {
 	std::string key, value;
 
@@ -175,7 +175,7 @@ void HttpreqHandler::insertCookieMap(std::string line, int *prevPos, int *pos)
 
 void HttpreqHandler::parseCookie(void)
 {
-	int pos, prevPos = 0;
+	size_t pos, prevPos = 0;
 	std::string cookies;
 	std::string line;
 	std::map<std::string, std::string>::iterator it;
@@ -197,7 +197,7 @@ void HttpreqHandler::parseCookie(void)
 /* =================== parse =================== */
 void HttpreqHandler::parseStartLine(std::string line) 
 {
-	int pos = 0, prevPos = 0;
+	size_t pos = 0, prevPos = 0;
 	std::string subLine;
 
 	while ((pos = line.find(" ", prevPos)) != std::string::npos)
@@ -226,7 +226,7 @@ void HttpreqHandler::saveGenericHeader(std::string key, std::string value)
 }
 
 bool HttpreqHandler::parseHeader(std::string line){
-	int pos;
+	size_t pos;
 	std::string key, value;
 
 	pos = line.find(": ");
@@ -241,7 +241,7 @@ bool HttpreqHandler::parseHeader(std::string line){
 
 void HttpreqHandler::parseBody(void)
 {
-	int pos;
+	size_t pos;
 
 	pos = _buf.find(CRLF2);
 	_info.body = _buf.assign(_buf.begin() + pos + 4, _buf.end());
@@ -249,7 +249,7 @@ void HttpreqHandler::parseBody(void)
 
 void HttpreqHandler::parse(void)
 {
-	int pos = 0, prevPos = 0;
+	size_t pos = 0, prevPos = 0;
 	std::string line;
 
 	while((pos = _buf.find(CRLF, prevPos)) != std::string::npos)

@@ -90,9 +90,6 @@ bool EventLoop::processCgi(Event *e)
 		return false;
 	}
 
-
-	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
-
 	/**
 	 * 1. create pipe
 	 * */

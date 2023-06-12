@@ -5,6 +5,7 @@
 
 responseHandler::responseHandler(Event *e) : _event(e)
 {
+	(void)(_event);
 	this->_res = new Response(200);
 };
 

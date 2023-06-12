@@ -29,12 +29,12 @@ void HttpLocationData::operator=(HttpServerData &c)
 	this->setSendFile(c.getSendFile());
 	this->setTcpNoDelay(c.getTcpNoDelay());
 	this->setTcpNoPush(c.getTcpNoPush());
-	for (int i = 0 ; i < c.getIndex().size(); i++)
+	for (size_t i = 0 ; i < c.getIndex().size(); i++)
 	{
 		this->setIndex(c.getIndex()[i]);
 	}
 	this->setListen(c.getListen());
-	for (int i = 0; i < c.getServerNames().size(); i++)
+	for (size_t i = 0; i < c.getServerNames().size(); i++)
 		this->setServerName(c.getServerNames()[i]);
 	this->setUploadStore(c.getUploadStore());
 }
@@ -69,7 +69,7 @@ void HttpLocationData::setLimitedMethods(std::vector<std::string> r)
 {
 	//deny all methods first
 	std::memset(&(this->lim_methods), DENY, sizeof(t_limited_methods));
-	for (int i = 1; i <r.size(); i++)
+	for (size_t i = 1; i <r.size(); i++)
 	{
 		//allowing get also allow head. check nginx documentation that representate `limit_except`
 		if (r[i] == "GET")

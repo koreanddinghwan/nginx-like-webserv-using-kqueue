@@ -39,12 +39,12 @@ void Event::setServerDataByPort(int port)
 {
 	std::vector<HttpServerBlock *> *serverBlock = &(Config::getInstance().getHTTPBlock()->getHttpData().getServerBlock());
 
-	for (int i = 0; i < serverBlock->size();i++)
+	for (unsigned long i = 0; i < serverBlock->size();i++)
 	{
 		if (serverBlock->at(i)->getServerData().getListen() == port)
 		{
 			this->serverData.push_back(&(serverBlock->at(i)->getServerData()));
-			for (int j = 0; j < this->serverData.back()->getHttpLocationBlock().size(); j++)
+			for (unsigned long j = 0; j < this->serverData.back()->getHttpLocationBlock().size(); j++)
 			{
 				this->serverData.back()->getLocationDatas().push_back( \
 						&(this->serverData.back()->getHttpLocationBlock().at(j)->getLocationData())
@@ -272,13 +272,13 @@ std::vector<char *> &Event::getCgiEnv()
  * @deprecated
  * */
 Event::Event(Event &e)
-{}
+{*this = e;}
 
 /**
  * @DO NOT USE
  * */
 const Event& Event::operator=(const Event &e)
-{return *this;}
+{ (void)e; return *this; }
 
 Event::Event()
 {}
