@@ -37,7 +37,7 @@ void EventLoop::initEventLoop()
 
 		for (int i = 0; i < nevents; i++)
 		{
-			printEvent(events[i].udata);
+			printEvent(events + i);
 			try {
 				if (events[i].filter == EVFILT_READ)
 					readCallback(events + i);
@@ -64,7 +64,10 @@ void EventLoop::initServerEvents()
 
 void printEvent(void *a)
 {
-	Event *e = static_cast<Event *>(a);
+	struct kevent *kev = static_cast<struct kevent *>(a);
+
+	Event *e = static_cast<Event *>(kev->udata);
+
 	HttpreqHandler *reqHandler = static_cast<HttpreqHandler *>(e->getRequestHandler());
 	std::cout<<"\033[33m"<<"===================="<<std::endl;
 	std::cout<<"Event Information"<<std::endl;
@@ -79,6 +82,12 @@ void printEvent(void *a)
 		std::cout<<"Event Type : E_FILE"<<std::endl;
 	else if (e->getEventType() == E_PIPE)
 		std::cout<<"Event Type : E_PIPE"<<std::endl;
+	std::cout<<"------------------------"<<std::endl;
+	if (kev->filter == EVFILT_READ)
+		std::cout<<"Filter : FILTER_READ"<<std::endl;
+	else if (kev->filter == EVFILT_WRITE)
+		std::cout<<"Filter : FILTER_WRITE"<<std::endl;
+	std::cout<<"------------------------"<<std::endl;
 	if (e->getEventType() != E_SERVER_SOCKET)
 	{
 		std::cout<<"Server Socket fd : "<<e->getServerFd()<<std::endl;
@@ -88,8 +97,8 @@ void printEvent(void *a)
 		std::cout<<"Route : "<<e->getRoute()<<std::endl;
 		std::cout<<"Uri : "<<reqHandler->getRequestInfo().path<<std::endl;
 		std::cout<<"Method : "<<reqHandler->getRequestInfo().method<<std::endl;
-		std::cout<<"===================="<<std::endl;
 	}
+	std::cout<<"===================="<<std::endl;
 }
 
 
