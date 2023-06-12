@@ -4,7 +4,7 @@
 
 ![초기 설계도-0407](https://user-images.githubusercontent.com/76278794/230448853-ddfdd56f-cab8-4f7a-8a26-58beda20df63.png)
 ![2차 설계 -0408](https://user-images.githubusercontent.com/76278794/230726575-aace36c4-d217-46e3-802e-82250e4f38e1.png)
-
+![최종 -0612](https://github.com/koreanddinghwan/nginx-like-webserv-using-kqueue/assets/76278794/7a5ed12a-832d-4712-a915-b894f92ace1b)
 
 <br>
 
