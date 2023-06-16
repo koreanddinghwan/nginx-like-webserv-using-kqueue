@@ -389,4 +389,3 @@ int listen(int sock, int backlog);
 
 - pending connection queue의 길이를 의미한다.
 - 꽉차게되면, 이후에 요청한 client는 `ECONNREFUSED`를 받는다.
-- `worker-connections`를 의미한다.
