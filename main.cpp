@@ -5,6 +5,10 @@
 
 int main(int ac, char **av) 
 {
-	WebServ::getInstance().run(ac, av);
+	try {
+		WebServ::getInstance().run(ac, av);
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 	return 0;
 }
