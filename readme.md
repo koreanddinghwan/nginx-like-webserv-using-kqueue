@@ -29,6 +29,7 @@
 [CGI란](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/cgi.md)  
 [nginx에 대해](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/nginx.md)
 [configuration 설명](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/configs.md)
+[http1.1](https://github.com/koreanddinghwan/webserv_tutorial/blob/main/docs/http1.1.md)
 
 ## bonus
 
