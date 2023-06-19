@@ -7,11 +7,13 @@
 ![최종 -0612](https://github.com/koreanddinghwan/nginx-like-webserv-using-kqueue/assets/76278794/7a5ed12a-832d-4712-a915-b894f92ace1b)
 
 <br>
+<br>
 
 # Repo Diagram
 
 ![Visualization of the codebase](./diagram.svg)
 
+<br>
 <br>
 
 # 개념정리
