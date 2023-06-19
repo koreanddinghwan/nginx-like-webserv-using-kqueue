@@ -2,6 +2,11 @@
 # define EVENTLOOP_HPP
 
 #include "../../factory/MethodFactory.hpp"
+#include <cstdint>
+#include <ctime>
+#include <exception>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
 #include <cstdlib>
 #include <exception>
 #include <sys/_types/_socklen_t.h>
@@ -15,8 +20,8 @@
 #include "../../interface/IBlock.hpp"
 #include "../http/HttpServer.hpp"
 #include "Event.hpp"
-#include "../http/responseHandler.hpp"
-#include "../http/HttpreqHandler.hpp"
+#include "../http/HttpResponseHandler.hpp"
+#include "../http/HttpRequestHandler.hpp"
 #include "../http/ws_HttpIndexModule.hpp"
 #include "../http/ws_HttpAutoIndexModule.hpp"
 #include "../http/ws_HttpUploadModule.hpp"

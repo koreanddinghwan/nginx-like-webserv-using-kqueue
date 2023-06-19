@@ -1,5 +1,4 @@
 #include "./ws_HttpIndexModule.hpp"
-#include <sys/fcntl.h>
 
 bool ws_HttpIndexModule::processEvent(Event *e)
 {

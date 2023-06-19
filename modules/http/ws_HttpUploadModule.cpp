@@ -1,6 +1,4 @@
 #include "ws_HttpUploadModule.hpp"
-#include <sys/fcntl.h>
-
 
 bool ws_HttpUploadModule::processEvent(Event *e)
 {

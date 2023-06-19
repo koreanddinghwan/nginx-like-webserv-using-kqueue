@@ -1,11 +1,4 @@
 #include "./ws_HttpAutoIndexModule.hpp"
-#include <dirent.h>
-#include <stdlib.h>
-#include <string>
-#include <sys/stat.h>
-#include <vector>
-#include "HttpreqHandler.hpp"
-#include "responseHandler.hpp"
 
 std::string converter(std::string &s) {
     std::string output;

@@ -1,14 +1,4 @@
 #include "../eventLoop/EventLoop.hpp"
-#include <cstdint>
-#include <ctime>
-#include <exception>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-#include "../http/HttpreqHandler.hpp"
-#include "Event.hpp"
-
 
 int getLongestPrefixMatchScore(const std::string& location, const std::string& requestPath) {
 

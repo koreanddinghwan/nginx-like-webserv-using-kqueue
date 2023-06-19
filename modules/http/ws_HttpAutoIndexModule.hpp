@@ -2,6 +2,13 @@
 # define WS_HTTPAUTOINDEXMODULE_HPP
 
 #include "../eventLoop/Event.hpp"
+#include <dirent.h>
+#include <stdlib.h>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+#include "HttpRequestHandler.hpp"
+#include "HttpResponseHandler.hpp"
 #include <sys/stat.h>
 
 /**
