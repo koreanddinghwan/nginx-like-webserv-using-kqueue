@@ -11,6 +11,7 @@
 
 # Repo Diagram
 
+- Overall diagram for this project
 ![Visualization of the codebase](./diagram.svg)
 
 <br>
