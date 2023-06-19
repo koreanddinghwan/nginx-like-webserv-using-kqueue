@@ -8,6 +8,12 @@
 
 <br>
 
+# Repo Diagram
+
+![Visualization of the codebase](./diagram.svg)
+
+<br>
+
 # 개념정리
 
 ## mandatory
