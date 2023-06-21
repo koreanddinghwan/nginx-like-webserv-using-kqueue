@@ -1,11 +1,21 @@
 const UploadServer = "http://localhost:80/fileupload/";
 
-const test = async (event) => {
-  console.log("test");
-  console.log(event);
-  const fileUpload = document.getElementById("fileUploadTest");
+const uploadBtn = document.getElementById("fileUploadBtn");
+const deleteBtn = document.getElementById("fileDeleteBtn");
+const checkUploadBtn = document.getElementById("checkUploadBtn");
+const cgiBtn = document.getElementById("cgiBtn");
+const multipleCgiBtn1 = document.getElementById("multipleCgiBtn1");
+const multipleCgiBtn2 = document.getElementById("multipleCgiBtn2");
 
-  const fileName = fileUpload.files[0].name;
+const fileUploadInput = document.getElementById("fileUploadInput");
+const fileDeleteInput = document.getElementById("fileDeleteInput");
+const cgiInput = document.getElementById("cgiInput");
+const cgiOutput = document.getElementById("cgiOutput");
+const multipleCgiOutput1 = document.getElementById("multipleCgiOutput1");
+const multipleCgiOutput2 = document.getElementById("multipleCgiOutput2");
+
+const onClickUploadBtn = async (event) => {
+  const fileName = fileUploadInput.files[0].name;
   const filePath = UploadServer + fileName;
 
   console.log("upload");
@@ -13,13 +23,79 @@ const test = async (event) => {
 
   const postedResult = await fetch(filePath, {
     method: "POST",
-    body: fileUpload.files[0],
+    body: fileUploadInput.files[0],
   });
   console.log(postedResult);
+  if (postedResult.ok) {
+	alert("posted");
+	fileDeleteInput.value = fileName;
+  } else {
+	alert("failed");
+  }
 };
 
-const uploadBtn = document.getElementById("fileUploadBtn");
+const onClickDeleteBtn = async (event) => {
+	const fileName = fileDeleteInput.value;
+	const filePath = "http://localhost:80/delete/" + fileName;
+	console.log("delete");
+	console.log(filePath);
+	const deletedResult = await fetch(filePath, {
+		method: "DELETE",
+	});
+	console.log(deletedResult);
+	if (deletedResult.ok) {
+		alert("deleted");
+	}
+	else {
+		alert("failed");
+	}
+}
 
-uploadBtn.addEventListener("click", test);
+const onClickCheckUploadBtn = async (event) => {
+	const url = "http://localhost:80/upload/" + fileUploadInput.files[0].name;
+	window.open(url, '_blank');
+}
 
-console.log("js transfered");
+const onClickCgiBtn = async (event) => {
+	const url = "http://localhost:80/cgi";
+	const result = await fetch(url, 
+	{
+		"method": "POST",
+		"body": cgiInput.value,
+	});
+	cgiOutput.value = await result.text();
+}
+
+const onClickMultipleCgiBtn1 = async (event) => {
+	const url = "http://localhost:80/asdf.shsh";
+
+	const result = await fetch(url,
+	{
+		"method": "GET"
+	});
+	const wrapper = document.createElement("div");
+	// const doc = new DOMParser().parseFromString(await result.text(), "text/xml");
+	wrapper.innerHTML = await result.text();
+	multipleCgiOutput1.appendChild(wrapper);
+}
+
+const onClickMultipleCgiBtn2 = async (event) => {
+	const url = "http://localhost:80/asdf.pyth";
+
+	const result = await fetch(url,
+	{
+		"method": "GET"
+	});
+	const wrapper = document.createElement("div");
+	// const doc = new DOMParser().parseFromString(await result.text(), "text/xml");
+	wrapper.innerHTML = await result.text();
+	multipleCgiOutput2.appendChild(wrapper);
+}
+
+
+uploadBtn.addEventListener("click", onClickUploadBtn);
+deleteBtn.addEventListener("click", onClickDeleteBtn);
+checkUploadBtn.addEventListener("click", onClickCheckUploadBtn);
+cgiBtn.addEventListener("click", onClickCgiBtn);
+multipleCgiBtn1.addEventListener("click", onClickMultipleCgiBtn1);
+multipleCgiBtn2.addEventListener("click", onClickMultipleCgiBtn2);
