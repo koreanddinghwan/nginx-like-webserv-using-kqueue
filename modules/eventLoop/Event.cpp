@@ -12,6 +12,7 @@ Event::Event(t_ServerType t)
 	this->serverType = t;
 	this->statusCode = -1;
 	this->internal_status = -1;
+	this->redirectCount = 0;
 }
 
 void Event::setServerType(t_ServerType t)

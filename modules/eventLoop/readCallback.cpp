@@ -131,6 +131,7 @@ void EventLoop::e_clientSocketReadCallback(struct kevent *e, Event *e_udata)
 				 * */
 				e_udata->internal_method = reqHandler->getRequestInfo().method;
 				e_udata->internal_uri = reqHandler->getRequestInfo().path;
+				e_udata->redirectCount = 0;
 				setHttpResponse(e_udata);
 			}
 		}

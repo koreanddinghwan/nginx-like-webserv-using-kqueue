@@ -137,6 +137,7 @@ public:
 	int fileWroteByte;
 	int	childPid;
 
+	int redirectCount;
 
 public:
 	Event(t_ServerType t);

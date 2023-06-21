@@ -227,6 +227,7 @@ void setInternalUri(Event *e)
 
 void EventLoop::ws_internalRedir(Event *e)
 {
+	e->redirectCount++;
 	setLocationData(e);
 	setInternalUri(e);
 }
@@ -274,6 +275,14 @@ void EventLoop::setHttpResponse(Event *e)
 {
 	setServerName(e);
 	ws_internalRedir(e);
+
+	if (e->redirectCount > 20)
+	{
+		e->setStatusCode(404);
+		errorCallback(e);
+		return;
+	}
+
 	/**
 	 * internal loop
 	 * */
