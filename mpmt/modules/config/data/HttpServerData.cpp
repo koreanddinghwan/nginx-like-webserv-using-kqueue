@@ -43,16 +43,6 @@ void HttpServerData::setHttpLocationBlock(HttpLocationBlock *n) {
 	this->httpLocationBlock.push_back(n);
 }
 
-void HttpServerData::printServerDataConfig() {
-	this->printConfig();
-	std::cout<<"listen: "<<listen<<std::endl;
-	for (int i = 0; i < server_names.size(); i++)
-	{
-		std::cout<<"server name: "<<server_names[i]<<std::endl;
-	}
-	std::cout<<"upload_store: "<<upload_store<<std::endl;
-}
-
 std::string HttpServerData::getUploadStore() {return this->upload_store;}
 
 void HttpServerData::setUploadStore(std::string upload_store) {this->upload_store = upload_store;}

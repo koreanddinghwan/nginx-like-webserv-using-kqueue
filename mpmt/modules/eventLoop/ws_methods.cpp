@@ -2,7 +2,6 @@
 
 void EventLoop::ws_method_GET(Event *e)
 {
-	std::cout<<e->locationData->getRoot() + e->internal_uri<<std::endl;
 	if ((stat((e->locationData->getRoot() + e->internal_uri).c_str(), &e->statBuf) == 0) &&
 			(e->statBuf.st_mode & S_IFREG) &&
 			(e->file_fd = open((e->locationData->getRoot() + e->internal_uri).c_str(), O_RDONLY)) != -1)
@@ -77,13 +76,18 @@ void EventLoop::ws_method_POST(Event *e)
 	{
 		/**
 		 * Upload store is not setted
-		 * std::cout<<"upload store is not setted"<<std::endl;
 		 * */
 		e->setStatusCode(404);
 		errorCallback(e);
 	}
 }
 
+/** 
+ * A 202 (Accepted) status code if the action will likely succeed but has not yet been enacted. 
+ * A 204 (No Content) status code if the action has been enacted and no further information is to be supplied.
+ * A 200 (OK) status code if the action has been enacted and the 
+ * response message includes a representation describing the status. 
+ **/
 void EventLoop::ws_method_DELETE(Event *e)
 {
 	/**
@@ -91,4 +95,29 @@ void EventLoop::ws_method_DELETE(Event *e)
 	 * */
 	std::string filePath;
 	filePath = e->locationData->getRoot() + e->internal_uri;
+
+
+	//delete file
+	if (e->internal_uri == "/")
+	{
+		//delete root directory not allowed
+		e->setStatusCode(403);
+		errorCallback(e);
+	}
+	else
+	
+	if (unlink(filePath.c_str()) == 0)
+	{
+		//delete success
+		//server do not send response body
+		e->setStatusCode(204);
+		unregisterClientSocketReadEvent(e);
+		registerClientSocketWriteEvent(e);
+	}
+	else
+	{
+		//delete fail
+		e->setStatusCode(404);
+		errorCallback(e);
+	}
 }

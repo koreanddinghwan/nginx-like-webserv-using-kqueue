@@ -26,15 +26,12 @@ void HttpServerBlock::parse(std::ifstream &File)
 		BlockParser::httpBlockParser(buf, *static_cast<HttpServerData *>(this->getConfigData()));
 		BlockParser::httpServerBlockParser(buf, *static_cast<HttpServerData *>(this->getConfigData()));
 
-		std::cout<<"current:"<<buf<<std::endl;
 		if (buf.find("location ") != std::string::npos)
 		{
 			File.seekg(cur_offset);
-			std::cout<<"\033[31m"<<"make new location block"<<buf<<std::endl;
 			this->serverData.setHttpLocationBlock((new HttpLocationBlock(File, static_cast<HttpServerData *>(this->getConfigData()))));
 		}
 	}
 	if (this->serverData.getHttpLocationBlock().size() == 0)
 		this->serverData.setHttpLocationBlock((new HttpLocationBlock(static_cast<HttpServerData *>(this->getConfigData()))));
-	std::cout<<"end of server block"<<std::endl;
 }

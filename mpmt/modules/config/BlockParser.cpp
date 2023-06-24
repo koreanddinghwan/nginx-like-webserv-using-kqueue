@@ -71,7 +71,6 @@
 		s.splitRemoveSemiColon(buf.c_str(), ' ');
 		for (int i = 1; i < s.get().size(); i++)
 		{
-			std::cout<<s.get()[i]<<std::endl;
 			confData.setIndex(s.get()[i]);
 		}
 	}

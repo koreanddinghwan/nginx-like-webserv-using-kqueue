@@ -1,9 +1,11 @@
 #include "responseHandler.hpp"
 #include "HttpreqHandler.hpp"
+#include "HttpServer.hpp"
 
 
-
-responseHandler::responseHandler() {
+responseHandler::responseHandler(Event *e) : _event(e)
+{
+	this->_res = new Response(200);
 };
 
 
@@ -40,10 +42,23 @@ void responseHandler::setResLocation(std::string location) const {
 	this->_res->setLocation(location); 
 };
 
+void responseHandler::setResCookie(std::string cookieString) const {
+	this->_res->setCookie(cookieString);
+};
+
 void responseHandler::setResAddtionalOptions(Event *event) const {
 	std::string httpMethod = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().method;
 	std::string requestedResource = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().path;
 	int statusCode = this->getResStatusCode();
+	
+	if (static_cast<HttpreqHandler *>(event->getRequestHandler())->getHasSid())
+	{
+		std::string cookieString = static_cast<HttpreqHandler *>(event->getRequestHandler())->getRequestInfo().reqHeaderMap.find("Cookie")->second;
+		this->setResCookie("Cookie: " + cookieString + "\r\n");
+	} else {
+		unsigned int tmpId = HttpServer::getInstance().issueSessionId();
+		this->setResCookie("Set-Cookie: sid=" + toString(tmpId) +"; max-age:86400;\r\n");
+	}
 
 	if (httpMethod == "GET") {
 		if (statusCode >= 300 && statusCode < 400)
@@ -99,8 +114,6 @@ void *responseHandler::handle(void *event) {
 
 	Event *e = static_cast<Event *>(event);
 
-	std::cout<<"statussss:"<<e->getStatusCode()<<std::endl;
-
 	/**
 	 * 1. apply event's status code
 	 * */
@@ -116,17 +129,16 @@ void *responseHandler::handle(void *event) {
 	 * */
 	this->setResAddtionalOptions(e);
 
-	/* std::cout << "=====================\n" << this->getResBody() << "=====================\n" << std::endl; */
 	
 	/**
 	 * 3. set resHeader
 	 * */
 	this->setResHeader(HTTPV11);
-	/* std::cout << "=====================\n" << this->getResHeader() << "=====================\n" << std::endl; */
 
 	/**
 	 * 4. set resBuffer to send
 	 * */
 	this->setResBuf();
-	/* std::cout << "=====================\n" << this->getResBuf() << "\n=====================" << std::endl; */
+
+	return event;
 }

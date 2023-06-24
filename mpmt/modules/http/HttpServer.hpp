@@ -17,7 +17,7 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <sys/event.h>
-# define HTTPBUFFER_SIZE 8192
+# define HTTPBUFFER_SIZE 99998
 
 class HttpServer : public IServer {
 private:
@@ -60,6 +60,8 @@ public:
    * @return char * of http buffer
    */
   char* getHttpBuffer();
+
+  unsigned int issueSessionId();
 
 private:
   HttpServer(); 

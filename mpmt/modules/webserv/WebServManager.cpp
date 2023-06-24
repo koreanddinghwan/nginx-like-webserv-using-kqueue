@@ -14,15 +14,12 @@ void WebservManager::initConfig(int ac, char **av) const throw (std::runtime_err
 	try {
 		if (ac == 1)
 		{
-			std::cout<<"Set config file as default path..."<<std::endl;
 			Config::getInstance().initConfig(defaultPath);
 		}
 		else
 		{
-			std::cout<<"Set config file as av[1] path..."<<av[1]<<std::endl;
 			Config::getInstance().initConfig(av[1]);
 		}
-		Config::getInstance().printConfigData();
 	} catch (configParseException &e) {
 		throw (e);
 	}

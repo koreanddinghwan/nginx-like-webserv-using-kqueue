@@ -24,26 +24,33 @@ class Response {
 		void setStatusCode(int statusCode);
 		//객체를 받아서 스트림 그자체로 쓸 수도 있음.
 
-		void setHeaders(std::string httpV);	
-		void setBody(std::string body);
-		void setLocation(std::string location);
+		void setHeaders(std::string const &httpV);	
+		void setBody(std::string const &body);
+		void setLocation(std::string const &location);
+		void setCgiBody(std::string const &substr);
+		void setCookie(std::string const &cookie);
 		void setBuf();
 
 		std::string& getBody();
 		std::string& getHeader();
 		std::string& getBuf();
-
+		std::string& getCookie();
 		std::string& getStatusMsg();
 		int getStatusCode() const;
 		
 	//destoryer
 	protected:
 		int _statusCode;
+		
 		std::string _statusMsg;
 		std::string _location;
 		std::string _headers;
 		std::string _body;
 		std::string _buf;
+		std::string _cookie;
+
 };
+
+std::string toString(size_t n);
 
 #endif

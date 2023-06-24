@@ -1,7 +1,4 @@
 #include "HttpreqHandler.hpp"
-#include <algorithm>
-#include <ostream>
-
 
 /* =================== undefine =================== */
 void HttpreqHandler::parseUndefined(void)
@@ -67,35 +64,23 @@ void HttpreqHandler::splitChunked(void)
 	_bodyBuf = buf;
 }
 
-void HttpreqHandler::parseChunked(std::string req) 
+void HttpreqHandler::parseChunked(void)
 {
 	int pos = 0, endPos = 0;
 	std::string line;
 	
-	if (_headerPended) //청크 헤더 덜들어옴
-	{
-		pos = _buf.find(CRLF2);
-		if (pos == std::string::npos)
-			return ;
-		_headerPended = false;
-		_bodyPended = true;
-		_chunkedWithoutBodyBuf.append(_buf.substr(0, pos + 4));
-	}
-	if (_bodyPended) // 청크 헤더 다 들어오고 바디 덜들어옴. 바디 끝 들어올 때 까지 파싱 x
-	{
-		endPos = _buf.find("0\r\n\r\n");
-		if (endPos == std::string::npos)
-			return ;
-		// 바디 다 들어옴, 길이, 바디 분리
-		pos = _buf.find(CRLF2);
-		_bodyBuf = _buf.substr(pos + 4);
-		_pended = false;
-		_bodyPended = false;
-		splitChunked();
-		_buf.clear();
-		_buf.append(_chunkedWithoutBodyBuf);
-		_buf.append(_bodyBuf);		
-	}
+	endPos = _buf.find("0\r\n\r\n");
+	if (endPos == std::string::npos)
+		return ;
+	// 바디 다 들어옴, 길이, 바디 분리
+	pos = _buf.find(CRLF2);
+	_bodyBuf = _buf.substr(pos + 4);
+	_pended = false;
+	_bodyPended = false;
+	splitChunked();
+	_buf.clear();
+	_buf.append(_chunkedWithoutBodyBuf);
+	_buf.append(_bodyBuf);
 }
 
 /* ============================================= */
@@ -248,7 +233,6 @@ bool HttpreqHandler::parseHeader(std::string line){
 		return false;// 종료, header 끝나고 body로 넘어가야됨
 	key = line.substr(0, pos);
 	value = line.substr(pos + 2);
-	std::cout<<"key : "<<key<<" value : "<<value<<std::endl;
 	_info.reqHeaderMap.insert(std::make_pair(key,value));
 	saveGenericHeader(key, value);
 	return true;
@@ -257,11 +241,9 @@ bool HttpreqHandler::parseHeader(std::string line){
 void HttpreqHandler::parseBody(void)
 {
 	int pos;
-	std::string line;
 
 	pos = _buf.find(CRLF2);
-	line = _buf.substr(pos + 4);
-	_info.body = line;
+	_info.body = _buf.assign(_buf.begin() + pos + 4, _buf.end());
 }
 
 void HttpreqHandler::parseWithoutBody(void)

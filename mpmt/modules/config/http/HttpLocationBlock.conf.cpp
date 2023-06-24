@@ -27,12 +27,9 @@ void HttpLocationBlock::parse(std::ifstream &File)
 			break;
 		std::getline(File, buf);
 
-		std::cout<<"current:"<<buf<<std::endl;
 		BlockParser::httpBlockParser(buf, this->confData);
 		BlockParser::httpLocationBlockParser(File, buf, this->confData);
 	}
-	std::cout<<"end of location block"<<std::endl;
-
 }
 
 HttpLocationData& HttpLocationBlock::getLocationData() {

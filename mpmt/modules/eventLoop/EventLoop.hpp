@@ -40,7 +40,7 @@ public:
 	 */
 	void initEventLoop();
 
-	char pipeBuffer[65535];
+	char pipeBuffer[HTTPBUFFER_SIZE];
 
 private:
 	int kq_fd;
@@ -58,8 +58,6 @@ private:
 
 	EventLoop();
 	~EventLoop();
-	void printCurrentData();
-
 
 	void readCallback(struct kevent *e);
 	void writeCallback(struct kevent *e);

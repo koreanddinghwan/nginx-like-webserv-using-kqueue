@@ -71,7 +71,6 @@ public:
 	void	setIndex(std::string);
 
 	void	copyErrorPage(errorMap m);
-	void	printConfig();
 };
 
 #endif

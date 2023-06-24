@@ -76,8 +76,6 @@ public:
 	void setReturnStatus(int r);  
 	void setRedirectUrl(std::string r);
 	void setLimitedMethods(std::vector<std::string> r);
-
-	void printLocationData();
 };
 
 #endif

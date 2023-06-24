@@ -23,8 +23,6 @@ class HttpData: public HttpConfigData
 
 		std::vector<HttpServerBlock *> &getServerBlock();
 		void setServerBlock(HttpServerBlock *f);
-
-		void printData();
 };
 
 #endif

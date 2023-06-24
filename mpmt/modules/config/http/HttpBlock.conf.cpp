@@ -1,4 +1,4 @@
-#include "httpBlock.conf.hpp"
+#include "HttpBlock.conf.hpp"
 #include "HttpLocationBlock.conf.hpp"
 #include <utility>
 
@@ -59,7 +59,6 @@ void HttpBlock::parse(std::ifstream &File)
 
 		if (buf.find("server {") != std::string::npos)
 		{
-			std::cout<<"\033[32m"<<"make new server block:" <<buf<<std::endl;
 			this->getHttpData().setServerBlock(
 					new HttpServerBlock(File, (&this->getHttpData()))
 				);
